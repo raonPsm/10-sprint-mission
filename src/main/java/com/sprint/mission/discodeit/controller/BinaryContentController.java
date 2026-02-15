@@ -16,7 +16,6 @@ import java.util.UUID;
 @RestController
 // Kebab case 로 변경
 @RequestMapping("/api/binary-contents")
-// TODO: URL에서는 소문자 사용이 관례
 public class BinaryContentController {
     private final BinaryContentService binaryContentService;
 
@@ -25,31 +24,19 @@ public class BinaryContentController {
         this.binaryContentService = binaryContentService;
     }
 
-    // 바이너리 파일을 1개 또는 여러 개 조회할 수 있다.
-    // 단건 조회 (다운로드 등)
-    @GetMapping(value = "/{binaryContentId}")
-    public ResponseEntity<BinaryContentResponse> findById(@PathVariable UUID binaryContentId) {
+    // 단건 조회
+    @GetMapping("/{binaryContentId}")
+    public ResponseEntity<BinaryContentResponse> find(@PathVariable UUID binaryContentId) {
         BinaryContentResponse response = binaryContentService.find(binaryContentId);
         return ResponseEntity.ok(response);
     }
 
-    // 정적 리소스 서빙
-    @PostMapping()
-    // GET은 Body를 권장하지 않음 -> POST 사용
-    // RequestParam -> RequestBody / DTO로 받아서 처리(URL 길이 제한 문제 및 확장성 확보)
-    public ResponseEntity<List<BinaryContentResponse>> find(@RequestBody BinaryContentIdsRequest request) {
-        List<BinaryContentResponse> response = binaryContentService.findAllByIdIn(request.ids());
-        return ResponseEntity.ok(response);
-    }
-
-    // 다건 조회 (특정 메시지의 첨부파일 목록 등)
-    // 사용자가 메시지를 보낼 때 사진 3장을 한 번에 올렸다고 가정해보면
-    // 프론트에서 사진 3장의 상세 정보를 가져오기 위해 다건 조회
-    @GetMapping(value = "/find")
-    public ResponseEntity<BinaryContent> findBinaryContent(
-            @RequestParam UUID binaryContentId
+    // 다건 조회 (ID 목록으로 검색)
+    @GetMapping
+    public ResponseEntity<List<BinaryContentResponse>> findAllByIdIn(
+            @RequestParam("ids") List<UUID> ids
     ) {
-        BinaryContent content = binaryContentService.findContent(binaryContentId);
-        return ResponseEntity.ok(content);
+        List<BinaryContentResponse> binaryContents = binaryContentService.findAllByIdIn(ids);
+        return ResponseEntity.ok(binaryContents);
     }
 }
