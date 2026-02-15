@@ -4,16 +4,17 @@ import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
     // 기본 CRUD 메서드 이름은 심플하게
-    UserResponse create(UserCreateRequest request);
+    UserResponse create(UserCreateRequest request, MultipartFile profile);
     UserResponse find(UUID userId);
     List<UserResponse> findAll();
-    UserResponse update(UUID userId, UserUpdateRequest request);
+    UserResponse update(UUID userId, UserUpdateRequest request, MultipartFile profile);
     void delete(UUID userId);
 
     List<UserDto> findAllUsers();

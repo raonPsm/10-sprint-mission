@@ -21,7 +21,9 @@ record가 자동으로 해주는 것들
 public record UserCreateRequest (
         String username,
         String email,
-        String password,
-        BinaryContentRequest profileImage  // BinaryContentRequest DTO를 필드로 받음 (Null 가능)
+        String password
+        // BinaryContentRequest profileImage
+            // BinaryContentRequest DTO를 필드로 받음 (Null 가능)
+            // 파일은 MultipartFile이라는 별도의 파라미터로 받기 때문에 해당 필드 삭제
         // TODO: 프로필 사진을 강제할 것인지 고민 필요 -> 기본 프로필 설정 or 프로필 강제 설정 -> 결정 필요
 ) {}

@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponse;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
@@ -11,10 +12,13 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -31,9 +35,12 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
+    private final BinaryContentService binaryContentService;
+    // FIXME: 원래 명세에서는 BinaryContentService 참조하면 안됨
+    // multipart
 
     @Override
-    public UserResponse create(UserCreateRequest request) {
+    public UserResponse create(UserCreateRequest request, MultipartFile profile) {
         if(userRepository.existsByUsername(request.username())) {
             throw new IllegalArgumentException("이미 존재하는 사용자 이름(username)입니다: " + request.username());
         }
@@ -43,10 +50,19 @@ public class BasicUserService implements UserService {
 
         // 프로필 이미지 처리 (있으면 저정, 없으면 null)
         UUID profileImageId = null;
-        if(request.profileImage() != null) {
-            BinaryContent binaryContent = createBinaryContent(request.profileImage());
-            binaryContentRepository.save(binaryContent);
-            profileImageId = binaryContent.getId();
+        if (profile != null && !profile.isEmpty()) {
+            try {
+                // MultipartFile의 데이터를 추출하여 DTO 생성
+                BinaryContentRequest imageRequest = new BinaryContentRequest(
+                        profile.getOriginalFilename(),
+                        profile.getContentType(),
+                        profile.getBytes()
+                );
+                BinaryContentResponse savedImg = binaryContentService.create(imageRequest);
+                profileImageId = savedImg.id();
+            } catch (IOException e) {
+                throw new RuntimeException("프로필 이미지 업로드 중 오류가 발생했습니다.");
+            }
         }
 
         // User 엔티티 생성 (있으면 저장, 없으면 null)
@@ -56,7 +72,6 @@ public class BasicUserService implements UserService {
                 request.password(),
                 profileImageId
         );
-
         User savedUser = userRepository.save(user);
 
         // UserStatus 생성
@@ -95,27 +110,33 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponse update(UUID userId, UserUpdateRequest request) {
+    public UserResponse update(UUID userId, UserUpdateRequest request, MultipartFile profile) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다. id: " + userId));
 
         // 새 프로필 이미지가 전달되었다면 저장 - 이미지 수정 안했을 경우 기존 id 유지
         UUID newProfileImageId = user.getProfileImageId();
 
-        if(request.profileImage() != null) {
-            // 기존에 설정된 프로필 이미지가 있다면 삭제
-            // TODO: 현재 profileId가 null일 경우 기본 프로필 설정으므로 / 기존 설정된 프로필 이미지가 기본 프로필인지 구분하기 위해
-            //   기본 프로필 설정을 null이 아니라 명시적으로 따른 사진으로 지정해 줄 필요성 있어보임 -> entity 수정 필요
-            if(user.getProfileImageId() != null) {
-                binaryContentRepository.deleteById(user.getProfileImageId());
+        if (profile != null && !profile.isEmpty()) {
+            try {
+                // (1) 기존 이미지가 존재한다면 삭제
+                if (user.getProfileImageId() != null) {
+                    binaryContentService.delete(user.getProfileImageId());
+                }
+
+                // (2) 새 이미지 저장
+                BinaryContentRequest imageRequest = new BinaryContentRequest(
+                        profile.getOriginalFilename(),
+                        profile.getContentType(),
+                        profile.getBytes()
+                ) ;
+                BinaryContentResponse savedImage = binaryContentService.create(imageRequest);
+
+                // (3) 교체할 id 업데이트
+                newProfileImageId = savedImage.id();
+            } catch (IOException e) {
+                throw new RuntimeException("프로필 이미지 수정 중 오류가 발생했습니다.", e);
             }
-
-            // 새 이미지 생성 및 저장
-            BinaryContent binaryContent = createBinaryContent(request.profileImage());
-            binaryContentRepository.save(binaryContent);
-
-            // 새 ID로 교체
-            newProfileImageId = binaryContent.getId();
         }
 
         // 유저 정보 수정

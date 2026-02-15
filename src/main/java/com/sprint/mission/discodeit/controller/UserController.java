@@ -6,8 +6,10 @@ import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -46,14 +48,17 @@ public class UserController {
     // TODO: BinaryContent -> 프로필 이미지 기능 확인
 
     // 사용자 정보를 수정할 수 있다.
-    @PutMapping(value = "/{id}")
+    // 멀티파트 타입 관련 수정
+    @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserResponse> update(
             @PathVariable UUID id,
-            @RequestBody UserUpdateRequest request
+            @RequestPart("request") UserUpdateRequest request,
+            @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
-        UserResponse response = userService.update(id, request);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        UserResponse response = userService.update(id, request, profile);
+        return ResponseEntity.ok(response);
     }
+
     // TODO: 존재하지 않는 사용자 수정 시도 -> 404 반환
     // TODO: 현재 API는 id만 알면 누구나 다른 사람의 정보를 수정할 수 있는 구조 -> 보안 문제
 
