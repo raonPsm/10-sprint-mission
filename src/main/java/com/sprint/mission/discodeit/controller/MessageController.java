@@ -12,7 +12,8 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/message")
+// message -> messages
+@RequestMapping("/api/messages")
 public class MessageController {
     private final MessageService messageService;
 
@@ -23,14 +24,14 @@ public class MessageController {
     // TODO: @RequiredArgsConstructor로 리펙토링 고려
 
     // 메시지를 보낼 수 있다.
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping()
     public ResponseEntity<MessageResponse> create(@RequestBody MessageCreateRequest request) {
         MessageResponse response = messageService.create(request);
         return ResponseEntity.ok(response); // ResponseEntity.status(HttpStatus.OK).body(responses); 축약형
     }
 
     //  메시지를 수정할 수 있다.
-    @RequestMapping(value = "/{messageId}", method = RequestMethod.PATCH)
+    @PatchMapping(value = "/{messageId}")
     public ResponseEntity<MessageResponse> update(
             @PathVariable UUID messageId,
             @RequestBody MessageUpdateRequest request
@@ -40,14 +41,14 @@ public class MessageController {
     }
 
     // 메시지를 삭제할 수 있다.
-    @RequestMapping(value = "/{messageId}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{messageId}")
     public ResponseEntity<Void> delete(@PathVariable UUID messageId) {
         messageService.delete(messageId);
         return ResponseEntity.noContent().build();
     }
 
     // 특정 채널의 메시지 목록을 조회할 수 있다.
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping()
     public ResponseEntity<List<MessageResponse>> findAllByChannelId(@RequestParam UUID channelId) {
         List<MessageResponse> responses = messageService.findAllByChannelId(channelId);
         return ResponseEntity.ok(responses);

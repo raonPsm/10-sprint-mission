@@ -15,7 +15,8 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/channel")
+// channel -> channels
+@RequestMapping("/api/channels")
 public class ChannelController {
     private final ChannelService channelService;
 
@@ -25,21 +26,21 @@ public class ChannelController {
     }
 
     // 공개 채널을 생성할 수 있다.
-    @RequestMapping(value = "/public", method = RequestMethod.POST)
+    @PostMapping(value = "/public")
     public ResponseEntity<ChannelResponse> createPublic(@RequestBody PublicChannelCreateRequest request) {
         ChannelResponse response = channelService.createPublic(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     // 비공개 채널을 생성할 수 있다.
-    @RequestMapping(value = "/private", method = RequestMethod.POST)
+    @PostMapping(value = "/private")
     public ResponseEntity<ChannelResponse> creatPrivate(@RequestBody PrivateChannelCreateRequest request) {
         ChannelResponse response = channelService.createPrivate(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     // 공개 채널의 정보를 수정할 수 있다.
-    @RequestMapping(value = "/{channelId}", method = RequestMethod.PATCH)
+    @PatchMapping(value = "/{channelId}")
     public ResponseEntity<ChannelResponse> update(
             @PathVariable UUID channelId,
             @RequestBody ChannelUpdateRequest request
@@ -49,14 +50,14 @@ public class ChannelController {
     }
 
     // 채널을 삭제할 수 있다.
-    @RequestMapping(value = "/{channelId}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "/{channelId}")
     public ResponseEntity<Void> delete(@PathVariable UUID channelId) {
         channelService.delete(channelId);
         return ResponseEntity.noContent().build();
     }
 
     // 특정 사용자가 볼 수 있는 모든 채널 목록을 조회할 수 있다.
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping()
     public ResponseEntity<List<ChannelResponse>> findAllByUserId(@RequestParam UUID userId) {
         List<ChannelResponse> responses = channelService.findAllByUserId(userId);
         return ResponseEntity.status(HttpStatus.OK).body(responses);
