@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.channel.ChannelResponse;
-import com.sprint.mission.discodeit.dto.channel.ChannelUpdateRequest;
-import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.*;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
@@ -29,7 +26,17 @@ public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
 
     @Override
-    public ChannelResponse createPublic(PublicChannelCreateRequest request) {
+    public ChannelResponse create(ChannelCreateRequest request) {
+        if (request.type() == ChannelType.PUBLIC) {
+            return createPublic(request);
+        } else if (request.type() == ChannelType.PRIVATE) {
+            return createPrivate(request);
+        } else {
+            throw new IllegalArgumentException("유효하지 않은 채널 타입입니다.");
+        }
+    }
+
+    public ChannelResponse createPublic(ChannelCreateRequest request) {
         if(channelRepository.existsByName(request.name())) {
             throw new IllegalArgumentException("이미 존재하는 공개 채널 이름(name)입니다. " + request.name());
         }
@@ -43,8 +50,7 @@ public class BasicChannelService implements ChannelService {
         // TODO: description 이름 유효성 검사 로직 추가
     }
 
-    @Override
-    public ChannelResponse createPrivate(PrivateChannelCreateRequest request) {
+    public ChannelResponse createPrivate(ChannelCreateRequest request) {
         Set<UUID> requestedUserIds = request.participantIds();
 
         channelRepository.findPrivateChannelByParticipants(requestedUserIds).ifPresent(existingChannel -> {

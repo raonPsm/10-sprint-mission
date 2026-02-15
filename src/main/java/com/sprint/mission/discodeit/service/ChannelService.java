@@ -1,18 +1,13 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.channel.ChannelResponse;
-import com.sprint.mission.discodeit.dto.channel.ChannelUpdateRequest;
-import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.*;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface ChannelService {
-    // PUBLIC 채널 생성
-    ChannelResponse createPublic(PublicChannelCreateRequest request);
-    // PRIVATE 채널 생성
-    ChannelResponse createPrivate(PrivateChannelCreateRequest request);
+    // PUBLIC 채널 생성 + PRIVATE 채널 생성
+    ChannelResponse create(ChannelCreateRequest request);
 
     // 단건 조회
     ChannelResponse find(UUID channelId);

@@ -1,16 +1,16 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.channel.ChannelResponse;
-import com.sprint.mission.discodeit.dto.channel.ChannelUpdateRequest;
-import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.*;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.annotation.Repeatable;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,16 +26,10 @@ public class ChannelController {
     }
 
     // 공개 채널을 생성할 수 있다.
-    @PostMapping(value = "/public")
-    public ResponseEntity<ChannelResponse> createPublic(@RequestBody PublicChannelCreateRequest request) {
-        ChannelResponse response = channelService.createPublic(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
     // 비공개 채널을 생성할 수 있다.
-    @PostMapping(value = "/private")
-    public ResponseEntity<ChannelResponse> creatPrivate(@RequestBody PrivateChannelCreateRequest request) {
-        ChannelResponse response = channelService.createPrivate(request);
+    @PostMapping
+    public ResponseEntity<ChannelResponse> create(@RequestBody ChannelCreateRequest request) {
+        ChannelResponse response = channelService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

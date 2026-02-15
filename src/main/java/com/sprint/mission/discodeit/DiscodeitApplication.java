@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
+import com.sprint.mission.discodeit.dto.channel.ChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.ChannelResponse;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
@@ -8,6 +9,7 @@ import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -58,12 +60,12 @@ public class DiscodeitApplication {
             UserResponse user2 = userService.create(userRequest2);
 
             // 2. 테스트용 공용 채널 생성
-            PublicChannelCreateRequest channelRequest1 = new PublicChannelCreateRequest("자유게시판", "자유롭게 대화하는 곳입니다.");
-            ChannelResponse channelPublic = channelService.createPublic(channelRequest1);
+            ChannelCreateRequest channelRequest1 = new ChannelCreateRequest(ChannelType.PUBLIC, "채널1", "자유롭게 대화하는 곳입니다.", null);
+            ChannelResponse channelPublic = channelService.create(channelRequest1);
 
             Set<UUID> participantIds = Set.of(user1.id(), user2.id());
-            PrivateChannelCreateRequest channerRequest2 = new PrivateChannelCreateRequest(participantIds);
-            ChannelResponse channelPrivate = channelService.createPrivate(channerRequest2);
+            ChannelCreateRequest channerRequest2 = new ChannelCreateRequest(ChannelType.PRIVATE, null, null, participantIds);
+            ChannelResponse channelPrivate = channelService.create(channerRequest2);
 
             // 3. 테스트용 초기 메시지 생성
             MessageCreateRequest messageRequest1 = new MessageCreateRequest(
