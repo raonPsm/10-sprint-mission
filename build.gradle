@@ -35,8 +35,8 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	// Thymeleaf 추가
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-	// SpringDoc OpenAPI (Swagger UI 포함)
-	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.15"
+	// TODO: SpringDoc OpenAPI (Swagger UI 포함)
+
 }
 
 tasks.named('test') {

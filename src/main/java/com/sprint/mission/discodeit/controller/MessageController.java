@@ -1,14 +1,20 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -24,11 +30,31 @@ public class MessageController {
     // TODO: @RequiredArgsConstructor로 리펙토링 고려
 
     // 메시지를 보낼 수 있다.
-    @PostMapping()
-    public ResponseEntity<MessageResponse> create(@RequestBody MessageCreateRequest request) {
-        MessageResponse response = messageService.create(request);
-        return ResponseEntity.ok(response); // ResponseEntity.status(HttpStatus.OK).body(responses); 축약형
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<MessageResponse> create(
+            @RequestPart("request") MessageCreateRequest request,
+            @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
+    ) {
+        List<BinaryContentRequest> fileRequests = Optional.ofNullable(attachments)
+                .map(files -> files.stream()
+                        .map(file -> {
+                            try {
+                                return new BinaryContentRequest(
+                                        file.getOriginalFilename(),
+                                        file.getContentType(),
+                                        file.getBytes()
+                                );
+                            } catch (IOException e) {
+                                throw new RuntimeException("파일 처리 중 오류가 발생했습니다.", e);
+                            }
+                        })
+                        .toList())
+                .orElse(new ArrayList<>());
+        MessageResponse response = messageService.create(request, fileRequests);
+
+        return ResponseEntity.ok(response);
     }
+
 
     //  메시지를 수정할 수 있다.
     @PatchMapping(value = "/{messageId}")
