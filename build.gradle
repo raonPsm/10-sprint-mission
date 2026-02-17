@@ -34,9 +34,8 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	// Thymeleaf 추가
-	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-	// TODO: SpringDoc OpenAPI (Swagger UI 포함)
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3'
+	// FIXME: 보안 취약점 관련 내용 확인 후 수정 요망
 }
 
 tasks.named('test') {

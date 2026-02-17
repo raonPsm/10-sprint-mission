@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/read-status")
+@RequestMapping("/api/readStatuses")
 public class ReadStatusController {
     private final ReadStatusService readStatusService;
 
@@ -31,15 +31,17 @@ public class ReadStatusController {
 
     // 특정 채널의 메시지 수신 정보를 수정할 수 있다.
     @PatchMapping(value = "/{readStatusId}")
-    public ResponseEntity<ReadStatusResponse> update(@PathVariable UUID readStatusId) {
-        ReadStatusUpdateRequest request = new ReadStatusUpdateRequest(readStatusId);
-        ReadStatusResponse response = readStatusService.update(request);
+    public ResponseEntity<ReadStatusResponse> update(
+            @PathVariable UUID readStatusId,
+            @RequestBody ReadStatusUpdateRequest request
+    ) {
+        // 서비스 메서드 호출 시 request 객체 전달 필요 (서비스 로직 확인 필요)
+        ReadStatusResponse response = readStatusService.update(readStatusId, request);
         return ResponseEntity.ok(response);
     }
 
-    // 특정 사용자의 메시지 수신 정보를 조회할 수 있다.
-    // 특정 유저의 읽기 상태 목록을 조회 (하위 리소스 조회 느낌)
-    @GetMapping(value = "/user/{userId}")
+    // User의 Message 읽음 상태 목록 조회
+    @GetMapping
     public ResponseEntity<List<ReadStatusResponse>> findAllByUserId(@PathVariable UUID userId) {
         List<ReadStatusResponse> response = readStatusService.findAllByUserId(userId);
         return ResponseEntity.ok(response);
