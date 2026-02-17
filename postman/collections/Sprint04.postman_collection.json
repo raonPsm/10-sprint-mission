@@ -493,8 +493,22 @@
             "method": "POST",
             "header": [],
             "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"username\": \"tester01\",\r\n    \"email\": \"test1@example\",\r\n    \"password\": \"password\",\r\n    \"profileImage\": null\r\n}",
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "userCreateRequest",
+                  "value": "{\"username\": \"user1\", \"email\": \"test@email.com\", \"password\": \"123\"}",
+                  "type": "text",
+                  "uuid": "ae50cce7-19f2-4464-a5e5-5de3d48544d1",
+                  "contentType": "application/json"
+                },
+                {
+                  "key": "",
+                  "type": "file",
+                  "uuid": "4a71acf7-5161-403d-b612-201f84fc3e23",
+                  "src": []
+                }
+              ],
               "options": {
                 "raw": {
                   "language": "json"
@@ -502,13 +516,13 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/user",
+              "raw": "{{baseURL}}/api/users",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "user"
+                "users"
               ]
             }
           },
@@ -544,7 +558,7 @@
           "response": []
         },
         {
-          "name": "delete",
+          "name": "User 삭제",
           "id": "acbea87e-154e-4372-9ae4-8645439152c7",
           "request": {
             "method": "DELETE",
@@ -564,19 +578,19 @@
           "response": []
         },
         {
-          "name": "getAll",
+          "name": "전체 User 목록 조회",
           "id": "6c8dd7f9-9248-4d12-8037-edf700b1f996",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseURL}}/api/user",
+              "raw": "{{baseURL}}/api/users",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "user"
+                "users"
               ]
             }
           },
@@ -637,32 +651,32 @@
   ],
   "variable": [
     {
-      "id": "85055170-554c-4af0-b3a7-a231ff284d49",
+      "id": "7b99710d-b1a3-469b-9ed8-5ba6f60ac5a0",
       "key": "baseURL",
       "value": ""
     },
     {
-      "id": "5477edec-c396-4bfb-8c51-91c94e9571ff",
+      "id": "9ff59433-9f94-4ce8-a65d-0d02611d603a",
       "key": "userId",
       "value": ""
     },
     {
-      "id": "e3d18109-bc5c-4f35-8481-8b34dc2b692a",
+      "id": "7595a1d1-710a-45f2-86ae-d9fa40cf7956",
       "key": "channelId",
       "value": ""
     },
     {
-      "id": "e9a8125d-be43-4fc1-9433-e643a103ccdd",
+      "id": "bd09485f-7e75-4b72-9279-23e413cd3bd1",
       "key": "messageId",
       "value": ""
     },
     {
-      "id": "13a4f94d-48c8-4bd6-9419-d078e4281d75",
+      "id": "b19cd36f-6a69-4911-9fdf-71806b93ec55",
       "key": "readStatusId",
       "value": ""
     },
     {
-      "id": "6de9fa25-115e-44db-8644-1fb2a3e3f109",
+      "id": "9f841efc-6649-4f8d-ad10-841df4970bda",
       "key": "binaryContentId",
       "value": ""
     }

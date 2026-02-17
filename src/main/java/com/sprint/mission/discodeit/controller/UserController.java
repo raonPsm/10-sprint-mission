@@ -35,7 +35,7 @@ public class UserController {
         this.userStatusService = userStatusService;
     }
 
-    // POST api/users -User 등록
+    // POST api/users - User 등록
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<User> create(
             @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
@@ -69,10 +69,10 @@ public class UserController {
     // TODO: 존재하지 않는 사용자 수정 시도 -> 404 반환
     // TODO: 현재 API는 id만 알면 누구나 다른 사람의 정보를 수정할 수 있는 구조 -> 보안 문제
 
-    // 사용자를 삭제할 수 있다.
-    @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        userService.delete(id);
+    // DELETE /api/users/{userId} - User 삭제
+    @DeleteMapping(value = "/{userId}")
+    public ResponseEntity<Void> delete(@PathVariable UUID userId) {
+        userService.delete(userId);
         return ResponseEntity.noContent().build();
     }
 
