@@ -487,7 +487,7 @@
       "name": "UserController",
       "item": [
         {
-          "name": "signUp",
+          "name": "User 등록",
           "id": "9dabb8a2-75f9-4d5e-9b90-503283026b7d",
           "request": {
             "method": "POST",
