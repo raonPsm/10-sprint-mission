@@ -44,10 +44,10 @@ public class BasicUserService implements UserService {
         String email = userCreateRequest.email();
 
         // email, username 중복 불가능
-        if(userRepository.existsByEmail(email)) {
+        if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("이미 사용중인 이메일(email)입니다: " + email);
         }
-        if(userRepository.existsByUsername(username)) {
+        if (userRepository.existsByUsername(username)) {
             throw new IllegalArgumentException("이미 존재하는 사용자 이름(username)입니다.: " + username);
         }
 
@@ -101,36 +101,38 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponse update(UUID userId, UserUpdateRequest request, BinaryContentCreateRequest profileRequest) {
+    public User update(UUID userId,
+                       UserUpdateRequest userUpdateRequest,
+                       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다. id: " + userId));
 
-        // 새 프로필 이미지가 전달되었다면 저장
-        UUID newProfileImageId = user.getProfileId();
-
-        if (profileRequest != null) {
-            // (1) 기존 이미지가 존재한다면 삭제
-            if (user.getProfileId() != null) {
-                binaryContentService.delete(user.getProfileId());
-            }
-            // (2) 새 이미지 저장
-            BinaryContentResponse savedImg = binaryContentService.create(profileRequest);
-            newProfileImageId = savedImg.id();
+        String newUsername = userUpdateRequest.username();
+        String newEmail = userUpdateRequest.email();
+        if (userRepository.existsByEmail(newEmail)) {
+            throw new IllegalArgumentException("이미 사용중인 이메일(email)입니다: " + newEmail);
+        }
+        if (userRepository.existsByUsername(newUsername)) {
+            throw new IllegalArgumentException("이미 존재하는 사용자 이름(username)입니다.: " + newUsername);
         }
 
-        // 유저 정보 수정
-        user.update(
-                request.username(),
-                request.email(),
-                request.password(),
-                newProfileImageId
-        );
-        User updatedUser = userRepository.save(user);
+        UUID nullableProfileId = optionalProfileCreateRequest
+                .map(profileRequest -> {
+                    Optional.ofNullable(user.getProfileId())
+                            .ifPresent(binaryContentRepository::deleteById);
 
-        UserStatus status = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalStateException("유저 상태 정보가 누락되었습니다. id: " + userId));
+                    String fileName = profileRequest.fileName();
+                    String contentType = profileRequest.contentType();
+                    byte[] bytes = profileRequest.bytes();
+                    BinaryContent binaryContent = new BinaryContent(fileName, contentType, bytes);
+                    return binaryContentRepository.save(binaryContent).getId();
+                })
+                .orElse(null);
 
-        return toResponse(updatedUser, status);
+        String newPassword = userUpdateRequest.password();
+        user.update(newUsername, newEmail, newPassword, nullableProfileId);
+
+        return userRepository.save(user);
     }
 
     @Override

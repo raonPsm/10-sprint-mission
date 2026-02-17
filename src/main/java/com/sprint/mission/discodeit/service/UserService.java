@@ -17,7 +17,9 @@ public interface UserService {
                 Optional<BinaryContentCreateRequest> profileCreateRequest);
     UserResponse find(UUID userId);
     List<UserResponse> findAll();
-    UserResponse update(UUID userId, UserUpdateRequest request, BinaryContentCreateRequest profile);
+    User update(UUID userId,
+                        UserUpdateRequest userUpdateRequest,
+                        Optional<BinaryContentCreateRequest> profileCreateRequest);
     void delete(UUID userId);
 
     List<UserDto> findAllUsers();

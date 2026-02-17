@@ -52,18 +52,17 @@ public class UserController {
     // TODO: Exception Handling
     // TODO: BinaryContent -> 프로필 이미지 기능 확인
 
-    // 사용자 정보를 수정할 수 있다.
-    // 멀티파트 타입 관련 수정
-    @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserResponse> update(
-            @PathVariable UUID id,
-            @RequestPart("request") UserUpdateRequest request,
+    // PATCH /api/users/{userId} - User 정보 수정
+    @PatchMapping(value = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<User> update(
+            @PathVariable UUID userId,
+            @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
-        BinaryContentCreateRequest profileRequest = toBinaryContentRequest(profile);
-
-        UserResponse response = userService.update(id, request, profileRequest);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
+                .flatMap(this::resolveProfileRequest);
+        User updateUser = userService.update(userId, userUpdateRequest, profileRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(updateUser);
     }
 
     // TODO: 존재하지 않는 사용자 수정 시도 -> 404 반환

@@ -503,7 +503,7 @@
                   "contentType": "application/json"
                 },
                 {
-                  "key": "",
+                  "key": "profile",
                   "type": "file",
                   "uuid": "4a71acf7-5161-403d-b612-201f84fc3e23",
                   "src": []
@@ -529,14 +529,29 @@
           "response": []
         },
         {
-          "name": "update",
+          "name": "User 정보 수정",
           "id": "b08b7911-4e2e-417c-b699-529029710b1a",
           "request": {
-            "method": "PUT",
+            "method": "PATCH",
             "header": [],
             "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"username\": \"updated_user\",\r\n    \"email\": \"updated@example.com\",\r\n    \"password\": \"newpassword123\",\r\n    \"profileImage\": null\r\n}",
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "userUpdateRequest",
+                  "value": "{\"username\": \"user2\", \"email\": \"test1@email.com\", \"password\": \"1234\"}",
+                  "type": "text",
+                  "uuid": "3c6d391d-cccf-4055-a00e-34da99923bfd",
+                  "contentType": "application/json"
+                },
+                {
+                  "key": "profile",
+                  "type": "file",
+                  "uuid": "6792f847-e17f-46dd-9645-751fdd70d4f2",
+                  "contentType": "",
+                  "src": []
+                }
+              ],
               "options": {
                 "raw": {
                   "language": "json"
@@ -544,13 +559,13 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/user/{{userId}}",
+              "raw": "{{baseURL}}/api/users/{{userId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "user",
+                "users",
                 "{{userId}}"
               ]
             }
@@ -564,13 +579,13 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseURL}}/api/user/{{userId}}",
+              "raw": "{{baseURL}}/api/users/{{userId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "user",
+                "users",
                 "{{userId}}"
               ]
             }
@@ -651,32 +666,32 @@
   ],
   "variable": [
     {
-      "id": "7b99710d-b1a3-469b-9ed8-5ba6f60ac5a0",
+      "id": "73c0b772-1718-4385-843f-8fea29e648a5",
       "key": "baseURL",
       "value": ""
     },
     {
-      "id": "9ff59433-9f94-4ce8-a65d-0d02611d603a",
+      "id": "3b19308a-3dec-4d0a-bd41-25473a3aaa5f",
       "key": "userId",
       "value": ""
     },
     {
-      "id": "7595a1d1-710a-45f2-86ae-d9fa40cf7956",
+      "id": "3146e7b3-1d6e-4caa-bc57-4bdf5ac27872",
       "key": "channelId",
       "value": ""
     },
     {
-      "id": "bd09485f-7e75-4b72-9279-23e413cd3bd1",
+      "id": "5c6e396b-8feb-4148-b814-750a21e89b49",
       "key": "messageId",
       "value": ""
     },
     {
-      "id": "b19cd36f-6a69-4911-9fdf-71806b93ec55",
+      "id": "16b9ba5e-d775-4d4b-be7e-e5447b58e28c",
       "key": "readStatusId",
       "value": ""
     },
     {
-      "id": "9f841efc-6649-4f8d-ad10-841df4970bda",
+      "id": "0244f6dd-916c-4872-819b-4bca92573cbb",
       "key": "binaryContentId",
       "value": ""
     }
