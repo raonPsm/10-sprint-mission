@@ -1,7 +1,5 @@
 package com.sprint.mission.discodeit.dto.user;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
-
 // 정보 수정 시 변경할 정보
 public record UserUpdateRequest (
         String username,

@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
@@ -35,11 +35,11 @@ public class MessageController {
             @RequestPart("request") MessageCreateRequest request,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
-        List<BinaryContentRequest> fileRequests = Optional.ofNullable(attachments)
+        List<BinaryContentCreateRequest> fileRequests = Optional.ofNullable(attachments)
                 .map(files -> files.stream()
                         .map(file -> {
                             try {
-                                return new BinaryContentRequest(
+                                return new BinaryContentCreateRequest(
                                         file.getOriginalFilename(),
                                         file.getContentType(),
                                         file.getBytes()

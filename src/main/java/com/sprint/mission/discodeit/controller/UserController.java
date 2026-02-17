@@ -1,16 +1,15 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -37,14 +37,16 @@ public class UserController {
 
     // POST api/users -User 등록
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserResponse> create(
-            @RequestPart("request") UserCreateRequest request,
+    public ResponseEntity<User> create(
+            @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
-        BinaryContentRequest profileRequest = toBinaryContentRequest(profile);
-
-        UserResponse response = userService.create(request, profileRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
+                .flatMap(this::resolveProfileRequest);
+        User createdUser = userService.create(userCreateRequest, profileRequest);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(createdUser);
     }
     // TODO: Validation 추가 -> NotBlank, Email, Size...
     // TODO: Exception Handling
@@ -58,7 +60,7 @@ public class UserController {
             @RequestPart("request") UserUpdateRequest request,
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
-        BinaryContentRequest profileRequest = toBinaryContentRequest(profile);
+        BinaryContentCreateRequest profileRequest = toBinaryContentRequest(profile);
 
         UserResponse response = userService.update(id, request, profileRequest);
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -96,12 +98,29 @@ public class UserController {
 
     // ===
 
-    private BinaryContentRequest toBinaryContentRequest(MultipartFile file) {
+    private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
+        if (profileFile.isEmpty()) {
+            return Optional.empty();
+        } else {
+            try {
+                BinaryContentCreateRequest binaryContentCreateRequest = new BinaryContentCreateRequest(
+                        profileFile.getOriginalFilename(),
+                        profileFile.getContentType(),
+                        profileFile.getBytes()
+                );
+                return Optional.of(binaryContentCreateRequest);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private BinaryContentCreateRequest toBinaryContentRequest(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             return null;
         }
         try {
-            return new BinaryContentRequest(
+            return new BinaryContentCreateRequest(
                     file.getOriginalFilename(),
                     file.getContentType(),
                     file.getBytes()

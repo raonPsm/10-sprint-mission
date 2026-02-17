@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponse;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
@@ -16,11 +16,11 @@ import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -38,35 +38,38 @@ public class BasicUserService implements UserService {
     private final BinaryContentService binaryContentService;
 
     @Override
-    public UserResponse create(UserCreateRequest request, BinaryContentRequest profileRequest) {
-        if(userRepository.existsByUsername(request.username())) {
-            throw new IllegalArgumentException("이미 존재하는 사용자 이름(username)입니다.: " + request.username());
+    public User create(UserCreateRequest userCreateRequest,
+                       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+        String username = userCreateRequest.username();
+        String email = userCreateRequest.email();
+
+        // email, username 중복 불가능
+        if(userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("이미 사용중인 이메일(email)입니다: " + email);
         }
-        if(userRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("이미 사용중인 이메일(email)입니다: " + request.email());
+        if(userRepository.existsByUsername(username)) {
+            throw new IllegalArgumentException("이미 존재하는 사용자 이름(username)입니다.: " + username);
         }
 
         // 프로필 이미지 처리
-        UUID profileImageId = null;
-        if (profileRequest != null) {
-            BinaryContentResponse savedImg = binaryContentService.create(profileRequest);
-            profileImageId = savedImg.id();
-        }
+        UUID nullableProfileId = optionalProfileCreateRequest
+                .map(profileRequest -> {
+                    String fileName = profileRequest.fileName();
+                    String contentType = profileRequest.contentType();
+                    byte[] bytes = profileRequest.bytes();
+                    BinaryContent binaryContent = new BinaryContent(fileName, contentType, bytes);
+                    return binaryContentRepository.save(binaryContent).getId();
+                })
+                .orElse(null);
+        String password = userCreateRequest.password();
 
-        // User 엔티티 생성
-        User user = new User(
-                request.username(),
-                request.email(),
-                request.password(),
-                profileImageId
-        );
-        User savedUser = userRepository.save(user);
+        User user = new User(username, email, password, nullableProfileId);
+        User createdUser = userRepository.save(user);
 
-        // UserStatus 생성
-        UserStatus userStatus = new UserStatus(savedUser.getId());
+        UserStatus userStatus = new UserStatus(createdUser.getId());
         userStatusRepository.save(userStatus);
 
-        return toResponse(savedUser, userStatus);
+        return createdUser;
 
         // TODO: 트랜잭션 롤백 필요성 존재 -> 추후 단계에서 고민
         // TODO: username 유효성 검사 로직 추가
@@ -98,17 +101,17 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponse update(UUID userId, UserUpdateRequest request, BinaryContentRequest profileRequest) {
+    public UserResponse update(UUID userId, UserUpdateRequest request, BinaryContentCreateRequest profileRequest) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다. id: " + userId));
 
         // 새 프로필 이미지가 전달되었다면 저장
-        UUID newProfileImageId = user.getProfileImageId();
+        UUID newProfileImageId = user.getProfileId();
 
         if (profileRequest != null) {
             // (1) 기존 이미지가 존재한다면 삭제
-            if (user.getProfileImageId() != null) {
-                binaryContentService.delete(user.getProfileImageId());
+            if (user.getProfileId() != null) {
+                binaryContentService.delete(user.getProfileId());
             }
             // (2) 새 이미지 저장
             BinaryContentResponse savedImg = binaryContentService.create(profileRequest);
@@ -140,8 +143,8 @@ public class BasicUserService implements UserService {
         userStatusRepository.deleteByUserId(userId);
 
         // 연관된 BinaryContent (프로필 이미지) 삭제
-        if (user.getProfileImageId() != null) {
-            binaryContentRepository.deleteById(user.getProfileImageId()); // TODO: deleteByUserId 사용 고려 요망
+        if (user.getProfileId() != null) {
+            binaryContentRepository.deleteById(user.getProfileId()); // TODO: deleteByUserId 사용 고려 요망
         }
 
         // User 삭제
@@ -161,7 +164,7 @@ public class BasicUserService implements UserService {
                             user.getUpdatedAt(),
                             user.getUsername(),
                             user.getEmail(),
-                            user.getProfileImageId(),
+                            user.getProfileId(),
                             userStatus.isOnline()
                     );
                 }).collect(Collectors.toList());
@@ -170,7 +173,7 @@ public class BasicUserService implements UserService {
     // ===
 
     // DTO -> BinaryContent 변환 로직
-    private BinaryContent createBinaryContent(BinaryContentRequest request) {
+    private BinaryContent createBinaryContent(BinaryContentCreateRequest request) {
         return new BinaryContent(
                 request.fileName(),
                 request.contentType(),
@@ -184,7 +187,7 @@ public class BasicUserService implements UserService {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getProfileImageId(),
+                user.getProfileId(),
                 userStatus.isOnline()
         );
     }

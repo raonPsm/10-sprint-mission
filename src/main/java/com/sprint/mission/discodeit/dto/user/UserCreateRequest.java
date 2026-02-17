@@ -1,7 +1,5 @@
 package com.sprint.mission.discodeit.dto.user;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
-
 // TODO: 기존 방식(Class + Lombk)과 레코드 방식(Record) 비교 후 정리 기록 남기기
 
 /*

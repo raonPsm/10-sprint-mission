@@ -4,8 +4,7 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponse;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
-import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -15,7 +14,6 @@ import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -30,7 +28,7 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentService binaryContentService;
 
     @Override
-    public MessageResponse create(MessageCreateRequest request, List<BinaryContentRequest> attachments) {
+    public MessageResponse create(MessageCreateRequest request, List<BinaryContentCreateRequest> attachments) {
         if (!channelRepository.existsById(request.channelId())) {
             throw new NoSuchElementException("채널이 존재하지 않습니다. id: " + request.channelId());
         }
@@ -41,7 +39,7 @@ public class BasicMessageService implements MessageService {
         // 첨부파일 저장
         List<UUID> attachmentIds = new ArrayList<>();
         if (attachments != null && !attachments.isEmpty()) {
-            for (BinaryContentRequest fileRequest : attachments) {
+            for (BinaryContentCreateRequest fileRequest : attachments) {
                 BinaryContentResponse savedContent = binaryContentService.create(fileRequest);
                 attachmentIds.add(savedContent.id());
             }
