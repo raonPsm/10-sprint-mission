@@ -35,8 +35,7 @@ public class UserController {
         this.userStatusService = userStatusService;
     }
 
-    // 사용자를 등록할 수 있다.
-    // 멀티파트 타입 관련 수정
+    // POST api/users -User 등록
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserResponse> create(
             @RequestPart("request") UserCreateRequest request,
@@ -75,10 +74,10 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    // 모든 사용자를 조회할 수 있다.
+    // GET /api/users - 전체 User 목록 조회 O
     @GetMapping()
-    public ResponseEntity<List<UserResponse>> findAll() {
-        List<UserResponse> users = userService.findAll();
+    public ResponseEntity<List<UserDto>> findAll() {
+        List<UserDto> users = userService.findAllUsers();
         return ResponseEntity.status(HttpStatus.OK).body(users);
     }
     // TODO: 특정 사용자 조회? userService.find()
@@ -95,7 +94,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    //
+    // ===
 
     private BinaryContentRequest toBinaryContentRequest(MultipartFile file) {
         if (file == null || file.isEmpty()) {

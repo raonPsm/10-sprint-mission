@@ -29,16 +29,16 @@ public class ReadStatusController {
         return ResponseEntity.ok(response);
     }
 
-    // 특정 채널의 메시지 수신 정보를 수정할 수 있다.
-    @PatchMapping(value = "/{readStatusId}")
-    public ResponseEntity<ReadStatusResponse> update(
-            @PathVariable UUID readStatusId,
-            @RequestBody ReadStatusUpdateRequest request
-    ) {
-        // 서비스 메서드 호출 시 request 객체 전달 필요 (서비스 로직 확인 필요)
-        ReadStatusResponse response = readStatusService.update(readStatusId, request);
-        return ResponseEntity.ok(response);
-    }
+//    // 특정 채널의 메시지 수신 정보를 수정할 수 있다.
+//    @PatchMapping(value = "/{readStatusId}")
+//    public ResponseEntity<ReadStatusResponse> update(
+//            @PathVariable UUID readStatusId,
+//            @RequestBody ReadStatusUpdateRequest request
+//    ) {
+//        // 서비스 메서드 호출 시 request 객체 전달 필요 (서비스 로직 확인 필요)
+//        ReadStatusResponse response = readStatusService.update(readStatusId, request);
+//        return ResponseEntity.ok(response);
+//    }
 
     // User의 Message 읽음 상태 목록 조회
     @GetMapping
