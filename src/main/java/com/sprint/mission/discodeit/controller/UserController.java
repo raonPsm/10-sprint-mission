@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,7 +42,9 @@ public class UserController {
             @RequestPart("request") UserCreateRequest request,
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
-        UserResponse response = userService.create(request, profile); // TODO: UserService도 수정해야 한다.
+        BinaryContentRequest profileRequest = toBinaryContentRequest(profile);
+
+        UserResponse response = userService.create(request, profileRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     // TODO: Validation 추가 -> NotBlank, Email, Size...
@@ -55,8 +59,10 @@ public class UserController {
             @RequestPart("request") UserUpdateRequest request,
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
-        UserResponse response = userService.update(id, request, profile);
-        return ResponseEntity.ok(response);
+        BinaryContentRequest profileRequest = toBinaryContentRequest(profile);
+
+        UserResponse response = userService.update(id, request, profileRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     // TODO: 존재하지 않는 사용자 수정 시도 -> 404 반환
@@ -87,6 +93,23 @@ public class UserController {
     ) {
         UserStatusResponse response = userStatusService.updateByUserId(userId, request);
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    //
+
+    private BinaryContentRequest toBinaryContentRequest(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+        try {
+            return new BinaryContentRequest(
+                    file.getOriginalFilename(),
+                    file.getContentType(),
+                    file.getBytes()
+            );
+        } catch (IOException e) {
+            throw new RuntimeException("파일 처리 중 오류가 발생했습니다.", e);
+        }
     }
 }
 

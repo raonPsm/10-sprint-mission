@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
@@ -11,10 +12,10 @@ import java.util.UUID;
 
 public interface UserService {
     // 기본 CRUD 메서드 이름은 심플하게
-    UserResponse create(UserCreateRequest request, MultipartFile profile);
+    UserResponse create(UserCreateRequest request, BinaryContentRequest profile);
     UserResponse find(UUID userId);
     List<UserResponse> findAll();
-    UserResponse update(UUID userId, UserUpdateRequest request, MultipartFile profile);
+    UserResponse update(UUID userId, UserUpdateRequest request, BinaryContentRequest profile);
     void delete(UUID userId);
 
     List<UserDto> findAllUsers();

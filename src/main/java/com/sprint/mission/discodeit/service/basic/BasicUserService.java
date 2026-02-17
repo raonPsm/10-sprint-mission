@@ -36,36 +36,24 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentService binaryContentService;
-    // FIXME: 원래 명세에서는 BinaryContentService 참조하면 안됨
-    // multipart
 
     @Override
-    public UserResponse create(UserCreateRequest request, MultipartFile profile) {
+    public UserResponse create(UserCreateRequest request, BinaryContentRequest profileRequest) {
         if(userRepository.existsByUsername(request.username())) {
-            throw new IllegalArgumentException("이미 존재하는 사용자 이름(username)입니다: " + request.username());
+            throw new IllegalArgumentException("이미 존재하는 사용자 이름(username)입니다.: " + request.username());
         }
         if(userRepository.existsByEmail(request.email())) {
             throw new IllegalArgumentException("이미 사용중인 이메일(email)입니다: " + request.email());
         }
 
-        // 프로필 이미지 처리 (있으면 저정, 없으면 null)
+        // 프로필 이미지 처리
         UUID profileImageId = null;
-        if (profile != null && !profile.isEmpty()) {
-            try {
-                // MultipartFile의 데이터를 추출하여 DTO 생성
-                BinaryContentRequest imageRequest = new BinaryContentRequest(
-                        profile.getOriginalFilename(),
-                        profile.getContentType(),
-                        profile.getBytes()
-                );
-                BinaryContentResponse savedImg = binaryContentService.create(imageRequest);
-                profileImageId = savedImg.id();
-            } catch (IOException e) {
-                throw new RuntimeException("프로필 이미지 업로드 중 오류가 발생했습니다.");
-            }
+        if (profileRequest != null) {
+            BinaryContentResponse savedImg = binaryContentService.create(profileRequest);
+            profileImageId = savedImg.id();
         }
 
-        // User 엔티티 생성 (있으면 저장, 없으면 null)
+        // User 엔티티 생성
         User user = new User(
                 request.username(),
                 request.email(),
@@ -76,11 +64,11 @@ public class BasicUserService implements UserService {
 
         // UserStatus 생성
         UserStatus userStatus = new UserStatus(savedUser.getId());
-        // TODO: 트랜잭션 롤백 필요성 존재 -> 추후 단계에서 고민
         userStatusRepository.save(userStatus);
 
         return toResponse(savedUser, userStatus);
 
+        // TODO: 트랜잭션 롤백 필요성 존재 -> 추후 단계에서 고민
         // TODO: username 유효성 검사 로직 추가
         // TODO: email 중복 불가능 검사 로직 추가
         // TODO: password 유효성 검사 로직 추가
@@ -110,33 +98,21 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponse update(UUID userId, UserUpdateRequest request, MultipartFile profile) {
+    public UserResponse update(UUID userId, UserUpdateRequest request, BinaryContentRequest profileRequest) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다. id: " + userId));
 
-        // 새 프로필 이미지가 전달되었다면 저장 - 이미지 수정 안했을 경우 기존 id 유지
+        // 새 프로필 이미지가 전달되었다면 저장
         UUID newProfileImageId = user.getProfileImageId();
 
-        if (profile != null && !profile.isEmpty()) {
-            try {
-                // (1) 기존 이미지가 존재한다면 삭제
-                if (user.getProfileImageId() != null) {
-                    binaryContentService.delete(user.getProfileImageId());
-                }
-
-                // (2) 새 이미지 저장
-                BinaryContentRequest imageRequest = new BinaryContentRequest(
-                        profile.getOriginalFilename(),
-                        profile.getContentType(),
-                        profile.getBytes()
-                ) ;
-                BinaryContentResponse savedImage = binaryContentService.create(imageRequest);
-
-                // (3) 교체할 id 업데이트
-                newProfileImageId = savedImage.id();
-            } catch (IOException e) {
-                throw new RuntimeException("프로필 이미지 수정 중 오류가 발생했습니다.", e);
+        if (profileRequest != null) {
+            // (1) 기존 이미지가 존재한다면 삭제
+            if (user.getProfileImageId() != null) {
+                binaryContentService.delete(user.getProfileImageId());
             }
+            // (2) 새 이미지 저장
+            BinaryContentResponse savedImg = binaryContentService.create(profileRequest);
+            newProfileImageId = savedImg.id();
         }
 
         // 유저 정보 수정
@@ -149,7 +125,7 @@ public class BasicUserService implements UserService {
         User updatedUser = userRepository.save(user);
 
         UserStatus status = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalStateException("유저 상태 데이터가 누락되었습니다. id: " + userId));
+                .orElseThrow(() -> new IllegalStateException("유저 상태 정보가 누락되었습니다. id: " + userId));
 
         return toResponse(updatedUser, status);
     }
