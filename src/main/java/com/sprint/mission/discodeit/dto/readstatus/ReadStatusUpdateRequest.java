@@ -4,5 +4,5 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record ReadStatusUpdateRequest (
-        Instant lastReadAt
+        Instant newLastReadAt
 ) {}

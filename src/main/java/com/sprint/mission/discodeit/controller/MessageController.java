@@ -1,11 +1,13 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.MessageApi;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +21,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/messages")
-public class MessageController {
+public class MessageController implements MessageApi {
     private final MessageService messageService;
 
     @Autowired
@@ -28,14 +30,14 @@ public class MessageController {
     }
     // TODO: @RequiredArgsConstructor로 리펙토링 고려
 
-    // GET /api/messages - Channel의 Message 목록 조회
+    /// GET /api/messages - Channel의 Message 목록 조회
     @GetMapping
     public ResponseEntity<List<MessageResponse>> findAllByChannelId(@RequestParam UUID channelId) {
         List<MessageResponse> messageListResponse = messageService.findAllByChannelId(channelId);
         return ResponseEntity.ok(messageListResponse);
     }
 
-    // POST /api/messages - Message 생성
+    /// POST /api/messages - Message 생성
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MessageResponse> create(
             @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
@@ -58,17 +60,17 @@ public class MessageController {
                 .orElse(new ArrayList<>());
         MessageResponse response = messageService.create(messageCreateRequest, fileRequests);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // DELETE /api/messages/{messageId} - Message 삭제
+    /// DELETE /api/messages/{messageId} - Message 삭제
     @DeleteMapping("/{messageId}")
     public ResponseEntity<Void> delete(@PathVariable UUID messageId) {
         messageService.delete(messageId);
         return ResponseEntity.noContent().build();
     }
 
-    // PATCH /api/messages/{messageId} - Message 내용 수정
+    /// PATCH /api/messages/{messageId} - Message 내용 수정
     @PatchMapping(value = "/{messageId}")
     public ResponseEntity<MessageResponse> update(
             @PathVariable UUID messageId,

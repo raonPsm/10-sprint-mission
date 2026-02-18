@@ -105,8 +105,8 @@ public class BasicUserService implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다. id: " + userId));
 
-        String newUsername = userUpdateRequest.username();
-        String newEmail = userUpdateRequest.email();
+        String newUsername = userUpdateRequest.newUsername();
+        String newEmail = userUpdateRequest.newEmail();
         if (userRepository.existsByEmail(newEmail)) {
             throw new IllegalArgumentException("이미 사용중인 이메일(email)입니다: " + newEmail);
         }
@@ -127,7 +127,7 @@ public class BasicUserService implements UserService {
                 })
                 .orElse(null);
 
-        String newPassword = userUpdateRequest.password();
+        String newPassword = userUpdateRequest.newPassword();
         user.update(newUsername, newEmail, newPassword, nullableProfileId);
 
         return userRepository.save(user);

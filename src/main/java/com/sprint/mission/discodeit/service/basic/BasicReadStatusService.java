@@ -70,7 +70,7 @@ public class BasicReadStatusService implements ReadStatusService {
                 .orElseThrow(() -> new NoSuchElementException("수정할 읽기 상태(readStatus)를 찾을 수 없습니다. id: " + readStatusId));
 
         // 읽은 시간 갱신
-        readStatus.updateLastReadAt(request.lastReadAt());
+        readStatus.updateLastReadAt(request.newLastReadAt());
         ReadStatus updated = readStatusRepository.save(readStatus);
 
         return toResponse(updated);
