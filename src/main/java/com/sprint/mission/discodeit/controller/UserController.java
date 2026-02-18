@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.UserApi;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.UserDto;
@@ -24,7 +25,7 @@ import java.util.UUID;
 @RestController
 // user -> users 복수형 사용
 @RequestMapping("/api/users")
-public class UserController {
+public class UserController implements UserApi {
     private final UserService userService;
     private final UserStatusService userStatusService;
 
@@ -34,7 +35,7 @@ public class UserController {
         this.userStatusService = userStatusService;
     }
 
-    /// GET /api/users - 전체 User 목록 조회 O
+    /// GET /api/users - 전체 User 목록 조회
     @GetMapping()
     public ResponseEntity<List<UserDto>> findAll() {
         List<UserDto> users = userService.findAllUsers();

@@ -26,6 +26,7 @@ public class UserStatus extends BaseEntity {
     }
 
     // 현재 '온라인' 상태인지 확인 (5분 이내 활동 시 true)
+    // FIXME: 명세에 맞게 수정 필요
     // TODO: 온라인 / 자리 비움 / 방해 금지 / 오프라인 표시 / 오프라인 -> Enum 으로 상태 구현
     public boolean isOnline() {
         Instant now = Instant.now();

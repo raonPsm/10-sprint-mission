@@ -91,6 +91,8 @@ public class BasicUserStatusService implements UserStatusService {
     private UserStatusResponse toResponse(UserStatus userStatus) {
         return new UserStatusResponse(
                 userStatus.getId(),
+                userStatus.getCreatedAt(),
+                userStatus.getUpdatedAt(),
                 userStatus.getUserId(),
                 userStatus.getUpdatedAt(),
                 userStatus.isOnline()
