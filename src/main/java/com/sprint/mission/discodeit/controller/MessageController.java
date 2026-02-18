@@ -28,6 +28,13 @@ public class MessageController {
     }
     // TODO: @RequiredArgsConstructor로 리펙토링 고려
 
+    // GET /api/messages - Channel의 Message 목록 조회
+    @GetMapping
+    public ResponseEntity<List<MessageResponse>> findAllByChannelId(@RequestParam UUID channelId) {
+        List<MessageResponse> messageListResponse = messageService.findAllByChannelId(channelId);
+        return ResponseEntity.ok(messageListResponse);
+    }
+
     // POST /api/messages - Message 생성
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MessageResponse> create(
@@ -70,12 +77,5 @@ public class MessageController {
     public ResponseEntity<Void> delete(@PathVariable UUID messageId) {
         messageService.delete(messageId);
         return ResponseEntity.noContent().build();
-    }
-
-    // 특정 채널의 메시지 목록을 조회할 수 있다.
-    @GetMapping()
-    public ResponseEntity<List<MessageResponse>> findAllByChannelId(@RequestParam UUID channelId) {
-        List<MessageResponse> responses = messageService.findAllByChannelId(channelId);
-        return ResponseEntity.ok(responses);
     }
 }
