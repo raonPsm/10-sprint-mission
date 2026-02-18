@@ -45,13 +45,51 @@
       "item": [
         {
           "name": "Public Channel 생성",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "730e2a31-ebe1-4f45-b61d-5823a3199379",
+                "exec": [
+                  "// 1. 응답 데이터를 JSON 형태로 파싱하여 변수에 담습니다.\r",
+                  "const jsonData = pm.response.json();\r",
+                  "\r",
+                  "// 2. 응답 데이터에 ID가 포함되어 있는지 확인 후 저장합니다.\r",
+                  "if (jsonData.id) {\r",
+                  "    // 컬렉션 변수(Collection Variables)에 'channelId'라는 이름으로 저장합니다.\r",
+                  "    pm.collectionVariables.set(\"channelId\", jsonData.id);\r",
+                  "    \r",
+                  "    // 제대로 저장되었는지 확인하기 위해 콘솔에 출력합니다. (Ctrl+Alt+C로 확인 가능)\r",
+                  "    console.log(\"새로운 채널 ID가 저장되었습니다: \" + jsonData.id);\r",
+                  "} else {\r",
+                  "    console.error(\"응답 데이터에서 ID를 찾을 수 없습니다.\");\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "2e9e7b55-54ac-4c74-b6c4-8f133d0e1311",
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "id": "b212d3a3-f016-4d02-b217-a1737dd3d735",
           "request": {
             "method": "POST",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"name\": \"public채널2\",\r\n    \"description\": \"public 채널 생성 테스트 중\"\r\n}",
+              "raw": "{\r\n    \"name\": \"public채널1\",\r\n    \"description\": \"public 채널 생성 테스트 중\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -80,7 +118,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"participantIds\": [\r\n        \"605f58db-ad45-4cfc-aef6-c62b048008e0\",\r\n        \"967574ae-536c-4bb8-be17-31eb1be5fae0\"\r\n    ]\r\n}",
+              "raw": "{\r\n    \"participantIds\": [\r\n        \"9ccba120-53da-4afc-b905-ac8796f5e56b\",\r\n        \"dad326d4-7241-4261-b53b-8b0ce3d6f9e4\"\r\n    ]\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -217,7 +255,6 @@
                 {
                   "key": "channelId",
                   "value": "{{channelId}}",
-                  "type": "text",
                   "uuid": "637f0a69-8326-442a-9f9e-683bb3e951d7"
                 }
               ]
@@ -227,34 +264,102 @@
         },
         {
           "name": "Message 생성",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "a5f65815-f4fc-42f0-973f-c60dc5891af9",
+                "exec": [
+                  "// 1. 응답 데이터를 JSON으로 변환\r",
+                  "const jsonData = pm.response.json();\r",
+                  "\r",
+                  "// 2. 응답 데이터에서 메시지 ID 추출 및 저장\r",
+                  "if (jsonData && jsonData.id) {\r",
+                  "    pm.collectionVariables.set(\"messageId\", jsonData.id);\r",
+                  "    console.log(\"메시지 ID 저장 완료: \" + jsonData.id);\r",
+                  "} else {\r",
+                  "    console.error(\"응답에 id가 없어서 messageId를 저장하지 못했습니다.\");\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "7fa20f95-5e63-4db4-8e5f-fc89522f180a",
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "id": "bb79f39a-0721-4224-8c68-51b07c723eff",
           "request": {
             "method": "POST",
             "header": [],
             "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"content\": \"안녕하세요! 두 번째 메시지입니다.\",\r\n    \"channelId\": \"{{channelId}}\",\r\n    \"authorId\": \"{{userId}}\",\r\n    \"attachments\": []\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "messageCreateRequest",
+                  "value": "{ \n    \"content\": \"메시지 테스트입니다.\",\n    \"channelId\": \"{{channelId}}\", \n    \"authorId\": \"{{userId}}\"\n}",
+                  "type": "text",
+                  "uuid": "08555b0f-5c87-4f28-89a3-1445912fa65d",
+                  "contentType": "application/json"
+                },
+                {
+                  "key": "attachments",
+                  "type": "file",
+                  "uuid": "4788a1f0-e6fe-4df6-8963-e8593ec701b0",
+                  "src": []
                 }
-              }
+              ]
             },
             "url": {
-              "raw": "{{baseURL}}/api/message",
+              "raw": "{{baseURL}}/api/messages",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "message"
+                "messages"
               ]
             }
           },
           "response": []
         },
         {
-          "name": "update",
+          "name": "Message 삭제",
+          "id": "1e39cc05-ee1a-4a44-bfca-3d2a2924c5e8",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"content\": \"변경된 메시지 내용입니다.\"\r\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/messages/{{messageId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "messages",
+                "{{messageId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Message 내용 수정",
           "id": "c33b8161-7b90-4b3f-af0b-3a84cb8b366a",
           "request": {
             "method": "PATCH",
@@ -267,30 +372,6 @@
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{baseURL}}/api/message/{{messageId}}",
-              "host": [
-                "{{baseURL}}"
-              ],
-              "path": [
-                "api",
-                "message",
-                "{{messageId}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "delete",
-          "id": "1e39cc05-ee1a-4a44-bfca-3d2a2924c5e8",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"content\": \"변경된 메시지 내용입니다.\"\r\n}"
             },
             "url": {
               "raw": "{{baseURL}}/api/messages/{{messageId}}",
@@ -501,6 +582,42 @@
         },
         {
           "name": "User 등록",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "d8509fe5-7055-4cf2-91e3-1599745d3cff",
+                "exec": [
+                  "// 응답 데이터를 JSON으로 파싱\r",
+                  "const jsonData = pm.response.json();\r",
+                  "\r",
+                  "// 응답에 실제 id값이 있는지 확인 후 저장 (안전한 코드)\r",
+                  "if (jsonData && jsonData.id) {\r",
+                  "    // pm.environment 대신 pm.collectionVariables 사용!\r",
+                  "    pm.collectionVariables.set(\"userId\", jsonData.id); \r",
+                  "    console.log(\"유저 ID 저장 완료: \" + jsonData.id);\r",
+                  "} else {\r",
+                  "    console.error(\"응답에 id 필드가 없습니다!\", jsonData);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "fe1c8f8c-fa18-4164-9663-2060413c67b6",
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "id": "9dabb8a2-75f9-4d5e-9b90-503283026b7d",
           "request": {
             "method": "POST",
@@ -510,7 +627,7 @@
               "formdata": [
                 {
                   "key": "userCreateRequest",
-                  "value": "{\"username\": \"user1\", \"email\": \"test@email.com\", \"password\": \"123\"}",
+                  "value": "{\"username\": \"user1\", \"email\": \"test1@email.com\", \"password\": \"123\"}",
                   "type": "text",
                   "uuid": "ae50cce7-19f2-4464-a5e5-5de3d48544d1",
                   "contentType": "application/json"
@@ -637,69 +754,36 @@
         }
       ],
       "id": "90fce08b-b98d-4bac-bc9e-ed65502c2300"
-    },
-    {
-      "name": "findAllByChannelId",
-      "id": "1465b1b0-489e-4999-9da5-01264f3ac99f",
-      "protocolProfileBehavior": {
-        "disableBodyPruning": true
-      },
-      "request": {
-        "method": "GET",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": ""
-        },
-        "url": {
-          "raw": "{{baseURL}}/api/message?channelId={{channelId}}",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "message"
-          ],
-          "query": [
-            {
-              "key": "channelId",
-              "value": "{{channelId}}",
-              "uuid": "5fd6c627-9d84-4852-8c00-564a3b32e1f0"
-            }
-          ]
-        }
-      },
-      "response": []
     }
   ],
   "variable": [
     {
-      "id": "153b7f45-4e4f-4b77-b8e6-4102bc045c61",
+      "id": "b6a31c53-ce95-4365-ab87-e969902b01bf",
       "key": "baseURL",
       "value": ""
     },
     {
-      "id": "3b0b6a6d-005c-4ca5-9b67-aa44b72fdf46",
+      "id": "f9784618-0da8-4876-b3a8-474c4a0ec85d",
       "key": "userId",
       "value": ""
     },
     {
-      "id": "7c4ff699-3382-4812-be85-e5f984fb9514",
+      "id": "1847add2-e145-4448-be54-c5453982083c",
       "key": "channelId",
       "value": ""
     },
     {
-      "id": "c44d6aef-32d3-46e5-981b-5b89a8fbe00e",
+      "id": "e9064d79-72a3-4916-9842-fe07f7f94812",
       "key": "messageId",
       "value": ""
     },
     {
-      "id": "8521f20b-5771-4bcf-a150-fd0f135eb086",
+      "id": "4a702bc2-4083-445f-9122-79de24bf5845",
       "key": "readStatusId",
       "value": ""
     },
     {
-      "id": "38681456-7a78-40b7-8553-f19b1d8a1299",
+      "id": "c7f31632-441b-4537-a2e0-4d27b1d1e122",
       "key": "binaryContentId",
       "value": ""
     }

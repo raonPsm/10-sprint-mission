@@ -61,8 +61,14 @@ public class MessageController {
         return ResponseEntity.ok(response);
     }
 
+    // DELETE /api/messages/{messageId} - Message 삭제
+    @DeleteMapping("/{messageId}")
+    public ResponseEntity<Void> delete(@PathVariable UUID messageId) {
+        messageService.delete(messageId);
+        return ResponseEntity.noContent().build();
+    }
 
-    //  메시지를 수정할 수 있다.
+    // PATCH /api/messages/{messageId} - Message 내용 수정
     @PatchMapping(value = "/{messageId}")
     public ResponseEntity<MessageResponse> update(
             @PathVariable UUID messageId,
@@ -70,12 +76,5 @@ public class MessageController {
     ) {
         MessageResponse response = messageService.update(messageId, request);
         return ResponseEntity.ok(response);
-    }
-
-    // 메시지를 삭제할 수 있다.
-    @DeleteMapping(value = "/{messageId}")
-    public ResponseEntity<Void> delete(@PathVariable UUID messageId) {
-        messageService.delete(messageId);
-        return ResponseEntity.noContent().build();
     }
 }
