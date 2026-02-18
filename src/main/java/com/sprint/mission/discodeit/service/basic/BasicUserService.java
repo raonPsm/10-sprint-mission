@@ -185,6 +185,8 @@ public class BasicUserService implements UserService {
     private UserResponse toResponse(User user, UserStatus userStatus) {
         return new UserResponse(
                 user.getId(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
                 user.getUsername(),
                 user.getEmail(),
                 user.getProfileId(),

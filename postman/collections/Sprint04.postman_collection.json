@@ -9,14 +9,14 @@
       "name": "AuthController",
       "item": [
         {
-          "name": "login",
+          "name": "로그인",
           "id": "e47027c9-d8a2-46b7-9110-41c5c14813ec",
           "request": {
             "method": "POST",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\": \"tester\",\r\n    \"password\": \"password123\"\r\n}",
+              "raw": "{\r\n    \"username\": \"user1\",\r\n    \"password\": \"123\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -778,37 +778,37 @@
   ],
   "variable": [
     {
-      "id": "b02c981a-2fad-403f-9a9b-4ce63290b350",
+      "id": "ba2ad8a5-a33b-407f-a401-8c8f0bba6b1a",
       "key": "baseURL",
       "value": ""
     },
     {
-      "id": "85d9bec1-f013-45f3-9da0-8bca1c95cc6c",
+      "id": "4ee52fe9-434c-4a33-bfda-6461e283b95d",
       "key": "userId",
       "value": ""
     },
     {
-      "id": "83d623d3-97fe-40c7-af08-947bf55ace16",
+      "id": "f52ac24a-93f5-4eaa-95bb-8f80fa11ce3d",
       "key": "channelId",
       "value": ""
     },
     {
-      "id": "c113ff89-ec04-4ff7-ad11-d390d94883ae",
+      "id": "adae3d19-b793-4d3b-9fa0-9084adf6e368",
       "key": "messageId",
       "value": ""
     },
     {
-      "id": "7064d893-cf4b-4f90-8b4f-609b868e0755",
+      "id": "7ea4328f-ee5e-4a31-b366-a6667244a5d9",
       "key": "readStatusId",
       "value": ""
     },
     {
-      "id": "7ff218c1-cafc-4444-8519-ad6cce03d38d",
+      "id": "f5144275-9387-4792-b793-03c163a1ca3f",
       "key": "binaryContentId",
       "value": ""
     },
     {
-      "id": "4b05cb82-9ec9-43af-8d29-2d958d8f0d6c",
+      "id": "14e0429b-c8be-404a-8a0a-6abc0c021b8a",
       "key": "currentTimestamp",
       "value": ""
     }

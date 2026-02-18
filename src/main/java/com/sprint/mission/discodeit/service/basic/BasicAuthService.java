@@ -34,6 +34,8 @@ public class BasicAuthService implements AuthService {
         // DTO(UserResponse)로 변환
         return new UserResponse(
                 user.getId(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
                 user.getUsername(),
                 user.getEmail(),
                 user.getProfileId(),
