@@ -523,74 +523,32 @@
       "name": "BinaryContentController",
       "item": [
         {
-          "name": "findById",
+          "name": "여러 첨부 파일 조회",
           "id": "b30dd2c3-45e6-458f-ba42-aac24d28c876",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseURL}}/api/binaryContent/{{binaryContentId}}",
+              "raw": "{{baseURL}}/api/binaryContents?binaryContentIds=b5653784-c8fa-4ba6-a879-f1969485f55c&binaryContentIds=99e154b7-f004-4028-a68d-5a8ab785e3ed",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "binaryContent",
-                "{{binaryContentId}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "find",
-          "id": "41f4a5d9-ef8f-4074-8c8a-61ad7e83c35e",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"ids\": [\r\n        \"7da69b83-0507-4c3e-810c-3cf39ac5e659\",\r\n        \"8caafe81-5172-472f-9481-804c97bf95bc\"\r\n    ]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseURL}}/api/binaryContent",
-              "host": [
-                "{{baseURL}}"
-              ],
-              "path": [
-                "api",
-                "binaryContent"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "findBinaryContent",
-          "id": "316953bd-dd72-4bf8-9dec-6605e2fdeb0d",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseURL}}/api/binaryContent/find?binaryContentId={{binaryContentId}}",
-              "host": [
-                "{{baseURL}}"
-              ],
-              "path": [
-                "api",
-                "binaryContent",
-                "find"
+                "binaryContents"
               ],
               "query": [
                 {
-                  "key": "binaryContentId",
-                  "value": "{{binaryContentId}}",
-                  "uuid": "e2672ca0-4d6f-40ae-99b2-8547d9400830"
+                  "key": "binaryContentIds",
+                  "value": "b5653784-c8fa-4ba6-a879-f1969485f55c",
+                  "type": "text",
+                  "uuid": "8522b321-fa06-436a-a594-5e5eaf48cd75"
+                },
+                {
+                  "key": "binaryContentIds",
+                  "value": "99e154b7-f004-4028-a68d-5a8ab785e3ed",
+                  "type": "text",
+                  "uuid": "63be382f-db9c-48af-9fec-1ba3f3a5735b"
                 }
               ]
             }
@@ -800,37 +758,37 @@
   ],
   "variable": [
     {
-      "id": "2064f4a0-f3b3-42c6-9eeb-8567e01aeb73",
+      "id": "65084097-f824-4e00-9376-fc946a830698",
       "key": "baseURL",
       "value": ""
     },
     {
-      "id": "6df7f1c5-976b-4a21-b8e0-c25142eb9a81",
+      "id": "9bf167f9-bf14-4fcd-9bbb-28b0d94f8a19",
       "key": "userId",
       "value": ""
     },
     {
-      "id": "6e806db8-d8b4-4dc0-8547-4b460abd2547",
+      "id": "43813e3e-e59c-4975-9b00-2736a1e61bda",
       "key": "channelId",
       "value": ""
     },
     {
-      "id": "321ede33-91ac-446b-a71b-e08d58816fb9",
+      "id": "80628c84-af91-4e00-8487-ca247da9c036",
       "key": "messageId",
       "value": ""
     },
     {
-      "id": "e9361635-426d-4909-9f81-7e45ea16f8f2",
+      "id": "9f66fd76-1235-4999-b049-4ae757bdf0e0",
       "key": "readStatusId",
       "value": ""
     },
     {
-      "id": "84b94b9c-23d0-4823-9cc1-4d33fd254b47",
+      "id": "a5cb8ed9-5b47-4123-b595-a7dfcd59b02d",
       "key": "binaryContentId",
       "value": ""
     },
     {
-      "id": "fb5f4699-aed1-47de-92ec-1dbfad2866a1",
+      "id": "2e226c25-47ff-4ddd-8d01-69c4103a2219",
       "key": "currentTimestamp",
       "value": ""
     }

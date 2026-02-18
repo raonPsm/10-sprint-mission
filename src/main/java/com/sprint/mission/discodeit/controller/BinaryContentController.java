@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @RestController
 // Kebab case 로 변경
-@RequestMapping("/api/binary-contents")
+@RequestMapping("/api/binaryContents")
 public class BinaryContentController {
     private final BinaryContentService binaryContentService;
 
@@ -24,19 +24,19 @@ public class BinaryContentController {
         this.binaryContentService = binaryContentService;
     }
 
+    // GET /api/binaryContents - 여러 첨부 파일 조회
+    @GetMapping
+    public ResponseEntity<List<BinaryContentResponse>> findAllByIdIn(
+            @RequestParam("binaryContentIds") List<UUID> binaryContentIds
+    ) {
+        List<BinaryContentResponse> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
+        return ResponseEntity.ok(binaryContents);
+    }
+
     // 단건 조회
     @GetMapping("/{binaryContentId}")
     public ResponseEntity<BinaryContentResponse> find(@PathVariable UUID binaryContentId) {
         BinaryContentResponse response = binaryContentService.find(binaryContentId);
         return ResponseEntity.ok(response);
-    }
-
-    // 다건 조회 (ID 목록으로 검색)
-    @GetMapping
-    public ResponseEntity<List<BinaryContentResponse>> findAllByIdIn(
-            @RequestParam("ids") List<UUID> ids
-    ) {
-        List<BinaryContentResponse> binaryContents = binaryContentService.findAllByIdIn(ids);
-        return ResponseEntity.ok(binaryContents);
     }
 }

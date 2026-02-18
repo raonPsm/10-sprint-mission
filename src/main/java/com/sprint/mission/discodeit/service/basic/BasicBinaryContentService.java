@@ -70,6 +70,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     private BinaryContentResponse toResponse(BinaryContent binaryContent) {
         return new BinaryContentResponse(
                 binaryContent.getId(),
+                binaryContent.getCreatedAt(),
                 binaryContent.getFileName(),
                 binaryContent.getContentType(),
                 binaryContent.getSize(),
