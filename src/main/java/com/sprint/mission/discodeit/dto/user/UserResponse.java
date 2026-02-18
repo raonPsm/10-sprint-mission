@@ -10,7 +10,8 @@ public record UserResponse (
         Instant updatedAt,
         String username,
         String email,
+        String password, // 명세에 맞춤
         // password는 반환하지 않음 (!보안 이슈!)
-        UUID profiledId,
-        boolean online // 접속 상태 (true: 온라인, false: 오프라인)
+        UUID profileId
+        // boolean online // 접속 상태 (true: 온라인, false: 오프라인)
 ) {}

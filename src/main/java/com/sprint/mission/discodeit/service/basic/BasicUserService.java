@@ -189,8 +189,8 @@ public class BasicUserService implements UserService {
                 user.getUpdatedAt(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getProfileId(),
-                userStatus.isOnline()
+                user.getPassword(),
+                user.getProfileId()
         );
     }
 }
