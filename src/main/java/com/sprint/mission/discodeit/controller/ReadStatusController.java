@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,23 +30,15 @@ public class ReadStatusController {
         return ResponseEntity.ok(readStatusListResponse);
     }
 
-    // 특정 채널의 메시지 수신 정보를 생성할 수 있다.
-    @PostMapping()
+    // POST /api/readStatuses - Message 읽음 상태 생성
+    // FIXME: lastReadAt 필드 null -> 확인 필요
+    @PostMapping
     public ResponseEntity<ReadStatusResponse> create(@RequestBody ReadStatusCreateRequest request) {
         ReadStatusResponse response = readStatusService.create(request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-//    // 특정 채널의 메시지 수신 정보를 수정할 수 있다.
-//    @PatchMapping(value = "/{readStatusId}")
-//    public ResponseEntity<ReadStatusResponse> update(
-//            @PathVariable UUID readStatusId,
-//            @RequestBody ReadStatusUpdateRequest request
-//    ) {
-//        // 서비스 메서드 호출 시 request 객체 전달 필요 (서비스 로직 확인 필요)
-//        ReadStatusResponse response = readStatusService.update(readStatusId, request);
-//        return ResponseEntity.ok(response);
-//    }
+    //
 
 
 }

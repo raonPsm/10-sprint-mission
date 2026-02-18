@@ -394,7 +394,7 @@
       "name": "ReadStatusController",
       "item": [
         {
-          "name": "create",
+          "name": "Message 읽음 상태 생성",
           "id": "fa597f03-d1fb-463e-afaa-a2e51ab18ffc",
           "request": {
             "method": "POST",
@@ -764,32 +764,32 @@
   ],
   "variable": [
     {
-      "id": "ad23a3a3-1479-49e4-8ecb-49ee2e6b5b89",
+      "id": "b19d6389-01f1-42b0-93cd-a1be56982122",
       "key": "baseURL",
       "value": ""
     },
     {
-      "id": "6b98573f-31cd-4c5b-9bca-444d8264b444",
+      "id": "e5aa3b1a-dd91-4346-b525-480609ce801e",
       "key": "userId",
       "value": ""
     },
     {
-      "id": "705f97b1-1514-45b7-a928-377c6b84a8b0",
+      "id": "de1ca391-84f1-450d-ad77-f26b1f367d06",
       "key": "channelId",
       "value": ""
     },
     {
-      "id": "25241e56-9779-44f5-a28b-06117dfc25cc",
+      "id": "b5ef097c-6031-41aa-87ce-80fe2480a2b4",
       "key": "messageId",
       "value": ""
     },
     {
-      "id": "30c1dc31-1322-4a16-8bef-5086300def4a",
+      "id": "243cf5ff-f7d2-4735-82e5-d86dca74e329",
       "key": "readStatusId",
       "value": ""
     },
     {
-      "id": "d082c34f-82aa-4b24-87e8-557084bfcb06",
+      "id": "3cd40aac-b625-4bc5-867b-0dd4a5abd44e",
       "key": "binaryContentId",
       "value": ""
     }

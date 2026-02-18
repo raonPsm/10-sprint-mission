@@ -32,7 +32,7 @@ public class ReadStatus extends BaseEntity {
         }
 
         if (isAnyValueUpdated) {
-            this.updateInstant();
+            this.updatedAt = Instant.now();
         }
     }
 }
