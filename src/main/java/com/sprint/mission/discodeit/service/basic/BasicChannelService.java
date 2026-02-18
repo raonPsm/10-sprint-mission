@@ -105,7 +105,7 @@ public class BasicChannelService implements ChannelService {
             throw new IllegalArgumentException("비공개(PRIVATE) 채널은 수정할 수 없습니다. name, description 수정 불가능.");
         }
 
-        channel.update(request.name(), request.description());
+        channel.update(request.newName(), request.newDescription());
         Channel savedChannel = channelRepository.save(channel);
 
         return toResponse(savedChannel);

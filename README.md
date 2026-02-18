@@ -13,7 +13,7 @@
   - 특히, 심화 요구사항에서 제공되는 프론트엔드 코드는 제공된 API 스펙을 준수해야 연동할 수 있습니다.
 - [ ] Postman을 활용해 컨트롤러를 테스트 하세요.
   - Postman API 테스트 결과를 export하여 PR에 첨부해주세요.
-- [ ] springdoc-openapi를 활용하여 Swagger 기반의 API 문서를 생성하세요.
+- [x] springdoc-openapi를 활용하여 Swagger 기반의 API 문서를 생성하세요.
 - [ ] Swagger-UI를 활용해 API를 테스트해보세요.
 
 ### ✏️ 심화 요구사항

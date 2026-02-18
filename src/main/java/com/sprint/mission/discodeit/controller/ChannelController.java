@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.ChannelApi;
 import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.dto.channel.*;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -14,7 +15,7 @@ import java.util.UUID;
 @RestController
 // channel -> channels
 @RequestMapping("/api/channels")
-public class ChannelController {
+public class ChannelController implements ChannelApi {
     private final ChannelService channelService;
 
     @Autowired
@@ -56,6 +57,7 @@ public class ChannelController {
 
 
     /// GET /api/channels - User가 참여 중인 Channel 목록 조회
+    // FIXME: ChannelDto -> ChannelResponse로 통일
     @GetMapping()
     public ResponseEntity<List<ChannelDto>> findAllByUserId(@RequestParam UUID userId) {
         List<ChannelDto> channelListResponse = channelService.findAllByUserId(userId);
