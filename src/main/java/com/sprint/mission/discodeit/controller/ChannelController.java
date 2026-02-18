@@ -33,6 +33,11 @@ public class ChannelController {
     }
 
     /// POST /api/channels/private - Private Channel 생성
+    @PostMapping("/private")
+    public ResponseEntity<ChannelResponse> createPrivateChannel(@RequestBody PrivateChannelCreateRequest request) {
+        ChannelResponse createdPrivateChannel = channelService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdPrivateChannel);
+    }
 
     // 공개 채널의 정보를 수정할 수 있다.
     @PatchMapping(value = "/{channelId}")
