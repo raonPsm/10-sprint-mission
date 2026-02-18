@@ -102,6 +102,30 @@
           "response": []
         },
         {
+          "name": "Channel 삭제",
+          "id": "c0180da3-91c3-4292-9044-3d79a470c94d",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/channels/{{channelId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "channels",
+                "{{channelId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "update",
           "id": "63709b29-1a80-402b-b753-60ec8cedfc63",
           "request": {
@@ -115,30 +139,6 @@
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{baseURL}}/api/channel/{{channelId}}",
-              "host": [
-                "{{baseURL}}"
-              ],
-              "path": [
-                "api",
-                "channel",
-                "{{channelId}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "delete",
-          "id": "c0180da3-91c3-4292-9044-3d79a470c94d",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
             },
             "url": {
               "raw": "{{baseURL}}/api/channel/{{channelId}}",
@@ -647,32 +647,32 @@
   ],
   "variable": [
     {
-      "id": "b86e4249-0520-4fbb-a971-4c3d92e8ca73",
+      "id": "4119cdaf-3beb-4d89-af44-18d83cfeaa6b",
       "key": "baseURL",
       "value": ""
     },
     {
-      "id": "e0584eba-1edb-49ba-8487-f16f199e21dc",
+      "id": "ef087d3c-306f-4df9-a29c-3a17a233767a",
       "key": "userId",
       "value": ""
     },
     {
-      "id": "2bf0d90f-ed74-4a28-a992-19128aa5345b",
+      "id": "6da3e769-0a93-4016-be39-c00d84fcce2f",
       "key": "channelId",
       "value": ""
     },
     {
-      "id": "2f861574-b0b9-4825-b4d0-46d7e97d55e7",
+      "id": "788b88b8-988b-42ec-9d2c-6f7098532966",
       "key": "messageId",
       "value": ""
     },
     {
-      "id": "7a766959-03aa-4f0c-91d4-e33bd4ac93da",
+      "id": "1c0774f4-faac-43e9-b5a5-e8ccf61be666",
       "key": "readStatusId",
       "value": ""
     },
     {
-      "id": "d438faa1-3864-4e1d-8985-a05bcaf04dfb",
+      "id": "60727c07-34b8-429f-82d6-8520fe144fd4",
       "key": "binaryContentId",
       "value": ""
     }
