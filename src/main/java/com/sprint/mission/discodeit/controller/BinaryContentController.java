@@ -33,7 +33,7 @@ public class BinaryContentController {
         return ResponseEntity.ok(binaryContents);
     }
 
-    // 단건 조회
+    // GET /api/binaryContents/{binaryContentId} - 첨부 파일 조회
     @GetMapping("/{binaryContentId}")
     public ResponseEntity<BinaryContentResponse> find(@PathVariable UUID binaryContentId) {
         BinaryContentResponse response = binaryContentService.find(binaryContentId);

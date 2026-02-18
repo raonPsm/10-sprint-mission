@@ -554,6 +554,26 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "첨부 파일 조회",
+          "id": "3d3cb4d3-fbe0-4d95-8689-ddaec23bf221",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/binaryContents/{{binaryContentId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "binaryContents",
+                "{{binaryContentId}}"
+              ]
+            }
+          },
+          "response": []
         }
       ],
       "id": "a38952e0-2e60-4772-9650-05dd1b1dc942"
@@ -758,37 +778,37 @@
   ],
   "variable": [
     {
-      "id": "65084097-f824-4e00-9376-fc946a830698",
+      "id": "b02c981a-2fad-403f-9a9b-4ce63290b350",
       "key": "baseURL",
       "value": ""
     },
     {
-      "id": "9bf167f9-bf14-4fcd-9bbb-28b0d94f8a19",
+      "id": "85d9bec1-f013-45f3-9da0-8bca1c95cc6c",
       "key": "userId",
       "value": ""
     },
     {
-      "id": "43813e3e-e59c-4975-9b00-2736a1e61bda",
+      "id": "83d623d3-97fe-40c7-af08-947bf55ace16",
       "key": "channelId",
       "value": ""
     },
     {
-      "id": "80628c84-af91-4e00-8487-ca247da9c036",
+      "id": "c113ff89-ec04-4ff7-ad11-d390d94883ae",
       "key": "messageId",
       "value": ""
     },
     {
-      "id": "9f66fd76-1235-4999-b049-4ae757bdf0e0",
+      "id": "7064d893-cf4b-4f90-8b4f-609b868e0755",
       "key": "readStatusId",
       "value": ""
     },
     {
-      "id": "a5cb8ed9-5b47-4123-b595-a7dfcd59b02d",
+      "id": "7ff218c1-cafc-4444-8519-ad6cce03d38d",
       "key": "binaryContentId",
       "value": ""
     },
     {
-      "id": "2e226c25-47ff-4ddd-8d01-69c4103a2219",
+      "id": "4b05cb82-9ec9-43af-8d29-2d958d8f0d6c",
       "key": "currentTimestamp",
       "value": ""
     }
