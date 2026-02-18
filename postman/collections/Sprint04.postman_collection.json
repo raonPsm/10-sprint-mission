@@ -442,7 +442,7 @@
           "response": []
         },
         {
-          "name": "findAllByUserId",
+          "name": "User의 Message 읽음 상태 목록 조회",
           "id": "7ece0b02-9974-49ae-b91b-1d1a6daf31cc",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -460,15 +460,21 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/read-status/user/{{userId}}",
+              "raw": "{{baseURL}}/api/readStatuses?userId={{userId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "read-status",
-                "user",
-                "{{userId}}"
+                "readStatuses"
+              ],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}",
+                  "type": "text",
+                  "uuid": "ded84106-e0ce-45fb-a78b-98c013c6f0cb"
+                }
               ]
             }
           },
@@ -758,32 +764,32 @@
   ],
   "variable": [
     {
-      "id": "b6a31c53-ce95-4365-ab87-e969902b01bf",
+      "id": "ad23a3a3-1479-49e4-8ecb-49ee2e6b5b89",
       "key": "baseURL",
       "value": ""
     },
     {
-      "id": "f9784618-0da8-4876-b3a8-474c4a0ec85d",
+      "id": "6b98573f-31cd-4c5b-9bca-444d8264b444",
       "key": "userId",
       "value": ""
     },
     {
-      "id": "1847add2-e145-4448-be54-c5453982083c",
+      "id": "705f97b1-1514-45b7-a928-377c6b84a8b0",
       "key": "channelId",
       "value": ""
     },
     {
-      "id": "e9064d79-72a3-4916-9842-fe07f7f94812",
+      "id": "25241e56-9779-44f5-a28b-06117dfc25cc",
       "key": "messageId",
       "value": ""
     },
     {
-      "id": "4a702bc2-4083-445f-9122-79de24bf5845",
+      "id": "30c1dc31-1322-4a16-8bef-5086300def4a",
       "key": "readStatusId",
       "value": ""
     },
     {
-      "id": "c7f31632-441b-4537-a2e0-4d27b1d1e122",
+      "id": "d082c34f-82aa-4b24-87e8-557084bfcb06",
       "key": "binaryContentId",
       "value": ""
     }

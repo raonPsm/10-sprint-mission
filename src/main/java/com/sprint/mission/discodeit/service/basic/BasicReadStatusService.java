@@ -43,7 +43,7 @@ public class BasicReadStatusService implements ReadStatusService {
             throw new IllegalArgumentException("해당 유저의 readStatus가 이미 존재합니다.");
         }
 
-        ReadStatus readStatus = new ReadStatus(request.channelId(), request.userId());
+        ReadStatus readStatus = new ReadStatus(request.channelId(), request.userId(), request.lastReadAt());
         ReadStatus saved = readStatusRepository.save(readStatus);
 
         return toResponse(saved);
@@ -70,7 +70,7 @@ public class BasicReadStatusService implements ReadStatusService {
                 .orElseThrow(() -> new NoSuchElementException("수정할 읽기 상태(readStatus)를 찾을 수 없습니다. id: " + request.id()));
 
         // 읽은 시간 갱신
-        readStatus.markAsRead();
+        readStatus.updateLastReadAt(request.lastReadAt());
         ReadStatus updated = readStatusRepository.save(readStatus);
 
         return toResponse(updated);
@@ -87,9 +87,11 @@ public class BasicReadStatusService implements ReadStatusService {
     private ReadStatusResponse toResponse(ReadStatus readStatus) {
         return new ReadStatusResponse(
                 readStatus.getId(),
+                readStatus.getCreatedAt(),
+                readStatus.getUpdatedAt(),
                 readStatus.getUserId(),
                 readStatus.getChannelId(),
-                readStatus.getUpdatedAt() // 마지막으로 읽은 시간
+                readStatus.getLastReadAt()
         );
     }
 }

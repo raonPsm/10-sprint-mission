@@ -22,6 +22,13 @@ public class ReadStatusController {
         this.readStatusService = readStatusService;
     }
 
+    // GET /api/readStatuses - User의 Message 읽음 상태 목록 조회
+    @GetMapping
+    public ResponseEntity<List<ReadStatusResponse>> findAllByUserId(@RequestParam UUID userId) {
+        List<ReadStatusResponse> readStatusListResponse = readStatusService.findAllByUserId(userId);
+        return ResponseEntity.ok(readStatusListResponse);
+    }
+
     // 특정 채널의 메시지 수신 정보를 생성할 수 있다.
     @PostMapping()
     public ResponseEntity<ReadStatusResponse> create(@RequestBody ReadStatusCreateRequest request) {
@@ -40,10 +47,5 @@ public class ReadStatusController {
 //        return ResponseEntity.ok(response);
 //    }
 
-    // User의 Message 읽음 상태 목록 조회
-    @GetMapping
-    public ResponseEntity<List<ReadStatusResponse>> findAllByUserId(@PathVariable UUID userId) {
-        List<ReadStatusResponse> response = readStatusService.findAllByUserId(userId);
-        return ResponseEntity.ok(response);
-    }
+
 }

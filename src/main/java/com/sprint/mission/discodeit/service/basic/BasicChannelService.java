@@ -58,7 +58,7 @@ public class BasicChannelService implements ChannelService {
         for (UUID userId : request.participantIds()) {
             // 유저 존재 여부 확인 (데이터 무결성)
             if (userRepository.existsById(userId)) {
-                ReadStatus readStatus = new ReadStatus(savedChannel.getId(), userId);
+                ReadStatus readStatus = new ReadStatus(savedChannel.getId(), userId, savedChannel.getCreatedAt());
                 readStatusRepository.save(readStatus);
             } else {
                 throw new NoSuchElementException("유저가 존재하지 않습니다." + userId);
