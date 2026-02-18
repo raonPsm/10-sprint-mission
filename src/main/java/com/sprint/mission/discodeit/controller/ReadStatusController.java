@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.ReadStatusApi;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponse;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
@@ -15,7 +16,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/readStatuses")
-public class ReadStatusController {
+public class ReadStatusController implements ReadStatusApi {
     private final ReadStatusService readStatusService;
 
     @Autowired
@@ -23,22 +24,21 @@ public class ReadStatusController {
         this.readStatusService = readStatusService;
     }
 
-    // GET /api/readStatuses - User의 Message 읽음 상태 목록 조회
+    /// GET /api/readStatuses - User의 Message 읽음 상태 목록 조회
     @GetMapping
     public ResponseEntity<List<ReadStatusResponse>> findAllByUserId(@RequestParam UUID userId) {
         List<ReadStatusResponse> readStatusListResponse = readStatusService.findAllByUserId(userId);
         return ResponseEntity.ok(readStatusListResponse);
     }
 
-    // POST /api/readStatuses - Message 읽음 상태 생성
-    // FIXME: lastReadAt 필드 null -> 확인 필요
+    /// POST /api/readStatuses - Message 읽음 상태 생성
     @PostMapping
     public ResponseEntity<ReadStatusResponse> create(@RequestBody ReadStatusCreateRequest request) {
         ReadStatusResponse response = readStatusService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // PATCH /api/readStatuses/{readStatusId} - Message 읽음 상태 수정
+    /// PATCH /api/readStatuses/{readStatusId} - Message 읽음 상태 수정
     @PatchMapping("{readStatusId}")
     public ResponseEntity<ReadStatusResponse> update(@PathVariable UUID readStatusId,
             @RequestBody ReadStatusUpdateRequest request) {
