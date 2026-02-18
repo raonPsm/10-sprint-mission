@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ChannelService {
-    // PUBLIC 채널 생성 + PRIVATE 채널 생성
-    ChannelResponse create(ChannelCreateRequest request);
+    // PUBLIC 채널 생성
+    ChannelResponse create(PublicChannelCreateRequest request);
+    // PRIVATE 채널 생성
+    ChannelResponse create(PrivateChannelCreateRequest request);
 
     // 단건 조회
     ChannelResponse find(UUID channelId);

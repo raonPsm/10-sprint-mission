@@ -26,17 +26,8 @@ public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
 
     @Override
-    public ChannelResponse create(ChannelCreateRequest request) {
-        if (request.type() == ChannelType.PUBLIC) {
-            return createPublic(request);
-        } else if (request.type() == ChannelType.PRIVATE) {
-            return createPrivate(request);
-        } else {
-            throw new IllegalArgumentException("유효하지 않은 채널 타입입니다.");
-        }
-    }
-
-    public ChannelResponse createPublic(ChannelCreateRequest request) {
+    public ChannelResponse create(PublicChannelCreateRequest request) {
+        // 채널 이름 중복 검사
         if(channelRepository.existsByName(request.name())) {
             throw new IllegalArgumentException("이미 존재하는 공개 채널 이름(name)입니다. " + request.name());
         }
@@ -50,7 +41,8 @@ public class BasicChannelService implements ChannelService {
         // TODO: description 이름 유효성 검사 로직 추가
     }
 
-    public ChannelResponse createPrivate(ChannelCreateRequest request) {
+    @Override
+    public ChannelResponse create(PrivateChannelCreateRequest request) {
         Set<UUID> requestedUserIds = request.participantIds();
 
         channelRepository.findPrivateChannelByParticipants(requestedUserIds).ifPresent(existingChannel -> {
@@ -164,6 +156,8 @@ public class BasicChannelService implements ChannelService {
 
         return new ChannelResponse(
                 channel.getId(),
+                channel.getCreatedAt(),
+                channel.getUpdatedAt(),
                 channel.getType(),
                 channel.getName(),
                 channel.getDescription(),

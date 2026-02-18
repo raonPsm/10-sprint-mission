@@ -25,13 +25,14 @@ public class ChannelController {
         this.channelService = channelService;
     }
 
-    // 공개 채널을 생성할 수 있다.
-    // 비공개 채널을 생성할 수 있다.
-    @PostMapping
-    public ResponseEntity<ChannelResponse> create(@RequestBody ChannelCreateRequest request) {
-        ChannelResponse response = channelService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    /// POST /api/channels/public - Public Channel 생성
+    @PostMapping(value = "/public")
+    public ResponseEntity<ChannelResponse> createPublicChannel(@RequestBody PublicChannelCreateRequest request) {
+        ChannelResponse createdPublicChannel = channelService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdPublicChannel);
     }
+
+    /// POST /api/channels/private - Private Channel 생성
 
     // 공개 채널의 정보를 수정할 수 있다.
     @PatchMapping(value = "/{channelId}")
