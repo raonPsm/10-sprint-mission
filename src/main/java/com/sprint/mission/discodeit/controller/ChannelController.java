@@ -1,16 +1,12 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.channel.*;
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.annotation.Repeatable;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,16 +42,16 @@ public class ChannelController {
         return ResponseEntity.noContent().build();
     }
 
-    // 공개 채널의 정보를 수정할 수 있다.
-    @PatchMapping(value = "/{channelId}")
+    /// PATCH /api/channels/{channelId} - Channel 정보 수정
+    // 공개 채널의 정보 수정 (비공개 채널의 정보는 수정 불가능)
+    @PatchMapping("/{channelId}")
     public ResponseEntity<ChannelResponse> update(
             @PathVariable UUID channelId,
-            @RequestBody ChannelUpdateRequest request
+            @RequestBody PublicChannelUpdateRequest request
     ) {
-        ChannelResponse response = channelService.update(channelId, request);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        ChannelResponse updatedChannel = channelService.update(channelId, request);
+        return ResponseEntity.ok().body(updatedChannel);
     }
-
 
 
     // 특정 사용자가 볼 수 있는 모든 채널 목록을 조회할 수 있다.

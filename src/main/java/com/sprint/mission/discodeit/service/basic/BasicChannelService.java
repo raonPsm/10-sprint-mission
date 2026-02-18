@@ -95,7 +95,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelResponse update(UUID channelId, ChannelUpdateRequest request) {
+    public ChannelResponse update(UUID channelId, PublicChannelUpdateRequest request) {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다. id: " + channelId));
 

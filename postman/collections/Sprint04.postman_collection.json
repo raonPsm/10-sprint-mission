@@ -126,7 +126,7 @@
           "response": []
         },
         {
-          "name": "update",
+          "name": "Channel 정보 수정",
           "id": "63709b29-1a80-402b-b753-60ec8cedfc63",
           "request": {
             "method": "PATCH",
@@ -141,13 +141,13 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/channel/{{channelId}}",
+              "raw": "{{baseURL}}/api/channels/{{channelId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "channel",
+                "channels",
                 "{{channelId}}"
               ]
             }
@@ -647,32 +647,32 @@
   ],
   "variable": [
     {
-      "id": "4119cdaf-3beb-4d89-af44-18d83cfeaa6b",
+      "id": "d4ee5e44-8028-4db7-b8bb-03270e8d9889",
       "key": "baseURL",
       "value": ""
     },
     {
-      "id": "ef087d3c-306f-4df9-a29c-3a17a233767a",
+      "id": "c26d75fa-7587-41f5-94a9-ffd6117e80fc",
       "key": "userId",
       "value": ""
     },
     {
-      "id": "6da3e769-0a93-4016-be39-c00d84fcce2f",
+      "id": "67d80501-3fdd-40e8-b62f-1b478e8753c0",
       "key": "channelId",
       "value": ""
     },
     {
-      "id": "788b88b8-988b-42ec-9d2c-6f7098532966",
+      "id": "de628f0e-1576-4a00-8292-54d4d5058d39",
       "key": "messageId",
       "value": ""
     },
     {
-      "id": "1c0774f4-faac-43e9-b5a5-e8ccf61be666",
+      "id": "14890b84-468a-4177-a66e-178cfc6d6e7d",
       "key": "readStatusId",
       "value": ""
     },
     {
-      "id": "60727c07-34b8-429f-82d6-8520fe144fd4",
+      "id": "81f67ec9-2bf2-4194-9f34-e8a84812a196",
       "key": "binaryContentId",
       "value": ""
     }
