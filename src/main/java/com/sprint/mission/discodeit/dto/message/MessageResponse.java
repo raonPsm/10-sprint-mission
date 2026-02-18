@@ -6,9 +6,10 @@ import java.util.UUID;
 
 public record MessageResponse (
         UUID id,
+        Instant createdAt,
+        Instant updatedAt,
         String content,
         UUID channelId,
         UUID authorId,
-        List<UUID> attachmentIds,
-        Instant createAt
+        List<UUID> attachmentIds
 ) {}

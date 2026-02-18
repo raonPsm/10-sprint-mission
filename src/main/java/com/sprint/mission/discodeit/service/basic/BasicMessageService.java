@@ -110,11 +110,12 @@ public class BasicMessageService implements MessageService {
     private MessageResponse toResponse(Message message) {
         return new MessageResponse(
                 message.getId(),
+                message.getCreatedAt(),
+                message.getUpdatedAt(),
                 message.getContent(),
                 message.getChannelId(),
                 message.getAuthorId(),
-                message.getAttachmentIds(),
-                message.getCreatedAt()
+                message.getAttachmentIds()
         );
     }
 }

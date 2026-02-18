@@ -18,7 +18,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-// message -> messages
 @RequestMapping("/api/messages")
 public class MessageController {
     private final MessageService messageService;
@@ -29,10 +28,10 @@ public class MessageController {
     }
     // TODO: @RequiredArgsConstructor로 리펙토링 고려
 
-    // 메시지를 보낼 수 있다.
+    // POST /api/messages - Message 생성
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<MessageResponse> create(
-            @RequestPart("request") MessageCreateRequest request,
+            @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
         List<BinaryContentCreateRequest> fileRequests = Optional.ofNullable(attachments)
@@ -50,7 +49,7 @@ public class MessageController {
                         })
                         .toList())
                 .orElse(new ArrayList<>());
-        MessageResponse response = messageService.create(request, fileRequests);
+        MessageResponse response = messageService.create(messageCreateRequest, fileRequests);
 
         return ResponseEntity.ok(response);
     }

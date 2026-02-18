@@ -199,7 +199,19 @@
       "name": "MessageController",
       "item": [
         {
-          "name": "create",
+          "name": "New Request",
+          "id": "08fe2491-9f35-4958-a327-73f2f3017a3c",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Message 생성",
           "id": "bb79f39a-0721-4224-8c68-51b07c723eff",
           "request": {
             "method": "POST",
@@ -274,39 +286,6 @@
                 "api",
                 "messages",
                 "{{messageId}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "findAllByChannelId",
-          "id": "1465b1b0-489e-4999-9da5-01264f3ac99f",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "request": {
-            "method": "GET",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
-            "url": {
-              "raw": "{{baseURL}}/api/message?channelId={{channelId}}",
-              "host": [
-                "{{baseURL}}"
-              ],
-              "path": [
-                "api",
-                "message"
-              ],
-              "query": [
-                {
-                  "key": "channelId",
-                  "value": "{{channelId}}",
-                  "uuid": "5fd6c627-9d84-4852-8c00-564a3b32e1f0"
-                }
               ]
             }
           },
@@ -643,36 +622,69 @@
         }
       ],
       "id": "90fce08b-b98d-4bac-bc9e-ed65502c2300"
+    },
+    {
+      "name": "findAllByChannelId",
+      "id": "1465b1b0-489e-4999-9da5-01264f3ac99f",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{baseURL}}/api/message?channelId={{channelId}}",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "api",
+            "message"
+          ],
+          "query": [
+            {
+              "key": "channelId",
+              "value": "{{channelId}}",
+              "uuid": "5fd6c627-9d84-4852-8c00-564a3b32e1f0"
+            }
+          ]
+        }
+      },
+      "response": []
     }
   ],
   "variable": [
     {
-      "id": "2af3c22e-4cfc-44b5-a8e5-a74094d80a7f",
+      "id": "c95cf1ff-5ef0-4508-b3ac-bf6dd4bf02c3",
       "key": "baseURL",
       "value": ""
     },
     {
-      "id": "666a14f6-9178-4be4-b33d-066a46ddac1c",
+      "id": "3b766771-ffba-4d86-9eae-af6e05e146fe",
       "key": "userId",
       "value": ""
     },
     {
-      "id": "bbb4026d-8873-4b0a-b385-00db9dceb904",
+      "id": "a2544b92-e79e-4f66-af57-b09bfc7d1152",
       "key": "channelId",
       "value": ""
     },
     {
-      "id": "dfb906da-20d9-4a65-a7e4-eeba3fa89978",
+      "id": "e6f8db18-4e36-4d4f-824d-9ad473915d9f",
       "key": "messageId",
       "value": ""
     },
     {
-      "id": "6b15996c-b936-411f-842e-939a8187a234",
+      "id": "8fd7895a-0303-4e60-a486-797adbd55ea5",
       "key": "readStatusId",
       "value": ""
     },
     {
-      "id": "d6ecf9f7-f603-47ee-8db0-882197add365",
+      "id": "462ac574-1f61-4feb-bd5f-1ea3ac26721a",
       "key": "binaryContentId",
       "value": ""
     }
