@@ -1,7 +1,7 @@
 {
   "info": {
     "_postman_id": "f76d973a-738f-4a49-aeb9-e3eb65fdac1b",
-    "name": "Sprint04",
+    "name": "Sprint05",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -155,7 +155,7 @@
           "response": []
         },
         {
-          "name": "findAllByUserId",
+          "name": "User가 참여 중인 Channel 목록 조회",
           "id": "7a9cb39b-5f35-41a9-bf5e-fd4afe2f184f",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -173,13 +173,13 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/channel?userId={{userId}}",
+              "raw": "{{baseURL}}/api/channels?userId={{userId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "channel"
+                "channels"
               ],
               "query": [
                 {
@@ -647,32 +647,32 @@
   ],
   "variable": [
     {
-      "id": "d4ee5e44-8028-4db7-b8bb-03270e8d9889",
+      "id": "2af3c22e-4cfc-44b5-a8e5-a74094d80a7f",
       "key": "baseURL",
       "value": ""
     },
     {
-      "id": "c26d75fa-7587-41f5-94a9-ffd6117e80fc",
+      "id": "666a14f6-9178-4be4-b33d-066a46ddac1c",
       "key": "userId",
       "value": ""
     },
     {
-      "id": "67d80501-3fdd-40e8-b62f-1b478e8753c0",
+      "id": "bbb4026d-8873-4b0a-b385-00db9dceb904",
       "key": "channelId",
       "value": ""
     },
     {
-      "id": "de628f0e-1576-4a00-8292-54d4d5058d39",
+      "id": "dfb906da-20d9-4a65-a7e4-eeba3fa89978",
       "key": "messageId",
       "value": ""
     },
     {
-      "id": "14890b84-468a-4177-a66e-178cfc6d6e7d",
+      "id": "6b15996c-b936-411f-842e-939a8187a234",
       "key": "readStatusId",
       "value": ""
     },
     {
-      "id": "81f67ec9-2bf2-4194-9f34-e8a84812a196",
+      "id": "d6ecf9f7-f603-47ee-8db0-882197add365",
       "key": "binaryContentId",
       "value": ""
     }

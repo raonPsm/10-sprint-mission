@@ -75,7 +75,7 @@ public class BasicChannelService implements ChannelService {
 
     // 특정 유저가 볼 수 있는 Channel 목록을 조회
     @Override
-    public List<ChannelResponse> findAllByUserId(UUID userId) {
+    public List<ChannelDto> findAllByUserId(UUID userId) {
         // 모든 채널 조회 -> PUBLIC 채널은 모두 포함 / PRIVATE 채널은 해당 유저가 ReadStatus를 가지고 있는 경우만 포함
         // TODO: ChannelUser 관계 매핑 엔티티 제작 필요할지 고려 요망 / ReadStatus을 활용할 건지도 고려
 
@@ -90,7 +90,7 @@ public class BasicChannelService implements ChannelService {
                                         && rs.getUserId().equals(userId));
                     }
                 })
-                .map(this::toResponse)
+                .map(this::toChannelDto)
                 .collect(Collectors.toList());
     }
 
@@ -163,6 +163,33 @@ public class BasicChannelService implements ChannelService {
                 channel.getDescription(),
                 lastMessageAt,
                 participantIds
+        );
+    }
+
+    private ChannelDto toChannelDto(Channel channel) {
+        // 해당 채널의 가장 최근 메시지 시간 조회
+        Instant lastMessageAt = messageRepository.findAll().stream()
+                .filter(m -> m.getChannelId().equals(channel.getId()))
+                .map(Message::getCreatedAt)
+                .max(Comparator.naturalOrder())
+                .orElse(null); // 메시지가 없으면 null
+
+        // PRIVATE 채널인 경우 참여자 id 목록 조회
+        List<UUID> participantIds = null;
+        if(channel.getType() == ChannelType.PRIVATE) {
+            participantIds = readStatusRepository.findAll().stream()
+                    .filter(rs -> rs.getChannelId().equals(channel.getId()))
+                    .map(ReadStatus::getUserId)
+                    .collect(Collectors.toList());
+        }
+
+        return new ChannelDto(
+                channel.getId(),
+                channel.getType(),
+                channel.getName(),
+                channel.getDescription(),
+                participantIds,
+                lastMessageAt
         );
     }
 }

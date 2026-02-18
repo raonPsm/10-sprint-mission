@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.channel.*;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -54,10 +55,10 @@ public class ChannelController {
     }
 
 
-    // 특정 사용자가 볼 수 있는 모든 채널 목록을 조회할 수 있다.
+    /// GET /api/channels - User가 참여 중인 Channel 목록 조회
     @GetMapping()
-    public ResponseEntity<List<ChannelResponse>> findAllByUserId(@RequestParam UUID userId) {
-        List<ChannelResponse> responses = channelService.findAllByUserId(userId);
-        return ResponseEntity.status(HttpStatus.OK).body(responses);
+    public ResponseEntity<List<ChannelDto>> findAllByUserId(@RequestParam UUID userId) {
+        List<ChannelDto> channelListResponse = channelService.findAllByUserId(userId);
+        return ResponseEntity.status(HttpStatus.OK).body(channelListResponse);
     }
 }
