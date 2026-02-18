@@ -38,7 +38,11 @@ public class ReadStatusController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    //
-
-
+    // PATCH /api/readStatuses/{readStatusId} - Message 읽음 상태 수정
+    @PatchMapping("{readStatusId}")
+    public ResponseEntity<ReadStatusResponse> update(@PathVariable UUID readStatusId,
+            @RequestBody ReadStatusUpdateRequest request) {
+        ReadStatusResponse response = readStatusService.update(readStatusId, request);
+        return ResponseEntity.ok(response);
+    }
 }

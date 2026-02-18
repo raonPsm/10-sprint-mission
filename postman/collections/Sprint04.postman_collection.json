@@ -422,19 +422,55 @@
           "response": []
         },
         {
-          "name": "update",
+          "name": "Message 읽음 상태 수정",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "169e10e3-4467-4cca-bbcb-90e350ed943d",
+                "exec": [
+                  "const now = new Date().toISOString();\r",
+                  "pm.collectionVariables.set(\"currentTimestamp\", now);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "id": "a6bdaf07-4903-4137-9a72-bfab94f78f1a",
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "id": "f01c0a87-0f30-4ca4-bd5c-44e3c618b377",
           "request": {
             "method": "PATCH",
             "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"lastReadAt\": \"{{currentTimestamp}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
-              "raw": "{{baseURL}}/api/read-status/{{readStatusId}}",
+              "raw": "{{baseURL}}/api/readStatuses/{{readStatusId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "read-status",
+                "readStatuses",
                 "{{readStatusId}}"
               ]
             }
@@ -764,33 +800,38 @@
   ],
   "variable": [
     {
-      "id": "b19d6389-01f1-42b0-93cd-a1be56982122",
+      "id": "2064f4a0-f3b3-42c6-9eeb-8567e01aeb73",
       "key": "baseURL",
       "value": ""
     },
     {
-      "id": "e5aa3b1a-dd91-4346-b525-480609ce801e",
+      "id": "6df7f1c5-976b-4a21-b8e0-c25142eb9a81",
       "key": "userId",
       "value": ""
     },
     {
-      "id": "de1ca391-84f1-450d-ad77-f26b1f367d06",
+      "id": "6e806db8-d8b4-4dc0-8547-4b460abd2547",
       "key": "channelId",
       "value": ""
     },
     {
-      "id": "b5ef097c-6031-41aa-87ce-80fe2480a2b4",
+      "id": "321ede33-91ac-446b-a71b-e08d58816fb9",
       "key": "messageId",
       "value": ""
     },
     {
-      "id": "243cf5ff-f7d2-4735-82e5-d86dca74e329",
+      "id": "e9361635-426d-4909-9f81-7e45ea16f8f2",
       "key": "readStatusId",
       "value": ""
     },
     {
-      "id": "3cd40aac-b625-4bc5-867b-0dd4a5abd44e",
+      "id": "84b94b9c-23d0-4823-9cc1-4d33fd254b47",
       "key": "binaryContentId",
+      "value": ""
+    },
+    {
+      "id": "fb5f4699-aed1-47de-92ec-1dbfad2866a1",
+      "key": "currentTimestamp",
       "value": ""
     }
   ]

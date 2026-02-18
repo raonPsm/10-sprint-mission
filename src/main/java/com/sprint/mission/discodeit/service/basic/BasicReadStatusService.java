@@ -65,9 +65,9 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
-    public ReadStatusResponse update(ReadStatusUpdateRequest request) {
-        ReadStatus readStatus = readStatusRepository.findById(request.id())
-                .orElseThrow(() -> new NoSuchElementException("수정할 읽기 상태(readStatus)를 찾을 수 없습니다. id: " + request.id()));
+    public ReadStatusResponse update(UUID readStatusId, ReadStatusUpdateRequest request) {
+        ReadStatus readStatus = readStatusRepository.findById(readStatusId)
+                .orElseThrow(() -> new NoSuchElementException("수정할 읽기 상태(readStatus)를 찾을 수 없습니다. id: " + readStatusId));
 
         // 읽은 시간 갱신
         readStatus.updateLastReadAt(request.lastReadAt());
