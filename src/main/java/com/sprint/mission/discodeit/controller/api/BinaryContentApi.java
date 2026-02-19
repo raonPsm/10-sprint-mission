@@ -33,7 +33,7 @@ public interface BinaryContentApi {
                     )
             ),
             @ApiResponse(
-                    responseCode = "400",
+                    responseCode = "404",
                     description = "첨부 파일을 찾을 수 없음",
                     content = @Content(
                             mediaType = "*/*",

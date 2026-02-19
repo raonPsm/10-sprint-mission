@@ -78,7 +78,11 @@ public class BasicChannelService implements ChannelService {
     @Override
     public List<ChannelDto> findAllByUserId(UUID userId) {
         // 모든 채널 조회 -> PUBLIC 채널은 모두 포함 / PRIVATE 채널은 해당 유저가 ReadStatus를 가지고 있는 경우만 포함
-        // TODO: ChannelUser 관계 매핑 엔티티 제작 필요할지 고려 요망 / ReadStatus을 활용할 건지도 고려
+
+        // 부수효과 제거를 위해 스트림 외부에서 유저의 접근 가능한 channelId를 한번에 조회
+        Set<UUID> accessiblePrivateChannelIds = readStatusRepository.findAllByUserId(userId).stream()
+                .map(ReadStatus::getChannelId)
+                .collect(Collectors.toSet());
 
         return channelRepository.findAll().stream()
                 .filter(channel -> {
@@ -86,9 +90,7 @@ public class BasicChannelService implements ChannelService {
                         return true;
                     } else {
                         // PRIVATE 채널인 경우, 유저가 해당 채널에 대한 ReadState를 가지고 있는지 확인
-                        return readStatusRepository.findAll().stream()
-                                .anyMatch(rs -> rs.getChannelId().equals(channel.getId())
-                                        && rs.getUserId().equals(userId));
+                        return accessiblePrivateChannelIds.contains(channel.getId());
                     }
                 })
                 .map(this::toChannelDto)

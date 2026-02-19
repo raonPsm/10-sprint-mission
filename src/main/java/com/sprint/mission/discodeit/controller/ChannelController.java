@@ -58,8 +58,8 @@ public class ChannelController implements ChannelApi {
 
     /// GET /api/channels - User가 참여 중인 Channel 목록 조회
     // FIXME: ChannelDto -> ChannelResponse로 통일
-    @GetMapping()
-    public ResponseEntity<List<ChannelDto>> findAllByUserId(@RequestParam UUID userId) {
+    @GetMapping
+    public ResponseEntity<List<ChannelDto>> findAll(@RequestParam UUID userId) {
         List<ChannelDto> channelListResponse = channelService.findAllByUserId(userId);
         return ResponseEntity.status(HttpStatus.OK).body(channelListResponse);
     }

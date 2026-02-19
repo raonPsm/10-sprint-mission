@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
@@ -88,6 +89,13 @@ public class FileReadStatusRepository implements ReadStatusRepository {
         } catch (IOException e) {
             throw new RuntimeException("ReadStatus 목록 조회 실패", e);
         }
+    }
+
+    @Override
+    public List<ReadStatus> findAllByUserId(UUID userId) {
+        return findAll().stream()
+                .filter(rs -> rs.getUserId().equals(userId))
+                .collect(Collectors.toList());
     }
 
     @Override

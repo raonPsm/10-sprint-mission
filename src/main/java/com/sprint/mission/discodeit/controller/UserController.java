@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.controller.api.UserApi;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.UserDto;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
@@ -46,13 +47,13 @@ public class UserController implements UserApi {
 
     /// POST api/users - User 등록
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<User> create( // FIXME: DTO 반환으로 수정
-            @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
-            @RequestPart(value = "profile", required = false) MultipartFile profile
+    public ResponseEntity<UserResponse> create( // FIXME: DTO 반환으로 수정
+                    @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
+                    @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
         Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
                 .flatMap(this::resolveProfileRequest);
-        User createdUser = userService.create(userCreateRequest, profileRequest);
+        UserResponse createdUser = userService.create(userCreateRequest, profileRequest);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(createdUser);

@@ -13,7 +13,7 @@ import java.util.UUID;
 
 public interface UserService {
     // 기본 CRUD 메서드 이름은 심플하게
-    User create(UserCreateRequest userCreateRequest,
+    UserResponse create(UserCreateRequest userCreateRequest,
                 Optional<BinaryContentCreateRequest> profileCreateRequest);
     UserResponse find(UUID userId);
     List<UserResponse> findAll();
