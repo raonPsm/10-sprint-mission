@@ -40,14 +40,13 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     // 여러 개의 id 목록을 받아, 실제로 존재하는 바이너리 콘텐츠들만 조회
+    // FIX: 부수효과 문제 제외 + 전체 목록 한번에 조회
     @Override
     public List<BinaryContentResponse> findAllByIdIn(List<UUID> ids) {
-        return ids.stream()
-                .map(binaryContentRepository::findById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+        return binaryContentRepository.findAllByIdIn(ids).stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+
     }
 
     @Override

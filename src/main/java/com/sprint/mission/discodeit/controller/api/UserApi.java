@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.controller.api;
 
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
@@ -62,7 +63,7 @@ public interface UserApi {
                     )
             )
     })
-    ResponseEntity<User> create(
+    ResponseEntity<UserResponse> create(
             @Parameter(description = "User 생성 정보", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
             @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
 

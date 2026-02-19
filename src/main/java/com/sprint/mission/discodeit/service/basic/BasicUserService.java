@@ -36,7 +36,7 @@ public class BasicUserService implements UserService {
     private final BinaryContentService binaryContentService;
 
     @Override
-    public User create(UserCreateRequest userCreateRequest,
+    public UserResponse create(UserCreateRequest userCreateRequest,
                        Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
         String username = userCreateRequest.username();
         String email = userCreateRequest.email();
@@ -67,7 +67,15 @@ public class BasicUserService implements UserService {
         UserStatus userStatus = new UserStatus(createdUser.getId());
         userStatusRepository.save(userStatus);
 
-        return createdUser;
+        return new UserResponse(
+                createdUser.getId(),
+                createdUser.getCreatedAt(),
+                createdUser.getUpdatedAt(),
+                createdUser.getUsername(),
+                createdUser.getEmail(),
+                createdUser.getPassword(),
+                createdUser.getProfileId()
+        );
 
         // TODO: 트랜잭션 롤백 필요성 존재 -> 추후 단계에서 고민
         // TODO: username 유효성 검사 로직 추가

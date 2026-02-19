@@ -5,11 +5,9 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
@@ -30,6 +28,14 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
     public Optional<BinaryContent> findById(UUID id) {
         return Optional.ofNullable(data.get(id));
     }
+
+    @Override
+    public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
+        return ids.stream()
+                .map(data::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    };
 
     @Override
     public void deleteById(UUID id) {

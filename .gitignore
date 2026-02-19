@@ -1,4 +1,4 @@
-# --- Windows ---
+# --- Windows (OS) ---
 Thumbs.db
 ehthumbs.db
 Desktop.ini
@@ -10,6 +10,8 @@ $RECYCLE.BIN/
 *.iml
 *.ipr
 out/
+.idea/workspace.xml
+.idea/tasks.xml
 
 # --- Gradle ---
 .gradle/
@@ -21,7 +23,14 @@ build/
 *.class
 *.log
 
-# --- Spring Boot ---
+# --- Spring Boot & Data ---
 logs/
 hs_err_pid*
+# 로컬 테스트용 데이터 저장소 제외
+*.ser
+discodeit.fileRepo/
 
+# --- Security & Config ---
+.env
+
+# .postman/ -> 토큰 가지고 있을 경우 .gitignore에 추가
