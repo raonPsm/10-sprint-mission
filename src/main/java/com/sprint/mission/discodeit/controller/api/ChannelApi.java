@@ -121,7 +121,7 @@ public interface ChannelApi {
                     )
             )
     })
-    ResponseEntity<List<ChannelDto>> findAll(
+    ResponseEntity<List<ChannelDto>> findAllByUserId(
             @Parameter(description = "조회할 User ID", required = true) UUID userId
     );
 }

@@ -37,11 +37,11 @@ public interface UserApi {
                     description = "User 목록 조회 성공",
                     content = @Content(
                             mediaType = "*/*",
-                            array = @ArraySchema(schema = @Schema(implementation = UserDto.class))
+                            array = @ArraySchema(schema = @Schema(implementation = UserResponse.class))
                     )
             )
     })
-    ResponseEntity<List<UserDto>> findAll();
+    ResponseEntity<List<UserResponse>> findAll();
 
     /// POST api/users - User 등록
     @Operation(summary = "User 등록")
@@ -51,7 +51,7 @@ public interface UserApi {
                     description = "User가 성공적으로 생성됨",
                     content = @Content(
                             mediaType = "*/*",
-                            schema = @Schema(implementation = User.class)
+                            schema = @Schema(implementation = UserResponse.class)
                     )
             ),
             @ApiResponse(
@@ -99,7 +99,7 @@ public interface UserApi {
                     description = "User 정보가 성공적으로 수정됨",
                     content = @Content(
                             mediaType = "*/*",
-                            schema = @Schema(implementation = User.class)
+                            schema = @Schema(implementation = UserResponse.class)
                     )
             ),
             @ApiResponse(
@@ -119,7 +119,7 @@ public interface UserApi {
                     )
             )
     })
-    ResponseEntity<User> update(
+    ResponseEntity<UserResponse> update(
             @Parameter(description = "수정할 User ID", required = true) UUID userId,
 
             @Parameter(description = "수정할 User 정보", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))

@@ -3,14 +3,17 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.controller.api.UserApi;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,43 +27,40 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-// user -> users 복수형 사용
 @RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class UserController implements UserApi {
     private final UserService userService;
     private final UserStatusService userStatusService;
-
-    @Autowired
-    public UserController(UserService userService, UserStatusService userStatusService) {
-        this.userService = userService;
-        this.userStatusService = userStatusService;
-    }
+    private final UserMapper userMapper;
 
     /// GET /api/users - 전체 User 목록 조회
-    @GetMapping()
+    @GetMapping
     public ResponseEntity<List<UserResponse>> findAll() {
-        List<UserResponse> users = userService.findAll();
-        return ResponseEntity.status(HttpStatus.OK).body(users);
+        List<UserResponse> responseList = userService.findAll().stream()
+                .map(userMapper::toResponse)
+                .toList();
+        return ResponseEntity.ok(responseList);
     }
-    // TODO: 특정 사용자 조회? userService.find()
-    // TODO: username 또는 email로 유저 검색 기능
+    // TODO: [Later] 특정 사용자 조회기능 추가 - userService.find() - username 또는 email로 유저 검색 기능
 
     /// POST api/users - User 등록
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserResponse> create( // FIXME: DTO 반환으로 수정
-                    @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
+    public ResponseEntity<UserResponse> create(
+                    @Valid @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
                     @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
         Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
                 .flatMap(this::resolveProfileRequest);
-        UserResponse createdUser = userService.create(userCreateRequest, profileRequest);
+
+        User createdUser = userService.create(userCreateRequest, profileRequest);
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(createdUser);
+                .body(userMapper.toResponse(createdUser));
     }
-    // TODO: Validation 추가 -> NotBlank, Email, Size...
-    // TODO: Exception Handling
-    // TODO: BinaryContent -> 프로필 이미지 기능 확인
+    // TODO: (Later) Validation 추가 -> NotBlank, Email, Size...
+    // TODO: (Later) 커스텀 예외 클래스 생성
 
     /// DELETE /api/users/{userId} - User 삭제
     @DeleteMapping(value = "/{userId}")
@@ -68,21 +68,23 @@ public class UserController implements UserApi {
         userService.delete(userId);
         return ResponseEntity.noContent().build();
     }
+    // TODO: (Later) 삭제 요청한 주체 본인 or 관리자 확인
 
     /// PATCH /api/users/{userId} - User 정보 수정
     @PatchMapping(value = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<User> update( // FIXME: DTO 반환으로 수정
+    public ResponseEntity<UserResponse> update(
             @PathVariable UUID userId,
             @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
         Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
                 .flatMap(this::resolveProfileRequest);
+
         User updateUser = userService.update(userId, userUpdateRequest, profileRequest);
-        return ResponseEntity.status(HttpStatus.OK).body(updateUser);
+
+        return ResponseEntity.ok(userMapper.toResponse(updateUser));
     }
-    // TODO: 존재하지 않는 사용자 수정 시도 -> 404 반환
-    // TODO: 현재 API는 id만 알면 누구나 다른 사람의 정보를 수정할 수 있는 구조 -> 보안 문제
+    // TODO: (Later) 현재 API는 id만 알면 누구나 다른 사람의 정보를 수정할 수 있는 구조 -> 보안 문제
 
     /// PATCH /api/users/{userId}/userStatus - User 온라인 상태 업데이트
     @PatchMapping(value = "/{userId}/userStatus")
@@ -91,7 +93,7 @@ public class UserController implements UserApi {
             @RequestBody UserStatusUpdateRequest userStatusUpdateRequest
     ) {
         UserStatusResponse response = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.ok(response);
     }
 
     // === Helper method ===
