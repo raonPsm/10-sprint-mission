@@ -21,12 +21,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-  // @Component의 자식이므로 빈으로 자동으로 등록해 줌
-  // 해당 클래스가 service 계층임을 명시
-  // 스프링은 Service 계층을 트랜잭션의 시작과 끝으로 봄
 @RequiredArgsConstructor
-  // final이 붙은 필드를 초기화하는 생성자를 자동으로 생성한다. -> Lombok 적용
-  // Lombok이 알아서 만들어 주기 때문에 Repository가 하나 더 늘어나도 생성자 크드를 수정할 필요가 없다.
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
