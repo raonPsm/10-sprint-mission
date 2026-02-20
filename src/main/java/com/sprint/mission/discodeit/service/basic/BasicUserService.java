@@ -16,10 +16,8 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,13 +31,13 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
-    private final BinaryContentService binaryContentService;
 
     @Override
-    public UserResponse create(UserCreateRequest userCreateRequest,
+    public User create(UserCreateRequest userCreateRequest,
                        Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
         String username = userCreateRequest.username();
         String email = userCreateRequest.email();
+        String password = userCreateRequest.password();
 
         // email, username 중복 불가능
         if (userRepository.existsByEmail(email)) {
@@ -55,11 +53,11 @@ public class BasicUserService implements UserService {
                     String fileName = profileRequest.fileName();
                     String contentType = profileRequest.contentType();
                     byte[] bytes = profileRequest.bytes();
+
                     BinaryContent binaryContent = new BinaryContent(fileName, contentType, bytes);
                     return binaryContentRepository.save(binaryContent).getId();
                 })
                 .orElse(null);
-        String password = userCreateRequest.password();
 
         User user = new User(username, email, password, nullableProfileId);
         User createdUser = userRepository.save(user);
@@ -67,15 +65,7 @@ public class BasicUserService implements UserService {
         UserStatus userStatus = new UserStatus(createdUser.getId());
         userStatusRepository.save(userStatus);
 
-        return new UserResponse(
-                createdUser.getId(),
-                createdUser.getCreatedAt(),
-                createdUser.getUpdatedAt(),
-                createdUser.getUsername(),
-                createdUser.getEmail(),
-                createdUser.getPassword(),
-                createdUser.getProfileId()
-        );
+        return user;
 
         // TODO: 트랜잭션 롤백 필요성 존재 -> 추후 단계에서 고민
         // TODO: username 유효성 검사 로직 추가
@@ -84,7 +74,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponse find(UUID userId) {
+    public User findByUserId(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 id의 유저가 존재하지 않습니다. (userId: " + userId + " )"));
 
@@ -92,17 +82,16 @@ public class BasicUserService implements UserService {
         UserStatus status = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalStateException("유저 상태(접속 정보)데이터가 누락되었습니다. (userId: " + userId + " )"));
 
-        return toResponse(user, status);
+        return user;
     }
 
     @Override
-    public List<UserResponse> findAll() {
+    public List<User> findAll() {
         return userRepository.findAll().stream()
                 .map(user -> {
-                    // FIX
                     UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
                             .orElseThrow(() -> new NoSuchElementException("UserStatus를 찾을 수 없습니다."));
-                    return toResponse(user, userStatus);
+                    return user;
                 }).collect(Collectors.toList());
     }
 
@@ -111,7 +100,7 @@ public class BasicUserService implements UserService {
                        UserUpdateRequest userUpdateRequest,
                        Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다. id: " + userId));
+                .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다. (userId: " + userId + " )"));
 
         String newUsername = userUpdateRequest.newUsername();
         String newEmail = userUpdateRequest.newEmail();
@@ -143,9 +132,8 @@ public class BasicUserService implements UserService {
 
     @Override
     public void delete(UUID userId) {
-        // TODO: findById() 활용해서 중복되는 부분 제거할 수 있는지 확인 필요
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다. id: " + userId));
+                .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다. (userId: " + userId + " )"));
 
         // 연관된 UserStatus 삭제
         userStatusRepository.deleteByUserId(userId);
@@ -155,50 +143,6 @@ public class BasicUserService implements UserService {
             binaryContentRepository.deleteById(user.getProfileId()); // TODO: deleteByUserId 사용 고려 요망
         }
 
-        // User 삭제
         userRepository.deleteById(userId);
-    }
-
-    @Override
-    public List<UserDto> findAllUsers() {
-        return userRepository.findAll().stream()
-                .map(user -> {
-                    UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
-                            .orElseThrow(() -> new NoSuchElementException("UserStatus를 찾을 수 없습니다."));
-
-                    return new UserDto(
-                            user.getId(),
-                            user.getCreatedAt(),
-                            user.getUpdatedAt(),
-                            user.getUsername(),
-                            user.getEmail(),
-                            user.getProfileId(),
-                            userStatus.isOnline()
-                    );
-                }).collect(Collectors.toList());
-    }
-
-    // ===
-
-    // DTO -> BinaryContent 변환 로직
-    private BinaryContent createBinaryContent(BinaryContentCreateRequest request) {
-        return new BinaryContent(
-                request.fileName(),
-                request.contentType(),
-                request.bytes()
-        );
-    }
-
-    // Entity -> DTO 변환 로직
-    private UserResponse toResponse(User user, UserStatus userStatus) {
-        return new UserResponse(
-                user.getId(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getPassword(),
-                user.getProfileId()
-        );
     }
 }

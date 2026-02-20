@@ -12,16 +12,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface UserService {
-    // 기본 CRUD 메서드 이름은 심플하게
-    UserResponse create(UserCreateRequest userCreateRequest,
+    User create(UserCreateRequest userCreateRequest,
                 Optional<BinaryContentCreateRequest> profileCreateRequest);
-    UserResponse find(UUID userId);
-    List<UserResponse> findAll();
+    User findByUserId(UUID userId);
+    List<User> findAll();
     User update(UUID userId,
                         UserUpdateRequest userUpdateRequest,
                         Optional<BinaryContentCreateRequest> profileCreateRequest);
     void delete(UUID userId);
-
-    List<UserDto> findAllUsers();
-    // 비즈니스 로직이 명확한 경우 구체적인 메서드명 사용
 }

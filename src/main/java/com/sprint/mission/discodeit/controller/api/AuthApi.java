@@ -22,7 +22,7 @@ public interface AuthApi {
                     description = "로그인 성공",
                     content = @Content(
                             mediaType = "*/*",
-                            schema = @Schema(implementation = UserResponse.class) // FIXME: api 스펙과 다름
+                            schema = @Schema(implementation = UserResponse.class)
                     )
             ),
             @ApiResponse(

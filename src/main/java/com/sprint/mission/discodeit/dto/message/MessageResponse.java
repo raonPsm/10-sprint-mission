@@ -8,8 +8,9 @@ public record MessageResponse (
         UUID id,
         Instant createdAt,
         Instant updatedAt,
-        String content,
         UUID channelId,
         UUID authorId,
+        String content,
         List<UUID> attachmentIds
-) {}
+) {
+}

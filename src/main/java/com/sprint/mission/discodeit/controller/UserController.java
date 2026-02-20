@@ -38,8 +38,8 @@ public class UserController implements UserApi {
 
     /// GET /api/users - 전체 User 목록 조회
     @GetMapping()
-    public ResponseEntity<List<UserDto>> findAll() {
-        List<UserDto> users = userService.findAllUsers();
+    public ResponseEntity<List<UserResponse>> findAll() {
+        List<UserResponse> users = userService.findAll();
         return ResponseEntity.status(HttpStatus.OK).body(users);
     }
     // TODO: 특정 사용자 조회? userService.find()
