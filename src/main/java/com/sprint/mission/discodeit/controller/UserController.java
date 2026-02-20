@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.UserApi;
+import com.sprint.mission.discodeit.controller.exception.FileProcessException;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
@@ -109,7 +110,7 @@ public class UserController implements UserApi {
                 );
                 return Optional.of(binaryContentCreateRequest);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new FileProcessException("프로필 파일 처리 중 오류가 발생했습니다." + e);
             }
         }
     }

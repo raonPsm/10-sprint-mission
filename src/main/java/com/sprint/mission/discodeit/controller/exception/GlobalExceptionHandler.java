@@ -32,6 +32,13 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(e.getMessage(), "NoSuchElementException"));
     }
 
+    @ExceptionHandler(FileProcessException.class)
+    public ResponseEntity<ErrorResponse> handleFileProcessException(FileProcessException e) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(e.getMessage(), "FileProcessException"));
+    }
+
     // 그 외 모든 예외
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception e) {

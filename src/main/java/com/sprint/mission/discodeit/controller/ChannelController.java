@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.controller.api.ChannelApi;
 import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.dto.channel.*;
 import com.sprint.mission.discodeit.service.ChannelService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,28 +14,27 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-// channel -> channels
 @RequestMapping("/api/channels")
+@RequiredArgsConstructor
 public class ChannelController implements ChannelApi {
     private final ChannelService channelService;
-
-    @Autowired
-    public ChannelController(ChannelService channelService) {
-        this.channelService = channelService;
-    }
 
     /// POST /api/channels/public - Public Channel 생성
     @PostMapping("/public")
     public ResponseEntity<ChannelResponse> createPublicChannel(@RequestBody PublicChannelCreateRequest request) {
         ChannelResponse createdPublicChannel = channelService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdPublicChannel);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(createdPublicChannel);
     }
 
     /// POST /api/channels/private - Private Channel 생성
     @PostMapping("/private")
     public ResponseEntity<ChannelResponse> createPrivateChannel(@RequestBody PrivateChannelCreateRequest request) {
         ChannelResponse createdPrivateChannel = channelService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdPrivateChannel);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(createdPrivateChannel);
     }
 
     /// DELETE /api/channels/{channelId} - Channel 삭제
