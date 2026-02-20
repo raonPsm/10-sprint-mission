@@ -56,9 +56,9 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<User> findById(UUID id) {
+    public Optional<User> findById(UUID userId) {
         User userNullable = null;
-        Path path = resolvePath(id);
+        Path path = resolvePath(userId);
         if (Files.exists(path)) {
             try (
                     FileInputStream fis = new FileInputStream(path.toFile());
@@ -66,7 +66,7 @@ public class FileUserRepository implements UserRepository {
             ) {
                 userNullable = (User) ois.readObject(); // 다운캐스팅
             } catch (IOException | ClassNotFoundException e) {
-                throw new RuntimeException("파일 읽기 실패: " + id, e);
+                throw new RuntimeException("파일 읽기 실패: " + userId, e);
             }
         }
         return Optional.ofNullable(userNullable);
@@ -94,18 +94,18 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public boolean existsById(UUID id) {
-        Path path = resolvePath(id);
+    public boolean existsById(UUID userId) {
+        Path path = resolvePath(userId);
         return Files.exists(path);
     }
 
     @Override
-    public void deleteById(UUID id) {
-        Path path = resolvePath(id);
+    public void deleteById(UUID userId) {
+        Path path = resolvePath(userId);
         try {
             Files.deleteIfExists(path);
         } catch (IOException e) {
-            throw new RuntimeException("파일 삭제 실패: " + id, e);
+            throw new RuntimeException("파일 삭제 실패: " + userId, e);
         }
     }
 

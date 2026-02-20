@@ -27,8 +27,8 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<User> findById(UUID id) {
-        return Optional.ofNullable(data.get(id));
+    public Optional<User> findById(UUID userId) {
+        return Optional.ofNullable(data.get(userId));
     }
 
     @Override
@@ -37,21 +37,24 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public boolean existsById(UUID id) {
-        return data.containsKey(id);
+    public boolean existsById(UUID userId) {
+        return data.containsKey(userId);
     }
 
     @Override
-    public void deleteById(UUID id) {
-        data.remove(id);
-    }
-
     public boolean existsByUsername(String username) {
         return data.values().stream()
                 .anyMatch(user -> user.getUsername().equals(username));
     }
+
+    @Override
     public boolean existsByEmail(String email) {
         return data.values().stream()
                 .anyMatch(user -> user.getEmail().equals(email));
+    }
+
+    @Override
+    public void deleteById(UUID userId) {
+        data.remove(userId);
     }
 }
