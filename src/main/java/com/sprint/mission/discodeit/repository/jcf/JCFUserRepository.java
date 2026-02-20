@@ -18,10 +18,6 @@ public class JCFUserRepository implements UserRepository {
 
     public JCFUserRepository() {
         data = new ConcurrentHashMap<>();
-        // 스프링은 기본적으로 싱글톤으로 빈을 관리한다.
-        // 웹 환경에서 여러 요청이 동시에 들어올 경우 HashMap은 Thread-Safe 하지 않아 데이터가 꼬이거나 예외가 발생할 수 있음
-        // 싱글톤이기 때문에 모든 사용자가 하나의 객체를 공유하게 되고, 그렇기 때문에 그 객체는 반드시 동시 접속을 처리할 수 있는 자료구조여야 한다
-        // HashMap -> CocurrentHashMap 으로 대체
     }
 
     @Override
