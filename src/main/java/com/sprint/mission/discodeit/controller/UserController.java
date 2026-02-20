@@ -110,7 +110,7 @@ public class UserController implements UserApi {
                 );
                 return Optional.of(binaryContentCreateRequest);
             } catch (IOException e) {
-                throw new FileProcessException("프로필 파일 처리 중 오류가 발생했습니다." + e);
+                throw new FileProcessException("프로필 파일 처리 중 오류가 발생했습니다.", e);
             }
         }
     }
