@@ -65,10 +65,7 @@ public class ChannelController implements ChannelApi {
     @GetMapping
     public ResponseEntity<List<ChannelResponse>> findAllByUserId(@RequestParam UUID userId) {
         List<Channel> channels = channelService.findAllByUserId(userId);
-        List<ChannelResponse> responses = channels.stream()
-                .map(channelMapper::toResponse)
-                .toList();
-
+        List<ChannelResponse> responses = channelMapper.toListResponse(channels);
         return ResponseEntity.ok(responses);
     }
 }
