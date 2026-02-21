@@ -14,10 +14,13 @@ import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+
+// FIXME: 메서드 내부 DTO 사용 부분 entity로 수정 및 기타 부수효과 문제 수정
 @RequiredArgsConstructor
 @Service
 public class BasicMessageService implements MessageService {
@@ -27,6 +30,7 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentService binaryContentService;
 
+    @Transactional
     @Override
     public Message create(MessageCreateRequest request, List<BinaryContentCreateRequest> attachments) {
         if (!channelRepository.existsById(request.channelId())) {
@@ -55,7 +59,6 @@ public class BasicMessageService implements MessageService {
 
         return messageRepository.save(message);
     }
-
 
     @Override
     public Message findById(UUID messageId) {
@@ -86,6 +89,7 @@ public class BasicMessageService implements MessageService {
         return messageRepository.save(message);
     }
 
+    @Transactional
     @Override
     public void delete(UUID messageId) {
         Message message = messageRepository.findById(messageId)

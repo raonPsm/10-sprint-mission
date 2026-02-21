@@ -5,7 +5,11 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.service.MessageService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,20 +26,18 @@ import java.util.UUID;
 // FIXME: 서비스 계층에서는 entity return하고 컨트롤러에서 DTO로 변환하는 방식으로 리펙토링 (+MapStruct 라이브러리 사용 고려
 @RestController
 @RequestMapping("/api/messages")
+@RequiredArgsConstructor
 public class MessageController implements MessageApi {
     private final MessageService messageService;
-
-    @Autowired
-    public MessageController(MessageService messageService) {
-        this.messageService = messageService;
-    }
-    // TODO: @RequiredArgsConstructor로 리펙토링 고려
+    private final MessageMapper messageMapper;
 
     /// GET /api/messages - Channel의 Message 목록 조회
     @GetMapping
     public ResponseEntity<List<MessageResponse>> findAllByChannelId(@RequestParam UUID channelId) {
-        List<MessageResponse> messageListResponse = messageService.findAllByChannelId(channelId);
-        return ResponseEntity.ok(messageListResponse);
+        List<MessageResponse> responses = messageService.findAllByChannelId(channelId).stream()
+                .map(messageMapper::toResponse)
+                .toList();
+        return ResponseEntity.ok(responses);
     }
 
     /// POST /api/messages - Message 생성
@@ -59,9 +61,11 @@ public class MessageController implements MessageApi {
                         })
                         .toList())
                 .orElse(new ArrayList<>());
-        MessageResponse response = messageService.create(messageCreateRequest, fileRequests);
+        Message message = messageService.create(messageCreateRequest, fileRequests);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(messageMapper.toResponse(message));
     }
 
     /// DELETE /api/messages/{messageId} - Message 삭제
@@ -77,7 +81,7 @@ public class MessageController implements MessageApi {
             @PathVariable UUID messageId,
             @RequestBody MessageUpdateRequest request
     ) {
-        MessageResponse response = messageService.update(messageId, request);
-        return ResponseEntity.ok(response);
+        Message message = messageService.update(messageId, request);
+        return ResponseEntity.ok(messageMapper.toResponse(message));
     }
 }
