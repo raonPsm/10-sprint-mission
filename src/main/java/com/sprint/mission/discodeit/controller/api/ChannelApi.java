@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.controller.api;
 
-import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.dto.channel.ChannelResponse;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
@@ -117,11 +116,11 @@ public interface ChannelApi {
                     description = "Channel 목록 조회 성공",
                     content = @Content(
                             mediaType = "*/*",
-                            array = @ArraySchema(schema = @Schema(implementation = ChannelDto.class))
+                            array = @ArraySchema(schema = @Schema(implementation = ChannelResponse.class))
                     )
             )
     })
-    ResponseEntity<List<ChannelDto>> findAllByUserId(
+    ResponseEntity<List<ChannelResponse>> findAllByUserId(
             @Parameter(description = "조회할 User ID", required = true) UUID userId
     );
 }

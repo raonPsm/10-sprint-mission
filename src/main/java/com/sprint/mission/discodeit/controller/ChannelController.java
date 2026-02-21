@@ -1,16 +1,18 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.ChannelApi;
-import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.dto.channel.*;
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -18,23 +20,26 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ChannelController implements ChannelApi {
     private final ChannelService channelService;
+    private final ChannelMapper channelMapper;
 
     /// POST /api/channels/public - Public Channel 생성
     @PostMapping("/public")
     public ResponseEntity<ChannelResponse> createPublicChannel(@RequestBody PublicChannelCreateRequest request) {
-        ChannelResponse createdPublicChannel = channelService.create(request);
+        Channel createdPublicChannel = channelService.create(request);
+        ChannelResponse response = channelMapper.toResponse(createdPublicChannel);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(createdPublicChannel);
+                .body(response);
     }
 
     /// POST /api/channels/private - Private Channel 생성
     @PostMapping("/private")
     public ResponseEntity<ChannelResponse> createPrivateChannel(@RequestBody PrivateChannelCreateRequest request) {
-        ChannelResponse createdPrivateChannel = channelService.create(request);
+        Channel createdPrivateChannel = channelService.create(request);
+        ChannelResponse response = channelMapper.toResponse(createdPrivateChannel);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(createdPrivateChannel);
+                .body(response);
     }
 
     /// DELETE /api/channels/{channelId} - Channel 삭제
@@ -51,15 +56,19 @@ public class ChannelController implements ChannelApi {
             @PathVariable UUID channelId,
             @RequestBody PublicChannelUpdateRequest request
     ) {
-        ChannelResponse updatedChannel = channelService.update(channelId, request);
-        return ResponseEntity.ok().body(updatedChannel);
+        Channel updatedChannel = channelService.update(channelId, request);
+        ChannelResponse response = channelMapper.toResponse(updatedChannel);
+        return ResponseEntity.ok(response);
     }
 
     /// GET /api/channels - User가 참여 중인 Channel 목록 조회
-    // FIXME: ChannelDto -> ChannelResponse로 통일
     @GetMapping
-    public ResponseEntity<List<ChannelDto>> findAllByUserId(@RequestParam UUID userId) {
-        List<ChannelDto> channelListResponse = channelService.findAllByUserId(userId);
-        return ResponseEntity.status(HttpStatus.OK).body(channelListResponse);
+    public ResponseEntity<List<ChannelResponse>> findAllByUserId(@RequestParam UUID userId) {
+        List<Channel> channels = channelService.findAllByUserId(userId);
+        List<ChannelResponse> responses = channels.stream()
+                .map(channelMapper::toResponse)
+                .toList();
+
+        return ResponseEntity.ok(responses);
     }
 }
