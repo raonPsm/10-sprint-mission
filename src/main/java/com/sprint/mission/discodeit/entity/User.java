@@ -37,8 +37,7 @@ public class User extends BaseEntity {
             this.password = newPassword;
             isAnyValueUpdated = true;
         }
-        if (newProfileId != null && !newProfileId.equals(this.profileId)) {  // 프로픨 이미지 id는 null일 수 있음
-            // TODO: null로 수정하는 것도 추가 -> 기존 등록된 사진 수정 로직 추가 필요 -> 관련 DTO 수정(UserUpdateRequest) + BasicUserService 수정 필요할 것으로 예쌍
+        if (newProfileId != null && !newProfileId.equals(this.profileId)) {  // TODO: (Later) 기본 이미지로 돌아가기 기능 추가 시 수정되어야 함
             this.profileId = newProfileId;
             isAnyValueUpdated = true;
         }

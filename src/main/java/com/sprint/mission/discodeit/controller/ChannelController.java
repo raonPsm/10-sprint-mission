@@ -55,7 +55,6 @@ public class ChannelController implements ChannelApi {
         return ResponseEntity.ok().body(updatedChannel);
     }
 
-
     /// GET /api/channels - User가 참여 중인 Channel 목록 조회
     // FIXME: ChannelDto -> ChannelResponse로 통일
     @GetMapping

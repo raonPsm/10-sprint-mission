@@ -32,4 +32,12 @@ public class Channel extends BaseEntity {
             updateInstant();
         }
     }
+
+    public static Channel createPublicChannel(String name, String description) {
+        return new Channel(ChannelType.PUBLIC, name, description);
+    }
+
+    public static Channel createPrivateChannel() {
+        return new Channel(ChannelType.PRIVATE, null, null);
+    }
 }

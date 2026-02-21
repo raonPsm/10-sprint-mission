@@ -106,8 +106,7 @@ public class BasicUserService implements UserService {
                        UserUpdateRequest userUpdateRequest,
                        Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
         // 유저 존재 확인
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다. (userId: " + userId + " )"));
+        User user = findByUserId(userId);
 
         String newUsername = userUpdateRequest.newUsername();
         String newEmail = userUpdateRequest.newEmail();
@@ -120,20 +119,9 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("이미 존재하는 사용자 이름(username)입니다.: " + newUsername);
         }
 
-        UUID nullableProfileId = optionalProfileCreateRequest
-                .map(profileRequest -> {
-                    // 기존 프로필 이미지가 있다면 삭제
-                    Optional.ofNullable(user.getProfileId())
-                            .ifPresent(binaryContentRepository::deleteById);
-
-                    BinaryContent binaryContent = new BinaryContent(
-                            profileRequest.fileName(),
-                            profileRequest.contentType(),
-                            profileRequest.bytes()
-                    );
-                    return binaryContentRepository.save(binaryContent).getId();
-                })
-                .orElse(null); // profileId = null 이면 기본 프로필로 프론트에서 설정됨
+        // 회원가입 시 사진을 등록했다면 기본 프로필로 돌아갈 수 있는 기능 없음
+        // -> 업데이트 시 파일이 존재하면 기존 사진 삭제 후 새로 저장, 파일이 없으면 기존 사진 유지
+        UUID nullableProfileId = resolveNullableProfileId(user, optionalProfileCreateRequest);
 
         // user 업데이트 및 저장
         user.update(newUsername, newEmail, userUpdateRequest.newPassword(), nullableProfileId);
@@ -157,9 +145,32 @@ public class BasicUserService implements UserService {
         userRepository.deleteById(userId);
     }
 
+    // === Helper Method ===
+
     private void validateUserStatusExists(UUID userId) {
         if (!userStatusRepository.existsByUserId(userId)) {
             throw new IllegalStateException("유저 상태 데이터가 누락되었습니다. (userId: " + userId + ")");
         }
+    }
+
+    // FIX: 별도 메서드 분리
+    // TODO: 별도 메서드 분리 기준 고민
+    // (프로필 이미지 업데이트 로직이 UserService에 존재하는 것이 적절한지, BinaryContentService로 분리하는 것이 나은지)
+    private UUID resolveNullableProfileId(User user,
+                                          Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+
+        return optionalProfileCreateRequest
+                .map(profileRequest -> {
+                    Optional.ofNullable(user.getProfileId())
+                            .ifPresent(binaryContentRepository::deleteById);
+
+                    BinaryContent binaryContent = new BinaryContent(
+                            profileRequest.fileName(),
+                            profileRequest.contentType(),
+                            profileRequest.bytes()
+                    );
+                    return binaryContentRepository.save(binaryContent).getId();
+                })
+                .orElse(user.getProfileId());
     }
 }

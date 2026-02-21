@@ -101,6 +101,19 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
+    public List<Channel> findAllByAccessible(UUID userId, Set<UUID> accessiblePrivateChannelIds) {
+        List<Channel> allChannels = findAll();
+
+        // 로드된 데이터 중 권한이 있는 데이터만 필터링
+        return allChannels.stream()
+                .filter(channel ->
+                        channel.getType() == ChannelType.PUBLIC ||
+                                accessiblePrivateChannelIds.contains(channel.getId())
+                )
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public boolean existsById(UUID id) {
         Path path = resolvePath(id);
         return Files.exists(path);
@@ -123,7 +136,7 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Optional<Channel> findPrivateChannelByParticipants(Set<UUID> participantIds) {
+    public Optional<Channel> findPrivateChannelByParticipantsIds(Set<UUID> participantIds) {
         // 중요: 파일 I/O 성능 이슈 방지를 위해 ReadStatus 전체 목록을 한 번만 로드합니다.
         // 루프 안에서 readStatusRepository.findAll()을 호출하면 끔찍하게 느려집니다.
         List<ReadStatus> allReadStatuses = readStatusRepository.findAll();

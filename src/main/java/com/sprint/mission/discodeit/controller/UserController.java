@@ -98,6 +98,7 @@ public class UserController implements UserApi {
     }
 
     // === Helper method ===
+    // 사용자가 파일을 보냈는데, 서버가 어떤 이유로 그 파일을 정상적으로 읽어내지 못했을 때 발생하는 예외를 처리하기 위한 메서드
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
         if (profileFile.isEmpty()) {
             return Optional.empty();

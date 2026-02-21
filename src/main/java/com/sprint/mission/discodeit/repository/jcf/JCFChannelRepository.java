@@ -50,6 +50,16 @@ public class JCFChannelRepository implements ChannelRepository {
     }
 
     @Override
+    public List<Channel> findAllByAccessible(UUID userId, Set<UUID> accessibleChannelIds) {
+        return data.values().stream()
+                .filter(ch ->
+                        ch.getType() == ChannelType.PUBLIC ||
+                                accessibleChannelIds.contains(ch.getId())
+                )
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public boolean existsById(UUID id) {
         return data.containsKey(id);
     }
@@ -66,7 +76,7 @@ public class JCFChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Optional<Channel> findPrivateChannelByParticipants(Set<UUID> participantIds) {
+    public Optional<Channel> findPrivateChannelByParticipantsIds(Set<UUID> participantIds) {
         // 성능 최적화: 반복문 안에서 findAll()을 호출하지 않도록 미리 한 번만 조회
         List<ReadStatus> allReadStatuses = readStatusRepository.findAll();
 
