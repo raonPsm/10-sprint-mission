@@ -28,7 +28,7 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentService binaryContentService;
 
     @Override
-    public MessageResponse create(MessageCreateRequest request, List<BinaryContentCreateRequest> attachments) {
+    public Message create(MessageCreateRequest request, List<BinaryContentCreateRequest> attachments) {
         if (!channelRepository.existsById(request.channelId())) {
             throw new NoSuchElementException("채널이 존재하지 않습니다. id: " + request.channelId());
         }
@@ -52,21 +52,19 @@ public class BasicMessageService implements MessageService {
                 request.authorId(),
                 attachmentIds
         );
-        Message savedMessage = messageRepository.save(message);
 
-        return toResponse(savedMessage);
+        return messageRepository.save(message);
     }
 
 
     @Override
-    public MessageResponse findById(UUID messageId) {
-        Message message = messageRepository.findById(messageId)
+    public Message findById(UUID messageId) {
+        return messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("해당 메시지가 존재하지 않습니다. id: " + messageId));
-        return toResponse(message);
     }
 
     @Override
-    public List<MessageResponse> findAllByChannelId(UUID channelId) {
+    public List<Message> findAllByChannelId(UUID channelId) {
         if(!channelRepository.existsById(channelId)) {
             throw new NoSuchElementException("채널이 존재하지 않습니다. id: " + channelId);
         }
@@ -75,20 +73,17 @@ public class BasicMessageService implements MessageService {
         return messageRepository.findAll().stream()
                 .filter(message -> message.getChannelId().equals(channelId))
                 .sorted(Comparator.comparing(Message::getCreatedAt)) // 생성 시간 순 정렬
-                .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
     // 사진은 update 불가능
     @Override
-    public MessageResponse update(UUID messageId, MessageUpdateRequest request) {
+    public Message update(UUID messageId, MessageUpdateRequest request) {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("해당 메시지가 존재하지 않습니다. id: " + messageId));
 
         message.update(request.newContent());
-        Message updatedMessage = messageRepository.save(message);
-
-        return toResponse(updatedMessage);
+        return messageRepository.save(message);
     }
 
     @Override
@@ -105,17 +100,5 @@ public class BasicMessageService implements MessageService {
 
         // 메시지 삭제
         messageRepository.deleteById(messageId);
-    }
-
-    private MessageResponse toResponse(Message message) {
-        return new MessageResponse(
-                message.getId(),
-                message.getCreatedAt(),
-                message.getUpdatedAt(),
-                message.getChannelId(),
-                message.getAuthorId(),
-                message.getContent(),
-                message.getAttachmentIds()
-        );
     }
 }
