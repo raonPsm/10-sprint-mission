@@ -29,7 +29,7 @@ public class Channel extends BaseEntity {
         }
 
         if (isAnyValueUpdated) {
-            updateInstant();
+            this.updatedAt = Instant.now();
         }
     }
 

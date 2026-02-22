@@ -26,7 +26,7 @@ public class BasicReadStatusService implements ReadStatusService {
     private final ChannelRepository channelRepository;
 
     @Override
-    public ReadStatusResponse create(ReadStatusCreateRequest request) {
+    public ReadStatus create(ReadStatusCreateRequest request) {
         // 관련된 Channel, User 있는지 확인
         if (!userRepository.existsById(request.userId())) {
             throw new NoSuchElementException("존재하지 않는 사용자입니다. id: " + request.userId());
@@ -50,14 +50,14 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
-    public ReadStatusResponse find(UUID readStatusId) {
+    public ReadStatus find(UUID readStatusId) {
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)
                 .orElseThrow(() -> new NoSuchElementException("읽기 상태(readStatus)를 찾을 수 없습니다. id: " + readStatusId));
         return toResponse(readStatus);
     }
 
     @Override
-    public List<ReadStatusResponse> findAllByUserId(UUID userId) {
+    public List<ReadStatus> findAllByUserId(UUID userId) {
         return readStatusRepository.findAll().stream()
                 .filter(rs -> rs.getUserId().equals(userId))
                 .map(this::toResponse)
@@ -65,7 +65,7 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
-    public ReadStatusResponse update(UUID readStatusId, ReadStatusUpdateRequest request) {
+    public ReadStatus update(UUID readStatusId, ReadStatusUpdateRequest request) {
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)
                 .orElseThrow(() -> new NoSuchElementException("수정할 읽기 상태(readStatus)를 찾을 수 없습니다. id: " + readStatusId));
 
@@ -82,16 +82,5 @@ public class BasicReadStatusService implements ReadStatusService {
             throw new NoSuchElementException("삭제할 읽기 상태가 존재하지 않습니다. id: " + readStatusId);
         }
         readStatusRepository.deleteById(readStatusId);
-    }
-
-    private ReadStatusResponse toResponse(ReadStatus readStatus) {
-        return new ReadStatusResponse(
-                readStatus.getId(),
-                readStatus.getCreatedAt(),
-                readStatus.getUpdatedAt(),
-                readStatus.getUserId(),
-                readStatus.getChannelId(),
-                readStatus.getLastReadAt()
-        );
     }
 }
