@@ -14,29 +14,31 @@ import java.util.UUID;
 @Getter
 public class UserStatus extends BaseEntity {
     private final UUID userId;
+    private Instant lastActiveAt;
 
-    public UserStatus(UUID userId) {
+    public UserStatus(UUID userId, Instant lastActiveAt) {
         super();
         this.userId = userId;
+        this.lastActiveAt = lastActiveAt;
     }
 
-    // 활동 시간 갱신
-    public void renewActivity() {
-        updateInstant();
+    public void update(Instant lastActiveAt) {
+        boolean anyValueUpdated = false;
+        if (lastActiveAt != null && !lastActiveAt.equals(this.lastActiveAt)) {
+            this.lastActiveAt = lastActiveAt;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 
     // 현재 '온라인' 상태인지 확인 (5분 이내 활동 시 true)
-    // FIXME: 명세에 맞게 수정 필요
-    // TODO: 온라인 / 자리 비움 / 방해 금지 / 오프라인 표시 / 오프라인 -> Enum 으로 상태 구현
-    public boolean isOnline() {
-        Instant now = Instant.now();
-        Duration duration = Duration.between(this.updatedAt, now);
-        return duration.toMinutes() <= 5; // 마지막 접속 시간이 현재 시간으로부터 5분 '이내'이면 현재 접속 중인 유저로 간주
-    }
+    // TODO: (Later) 온라인 / 자리 비움 / 방해 금지 / 오프라인 표시 / 오프라인 -> Enum 으로 상태 구현
+    public Boolean isOnline() {
+        Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
 
-    // 테스트용 -> 시간 주입 받는 메서드
-    public boolean isOnline(Instant current) {
-        Duration duration = Duration.between(this.updatedAt, current);
-        return duration.toMinutes() <= 5;
+        return lastActiveAt.isAfter(instantFiveMinutesAgo);
     }
 }
