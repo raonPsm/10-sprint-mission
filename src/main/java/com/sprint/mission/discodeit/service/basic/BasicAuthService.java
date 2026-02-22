@@ -10,6 +10,8 @@ import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+
 @Service
 @RequiredArgsConstructor
 public class BasicAuthService implements AuthService {
@@ -27,7 +29,7 @@ public class BasicAuthService implements AuthService {
         // 로그인 성공 시 해당 유저의 접속 상태 정보(UserStatus) 갱신
         UserStatus status = userStatusRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new IllegalStateException("유저 상태 데이터가 존재하지 않습니다."));
-        status.renewActivity();  // 최근 접속 시간 업데이트
+        status.update(Instant.now());  // 최근 접속 시간 업데이트
         userStatusRepository.save(status);
 
         // DTO(UserResponse)로 변환

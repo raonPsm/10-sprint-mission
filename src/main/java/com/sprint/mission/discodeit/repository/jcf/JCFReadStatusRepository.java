@@ -47,7 +47,7 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
     }
 
     @Override
-    public boolean existById(UUID id) {
+    public boolean existsById(UUID id) {
         return data.containsKey(id);
     }
 }

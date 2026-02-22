@@ -109,7 +109,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     }
 
     @Override
-    public boolean existById(UUID id) {
+    public boolean existsById(UUID id) {
         Path path = resolvePath(id);
         return Files.exists(path);
     }

@@ -62,7 +62,7 @@ public class BasicUserStatusService implements UserStatusService {
         UserStatus userStatus = userStatusRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("수정할 UserStatus를 찾을 수 없습니다."));
 
-        userStatus.renewActivity();
+        userStatus.update(request.newLastActiveAt());
 
         userStatusRepository.save(userStatus);
         return toResponse(userStatus);
@@ -73,7 +73,7 @@ public class BasicUserStatusService implements UserStatusService {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new NoSuchElementException("수정할 UserStatus를 찾을 수 없습니다."));
 
-        userStatus.renewActivity();
+        userStatus.update(request.newLastActiveAt());
 
         userStatusRepository.save(userStatus);
         return toResponse(userStatus);

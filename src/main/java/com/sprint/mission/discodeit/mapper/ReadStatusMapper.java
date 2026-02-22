@@ -1,8 +1,7 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import org.hibernate.annotations.Comment;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponse;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -10,23 +9,23 @@ import java.util.List;
 
 @Component
 public class ReadStatusMapper {
-    public UserStatusResponse toResponse(UserStatus userStatus) {
-        if (userStatus == null) return null;
+    public ReadStatusResponse toResponse(ReadStatus readStatus) {
+        if (readStatus == null) return null;
 
-        return new UserStatusResponse(
-                userStatus.getId(),
-                userStatus.getCreatedAt(),
-                userStatus.getUpdatedAt(),
-                userStatus.getUserId(),
-                userStatus.getLastActiveAt(),
-                userStatus.isOnline()
+        return new ReadStatusResponse(
+                readStatus.getId(),
+                readStatus.getCreatedAt(),
+                readStatus.getUpdatedAt(),
+                readStatus.getUserId(),
+                readStatus.getChannelId(),
+                readStatus.getLastReadAt()
         );
     }
 
-    public List<UserStatusResponse> toListResponse(List<UserStatus> userStatuses) {
-        if (userStatuses == null || userStatuses.isEmpty()) return Collections.emptyList();
+    public List<ReadStatusResponse> toListResponse(List<ReadStatus> readStatuses) {
+        if (readStatuses == null || readStatuses.isEmpty()) return Collections.emptyList();
 
-        return userStatuses.stream()
+        return readStatuses.stream()
                 .map(this::toResponse)
                 .toList();
     }
