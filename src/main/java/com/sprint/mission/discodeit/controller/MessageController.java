@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-// FIXME: 서비스 계층에서는 entity return하고 컨트롤러에서 DTO로 변환하는 방식으로 리펙토링 (+MapStruct 라이브러리 사용 고려
+// FIXME: 메서드 내부 기타 부수효과 문제 확인 후 수정
 @RestController
 @RequestMapping("/api/messages")
 @RequiredArgsConstructor

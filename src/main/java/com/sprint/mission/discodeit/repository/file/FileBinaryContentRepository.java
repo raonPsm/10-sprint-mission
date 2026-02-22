@@ -87,4 +87,9 @@ public class FileBinaryContentRepository implements  BinaryContentRepository {
             throw new RuntimeException("첨부파일 삭제 실패: " + id, e);
         }
     }
+
+    @Override
+    public boolean existsById(UUID id) {
+        return findById(id).isPresent();
+    }
 }

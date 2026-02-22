@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -44,8 +45,8 @@ public class BasicMessageService implements MessageService {
         List<UUID> attachmentIds = new ArrayList<>();
         if (attachments != null && !attachments.isEmpty()) {
             for (BinaryContentCreateRequest fileRequest : attachments) {
-                BinaryContentResponse savedContent = binaryContentService.create(fileRequest);
-                attachmentIds.add(savedContent.id());
+                BinaryContent savedContent = binaryContentService.create(fileRequest);
+                attachmentIds.add(savedContent.getId());
             }
         }
 
