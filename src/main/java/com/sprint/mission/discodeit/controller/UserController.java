@@ -9,7 +9,9 @@ import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -34,6 +36,7 @@ public class UserController implements UserApi {
     private final UserService userService;
     private final UserStatusService userStatusService;
     private final UserMapper userMapper;
+    private final UserStatusMapper userStatusMapper;
 
     /// GET /api/users - 전체 User 목록 조회
     @GetMapping
@@ -61,6 +64,7 @@ public class UserController implements UserApi {
                 .body(userMapper.toResponse(createdUser));
     }
     // TODO: (Later) Validation 추가 -> NotBlank, Email, Size...
+    // FIXME: 프론트에서 Email 검증 로직 있는 것 같음
     // TODO: (Later) 커스텀 예외 클래스 생성
 
     /// DELETE /api/users/{userId} - User 삭제
@@ -93,8 +97,8 @@ public class UserController implements UserApi {
             @PathVariable UUID userId,
             @RequestBody UserStatusUpdateRequest userStatusUpdateRequest
     ) {
-        UserStatusResponse response = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
-        return ResponseEntity.ok(response);
+        UserStatus response = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
+        return ResponseEntity.ok(userStatusMapper.toResponse(response));
     }
 
     // === Helper method ===
