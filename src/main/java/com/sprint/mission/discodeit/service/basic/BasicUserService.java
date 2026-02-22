@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -58,7 +59,7 @@ public class BasicUserService implements UserService {
         User createdUser = userRepository.save(user);
 
         // 유저 상태 초기화
-        UserStatus userStatus = new UserStatus(createdUser.getId());
+        UserStatus userStatus = new UserStatus(createdUser.getId(), Instant.now());
         userStatusRepository.save(userStatus);
 
         return createdUser;

@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -34,7 +35,7 @@ public class BasicUserStatusService implements UserStatusService {
             throw new IllegalArgumentException("이미 해당 유저의 상태 정보(UserStatus)가 존재합니다. userId: " + request.userId());
         }
 
-        UserStatus userStatus = new UserStatus(request.userId());
+        UserStatus userStatus = new UserStatus(request.userId(), Instant.now());
         userStatusRepository.save(userStatus);
 
         return toResponse(userStatus);
