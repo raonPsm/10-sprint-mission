@@ -778,37 +778,37 @@
   ],
   "variable": [
     {
-      "id": "ba2ad8a5-a33b-407f-a401-8c8f0bba6b1a",
+      "id": "db1ca1d7-4d27-4268-a2d0-5ad40003cc47",
       "key": "baseURL",
       "value": ""
     },
     {
-      "id": "4ee52fe9-434c-4a33-bfda-6461e283b95d",
+      "id": "56572637-4877-4bf5-af01-9a6d8e4d9da2",
       "key": "userId",
       "value": ""
     },
     {
-      "id": "f52ac24a-93f5-4eaa-95bb-8f80fa11ce3d",
+      "id": "d5218376-65b8-4321-9a6b-0f937c5426d2",
       "key": "channelId",
       "value": ""
     },
     {
-      "id": "adae3d19-b793-4d3b-9fa0-9084adf6e368",
+      "id": "f744082f-7f9c-4314-8ddb-57eb70d217d2",
       "key": "messageId",
       "value": ""
     },
     {
-      "id": "7ea4328f-ee5e-4a31-b366-a6667244a5d9",
+      "id": "4be1ef1a-c3c6-4d3b-9cfe-2d869ee27a36",
       "key": "readStatusId",
       "value": ""
     },
     {
-      "id": "f5144275-9387-4792-b793-03c163a1ca3f",
+      "id": "fcdd8aac-1b8a-402a-a096-a0d32e1dd501",
       "key": "binaryContentId",
       "value": ""
     },
     {
-      "id": "14e0429b-c8be-404a-8a0a-6abc0c021b8a",
+      "id": "25dc5c21-b07e-492e-bf92-18b359957f7d",
       "key": "currentTimestamp",
       "value": ""
     }
