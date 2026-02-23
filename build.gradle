@@ -9,6 +9,7 @@ version = '0.0.1-SNAPSHOT'
 description = 'Demo project - discodeit'
 
 java {
+    // Railway.app 배포 중 생긴 문제로 toolchain에서 sourceCompatibility로 변경
     sourceCompatibility = '17'
 }
 
