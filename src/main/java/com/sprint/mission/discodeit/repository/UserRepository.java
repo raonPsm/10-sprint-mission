@@ -7,12 +7,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface UserRepository {
-     User save(User user);
+    // 추후 JPA 도입을 고려한 메서드 이름 사용
+    User save(User user);
+    Optional<User> findById(UUID id);
+    List<User> findAll();
+    boolean existsById(UUID id);
+    void deleteById(UUID id);
 
-     Optional<User> findById(UUID id);
-     List<User> findAll();
-
-     void delete(UUID id);
-
-     boolean existsByUsername(String username);
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
 }
