@@ -11,7 +11,7 @@ import java.util.UUID;
 public class Message extends BaseEntity {
     private String content;
 
-    private UUID channelId;
+    private Channel channel;
     private UUID authorId;
 
     // 첨부파일 id 목록 (Message 1..* BinaryContent)
