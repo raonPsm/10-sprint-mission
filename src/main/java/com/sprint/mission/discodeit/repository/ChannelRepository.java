@@ -25,8 +25,8 @@ public interface ChannelRepository extends JpaRepository<Channel, UUID> {
     @Query("SELECT rs.channel FROM ReadStatus rs " +
             "WHERE rs.channel.type = 'PRIVATE' " + // PRIVATE 채널에서
             "GROUP BY rs.channel " + // 채널 단위로 그룹화
-            "HAVING COUNT(rs.user.id) = :size " + // 채널에 속한 전체 유저의 수가 :size랑 같고
-            "AND SUM(CASE WHEN rs.user.id IN :participantIds THEN 1 ELSE 0 END) = :size")
+            "HAVING COUNT(rs.user.id) = :#{#participantIds.size()} " + // 채널에 속한 전체 유저의 수가 :size랑 같고 (SpEL 활용)
+            "AND SUM(CASE WHEN rs.user.id IN :participantIds THEN 1 ELSE 0 END) = :#{#participantIds.size()}")
             // 채널에 속한 유저들을 하나씩 순회하며, 그 유저의 ID가 :participantIds에 포함되어 있으면 1, 아니면 0을 더해서 그 합이 :size랑 같아야 함
-    Optional<Channel> findPrivateChannelByParticipantsIds(Set<UUID> participantIds);
+    Optional<Channel> findPrivateChannelByParticipantsIds(@Param("participantIds") Set<UUID> participantIds);
 }
