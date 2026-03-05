@@ -53,4 +53,8 @@ public class User extends BaseUpdatableEntity {
             this.profile = newProfile;
         }
     }
+
+    public void assignUserStatus(UserStatus userStatus) {
+        this.userStatus = userStatus;
+    }
 }

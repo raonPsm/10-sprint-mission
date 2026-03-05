@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.dto.requestRespose.auth.LoginRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +15,7 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
+    // 연관관계 탐색을 활용하므로 UserStatusRepository 의존성 제거
 
     @Transactional(readOnly = true)
     @Override
