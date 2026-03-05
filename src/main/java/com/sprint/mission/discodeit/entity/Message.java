@@ -40,13 +40,13 @@ public class Message extends BaseUpdatableEntity {
             joinColumns = @JoinColumn(name = "message_id"), // Message의 기본키를 참조할 매핑 테이블의 외래키 컬럼명
             inverseJoinColumns = @JoinColumn(name = "attachment_id") // BinaryContent의 기본키를 참조할 매핑 테이블의 외래키 컬럼명
     )
-    private List<BinaryContent> attatchments = new ArrayList<>();
+    private List<BinaryContent> attachments = new ArrayList<>();
 
     public Message(String content, Channel channel, User author, List<BinaryContent> attachments) {
         this.content = content;
         this.channel = channel;
         this.author = author;
-        this.attatchments = attachments;
+        this.attachments = attachments;
     }
 
     public void update(String newContent) {
