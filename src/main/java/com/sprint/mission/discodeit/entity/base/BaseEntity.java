@@ -17,10 +17,10 @@ import java.util.UUID;
 public abstract class BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(columnDefinition = "UUID", updatable = false, nullable = false)
+    @Column(updatable = false, nullable = false)
     private UUID id;
 
     @CreatedDate
-    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", updatable = false, nullable = false)
+    @Column(updatable = false, nullable = false)
     private Instant createdAt;
 }

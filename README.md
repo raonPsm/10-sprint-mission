@@ -87,6 +87,16 @@ GRANT
 ||||||
 ||||||
 
+| 엔티티 관계                   | 다중성   | 방향성                         | 부모-자식 관계                     | 연관관계의 주인   | 비고 (FK 식별자)                       |
+|--------------------------| ----- | --------------------------- | ---------------------------- | ---------- | --------------------------------- |
+| Channel : Message        | 1 : N | Message → Channel 단방향       | 부모: Channel자식: Message       | Message    | Message 테이블이 channel_id FK 소유     |
+| User : Message           | 1 : N | Message → User 단방향          | 부모: User자식: Message          | Message    | Message 테이블이 author_id FK 소유      |
+| User : UserStatus        | 1 : 1 | UserStatus → User 단방향       | 부모: User자식: UserStatus       | UserStatus | UserStatus 테이블이 user_id FK 소유     |
+| Channel : ReadStatus     | 1 : N | ReadStatus → Channel 단방향    | 부모: Channel자식: ReadStatus    | ReadStatus | ReadStatus 테이블이 channel_id FK 소유  |
+| User : ReadStatus        | 1 : N | ReadStatus → User 단방향       | 부모: User자식: ReadStatus       | ReadStatus | ReadStatus 테이블이 user_id FK 소유     |
+| User : BinaryContent     | 1 : 1 | User → BinaryContent 단방향    | 부모: User자식: BinaryContent    | User       | User 테이블이 profile_id FK 소유        |
+| Message : BinaryContent  | 1 : N | Message → BinaryContent 단방향 | 부모: Message자식: BinaryContent | Message    | 조인 테이블(message_attachments) 방식 사용 |
+
 - [ ] JPA 주요 어노테이션을 활용해 ERD, 연관관계 매핑 정보를 도메인 모델에 반영해보세요.
     - `@Entity`, `@Table`
     - `@Column`, `@Enumerated`

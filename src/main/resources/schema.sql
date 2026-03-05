@@ -70,7 +70,7 @@ CREATE TABLE read_statuses (
 
                                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
                                FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE,
-                               UNIQUE (user_id, channel_id)
+                               CONSTRAINT uk_user_channel UNIQUE (user_id, channel_id)
 );
 
 CREATE TABLE message_attachments (
