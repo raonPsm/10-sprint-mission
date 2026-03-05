@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.dto.auth;
+package com.sprint.mission.discodeit.dto.requestRespose.auth;
 
 import java.util.UUID;
 

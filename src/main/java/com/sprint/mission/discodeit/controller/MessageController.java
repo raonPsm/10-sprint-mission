@@ -1,16 +1,14 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.MessageApi;
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.message.MessageResponse;
-import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.requestRespose.binarycontent.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.requestRespose.message.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.requestRespose.message.MessageResponse;
+import com.sprint.mission.discodeit.dto.requestRespose.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

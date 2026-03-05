@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.controller.exception;
 
-import com.sprint.mission.discodeit.dto.error.ErrorResponse;
-import org.apache.coyote.Response;
+import com.sprint.mission.discodeit.dto.requestRespose.error.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

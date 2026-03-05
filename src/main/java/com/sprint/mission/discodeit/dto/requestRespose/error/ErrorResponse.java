@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.dto.error;
+package com.sprint.mission.discodeit.dto.requestRespose.error;
 
 public record ErrorResponse(
         String Message,

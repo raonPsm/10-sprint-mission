@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.channel.*;
+import com.sprint.mission.discodeit.dto.requestRespose.channel.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.requestRespose.channel.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.requestRespose.channel.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 
 import java.util.List;

@@ -1,11 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.dto.requestRespose.userstatus.UserStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.requestRespose.userstatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -16,7 +13,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

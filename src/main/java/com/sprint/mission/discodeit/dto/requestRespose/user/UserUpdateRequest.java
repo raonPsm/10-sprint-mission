@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.dto.user;
+package com.sprint.mission.discodeit.dto.requestRespose.user;
 
 // 정보 수정 시 변경할 정보
 public record UserUpdateRequest (

@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.BinaryContentApi;
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponse;
+import com.sprint.mission.discodeit.dto.requestRespose.binarycontent.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.service.BinaryContentService;

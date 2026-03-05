@@ -1,7 +1,10 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.ChannelApi;
-import com.sprint.mission.discodeit.dto.channel.*;
+import com.sprint.mission.discodeit.dto.requestRespose.channel.ChannelResponse;
+import com.sprint.mission.discodeit.dto.requestRespose.channel.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.requestRespose.channel.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.requestRespose.channel.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -10,9 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @RestController

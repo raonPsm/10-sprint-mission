@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.requestRespose.binarycontent.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.requestRespose.user.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.requestRespose.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -23,8 +23,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
-    private final BinaryContentRepository binaryContentRepository;
-    private final UserStatusRepository userStatusRepository;
+    // binaryContentRepo, userStatusRepo -> 의존성 필요 없음 / 변경 감지 및 영속성 전이 활용
 
     @Transactional
     @Override
@@ -42,27 +41,11 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("이미 존재하는 사용자 이름(username)입니다.: " + username);
         }
 
-        // 프로필 이미지 처리
-        UUID nullableProfileId = optionalProfileCreateRequest
-                .map(profileRequest -> {
-                    String fileName = profileRequest.fileName();
-                    String contentType = profileRequest.contentType();
-                    byte[] bytes = profileRequest.bytes();
+        // 프로필 이미지 엔티티 생성
+        BinaryContent profileImage = optionalProfileCreateRequest
+                .map(req -> new BinaryContent(req.fileName(), req.contentType(), req.bytes()))
 
-                    BinaryContent binaryContent = new BinaryContent(fileName, contentType, bytes);
-                    return binaryContentRepository.save(binaryContent).getId();
-                })
-                .orElse(null);
-
-        // 유저 생성 및 젖아
-        User user = new User(username, email, password, nullableProfileId);
-        User createdUser = userRepository.save(user);
-
-        // 유저 상태 초기화
-        UserStatus userStatus = new UserStatus(createdUser.getId(), Instant.now());
-        userStatusRepository.save(userStatus);
-
-        return createdUser;
+        return ;
 
         // TODO: 트랜잭션 롤백 필요성 존재 -> 추후 단계에서 고민
         // TODO: username 유효성 검사 로직 추가

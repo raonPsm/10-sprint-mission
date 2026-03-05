@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.dto.user;
+package com.sprint.mission.discodeit.dto.requestRespose.user;
 
 /*
 record가 자동으로 해주는 것들
