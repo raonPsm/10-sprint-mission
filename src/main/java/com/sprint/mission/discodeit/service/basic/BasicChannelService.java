@@ -5,8 +5,8 @@ import com.sprint.mission.discodeit.dto.requestRespose.channel.PublicChannelCrea
 import com.sprint.mission.discodeit.dto.requestRespose.channel.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -27,9 +28,11 @@ import java.util.stream.Collectors;
 public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
     private final ReadStatusRepository readStatusRepository;
-    private final MessageRepository messageRepository;
     private final UserRepository userRepository;
+    private final MessageRepository messageRepository;
+    // MessageRepository 의존성 제거 <- Cascade 적용
 
+    @Transactional
     @Override
     public Channel create(PublicChannelCreateRequest request) {
         // 채널 이름 중복 검사
@@ -67,22 +70,21 @@ public class BasicChannelService implements ChannelService {
             }
         }
 
-        // PRIVATE 채널 생성 및 저장
+        // PRIVATE 채널 생성
         Channel channel = Channel.createPrivateChannel();
         Channel savedChannel = channelRepository.save(channel);
 
         // 참여자별 ReadStatus 생성
         for (UUID userId : requestedUserIds) {
-            ReadStatus readStatus = new ReadStatus(
-                    savedChannel.getId(),
-                    userId,
-                    savedChannel.getCreatedAt()
-            );
+            User userProxy = userRepository.getReferenceById(userId);
+            ReadStatus readStatus = new ReadStatus(userProxy, savedChannel, Instant.now());
             readStatusRepository.save(readStatus);
         }
+
         return savedChannel;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Channel findByChannelId(UUID channelId) {
         return channelRepository.findById(channelId)
@@ -90,15 +92,16 @@ public class BasicChannelService implements ChannelService {
     }
 
     // 특정 유저가 볼 수 있는 Channel 목록을 조회
+    @Transactional(readOnly = true)
     @Override
     public List<Channel> findAllByUserId(UUID userId) {
         // 모든 채널 조회 -> PUBLIC 채널은 모두 포함 / PRIVATE 채널은 해당 유저가 ReadStatus를 가지고 있는 경우만 포함
 
         Set<UUID> accessiblePrivateChannelIds = readStatusRepository.findAllByUserId(userId).stream()
-                .map(ReadStatus::getChannelId)
+                .map(rs -> rs.getChannel().getId())
                 .collect(Collectors.toSet());
 
-        return channelRepository.findAllByAccessible(userId, accessiblePrivateChannelIds);
+        return channelRepository.findAllByAccessible(accessiblePrivateChannelIds);
     }
 
     @Transactional
@@ -121,36 +124,19 @@ public class BasicChannelService implements ChannelService {
 
         channel.update(request.newName(), request.newDescription());
 
-        return channelRepository.save(channel);
+        return channel;
     }
 
     @Transactional
     @Override
     public void delete(UUID channelId) {
-        if (!channelRepository.existsById(channelId)) {
-            throw new NoSuchElementException("해당 채널이 존재하지 않습니다. id: " + channelId);
-        }
+        // TODO: Channel channel = findByChannelId(channelId); vs Helper Method -> 어떤 방식이 더 나은지?
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다. id: " + channelId));
 
-        // 1 관련 메시지 삭제
-        // JCF Repo 특성상 반복문으로 돌면서 삭제시 ConcurrentModificationException 발생 가능 -> id 수집 후 삭제
-        List<UUID> messageIdsToDelete = messageRepository.findAll().stream()
-                .filter(m -> m.getChannelId().equals(channelId))
-                .map(Message::getId)
-                .toList();
-        messageIdsToDelete.forEach(messageRepository::deleteById);
+        messageRepository.deleteAllByChannelId(channelId);
+        readStatusRepository.deleteAllByChannelId(channelId);
 
-        // 2 관련 ReadStatus 삭제
-        List<UUID> readStatusIdsToDelete = readStatusRepository.findAll().stream()
-                .filter(rs -> rs.getChannelId().equals(channelId))
-                .map(ReadStatus::getId)
-                .toList();
-        readStatusIdsToDelete.forEach(readStatusRepository::deleteById);
-
-        //    messageRepository.deleteAllByChannelId(channelId);
-        //    readStatusRepository.deleteAllByChannelId(channelId);
-        // -> 이렇게 repo 계층에 위임할 수도 있다. 일단은 service 계층에서 진행한다.
-
-        // 3 채널 삭제
-        channelRepository.deleteById(channelId);
+        channelRepository.delete(channel);
     }
 }

@@ -9,6 +9,11 @@ import java.util.UUID;
 public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
     List<ReadStatus> findAllByUserId(UUID userId);
 
-    // Optional<ReadStatus> findByUserIdAndChannelId(UUID userId, UUID channelId);
-    // TODO: 특정 채널의 메시지를 특정 유저가 읽었는지 확인할 때 필요할 수 있음 -> 비즈니스 로직 고려 후 판단
+    void deleteAllByChannelId(UUID channelId);
+
+    // SELECT 1
+    // FROM read_statuses
+    // WHERE user_id = ? AND channel_id = ?
+    // LIMIT 1;
+    boolean existsByUserIdAndChannelId(UUID userId, UUID channelId);
 }

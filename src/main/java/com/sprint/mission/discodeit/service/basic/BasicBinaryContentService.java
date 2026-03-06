@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
@@ -17,14 +18,11 @@ import java.util.UUID;
 public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
 
+    @Transactional
     @Override
     public BinaryContent create(BinaryContentCreateRequest request) {
-        BinaryContent binaryContent = new BinaryContent(
-                request.fileName(),
-                request.contentType(),
-                request.bytes()
-        );
-
+        long size = request.bytes() != null ? request.bytes().length : 0L;
+        BinaryContent binaryContent = new BinaryContent(request.fileName(), size, request.contentType());
         return binaryContentRepository.save(binaryContent);
     }
     // TODO: (Later) createAll - 다건 저장 로직 추가
@@ -47,9 +45,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public void delete(UUID id) {
-        if (binaryContentRepository.existsById(id)) {
-            throw new NoSuchElementException("삭제할 첨부파일(BinaryContent)을 찾을 수 없습니다. id: " + id);
-        }
+        BinaryContent binaryContent = find(id);
         binaryContentRepository.deleteById(id);
     }
 }

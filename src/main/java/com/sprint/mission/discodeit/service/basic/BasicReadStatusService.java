@@ -2,18 +2,20 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.requestRespose.readstatus.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.readstatus.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +24,7 @@ public class BasicReadStatusService implements ReadStatusService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
 
+    @Transactional
     @Override
     public ReadStatus create(ReadStatusCreateRequest request) {
         // 관련된 Channel, User 있는지 확인
@@ -33,33 +36,33 @@ public class BasicReadStatusService implements ReadStatusService {
         }
 
         // 같은 Channel과 User와 관련된 객체가 이미 존재하면 예외 발생
-        // FIXME: existsByUserIdAndChannelId -> repo 계층 위임 수정
-        boolean exists = readStatusRepository.findAll().stream()
-                .anyMatch(rs -> rs.getUserId().equals(request.userId())
-                        && rs.getChannelId().equals(request.channelId()));
-        if (exists) {
+        if (readStatusRepository.existsByUserIdAndChannelId(request.userId(), request.channelId())) {
             throw new IllegalArgumentException("해당 유저의 readStatus가 이미 존재합니다.");
         }
 
-        ReadStatus readStatus = new ReadStatus(request.channelId(), request.userId(), request.lastReadAt());
+        // 지연 로딩 활용 (프록시)
+        User userProxy = userRepository.getReferenceById(request.userId());
+        Channel channelProxy = channelRepository.getReferenceById(request.channelId());
+
+        ReadStatus readStatus = new ReadStatus(userProxy, channelProxy, request.lastReadAt());
 
         return readStatusRepository.save(readStatus);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ReadStatus find(UUID readStatusId) {
         return readStatusRepository.findById(readStatusId)
                 .orElseThrow(() -> new NoSuchElementException("읽기 상태(readStatus)를 찾을 수 없습니다. id: " + readStatusId));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ReadStatus> findAllByUserId(UUID userId) {
-        // FIXME: return readStatusRepository.findAllByUserId(userId);
-        return readStatusRepository.findAll().stream()
-                .filter(rs -> rs.getUserId().equals(userId))
-                .collect(Collectors.toList());
+        return readStatusRepository.findAllByUserId(userId);
     }
 
+    @Transactional
     @Override
     public ReadStatus update(UUID readStatusId, ReadStatusUpdateRequest request) {
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)
@@ -68,14 +71,14 @@ public class BasicReadStatusService implements ReadStatusService {
         // 읽은 시간 갱신
         readStatus.updateLastReadAt(request.newLastReadAt());
 
-        return readStatusRepository.save(readStatus);
+        return readStatus;
     }
 
+    @Transactional
     @Override
     public void delete(UUID readStatusId) {
-        if (!readStatusRepository.existsById(readStatusId)) {
-            throw new NoSuchElementException("삭제할 읽기 상태가 존재하지 않습니다. id: " + readStatusId);
-        }
-        readStatusRepository.deleteById(readStatusId);
+        // FIXME: 내부 메서드 사용하지 않도록 수정
+        ReadStatus readStatus = find(readStatusId);
+        readStatusRepository.delete(readStatus);
     }
 }

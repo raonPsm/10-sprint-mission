@@ -50,6 +50,7 @@ public class BasicUserService implements UserService {
         User user = new User(username, email, password, profileImage);
 
         // UserStatus 엔티티 생성 + 양방향 연관관계(1:1) 설정
+        // TODO: 단방향 연관관계가 맞는 건지 확인 요망
         UserStatus userStatus = new UserStatus(user, Instant.now());
         user.assignUserStatus(userStatus);
 
@@ -96,7 +97,8 @@ public class BasicUserService implements UserService {
                        UserUpdateRequest userUpdateRequest,
                        Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
         // user 존재하는지 조회
-        User user = findByUserId(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("해당 id의 유저가 존재하지 않습니다. (userId: " + userId + " )"));
 
         String newUsername = userUpdateRequest.newUsername();
         String newEmail = userUpdateRequest.newEmail();
@@ -126,10 +128,10 @@ public class BasicUserService implements UserService {
     @Transactional
     @Override
     public void delete(UUID userId) {
-        User user = findByUserId(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("해당 id의 유저가 존재하지 않습니다. (userId: " + userId + " )"));
         // cascade = CascadeType.ALL, orphanRemoval = true 적용
         // User만 삭제해도 연관된 UserStatus, BinaryContent에 대한 DELETE 쿼리가 자동으로 발생
         userRepository.delete(user);
     }
-
 }

@@ -17,22 +17,20 @@ public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
     // 연관관계 탐색을 활용하므로 UserStatusRepository 의존성 제거
 
-    @Transactional(readOnly = true)
+    @Transactional
     @Override
     public User login(LoginRequest request) {
-        // username으로 유저 조회 후 password 일치 확인
-        User user = userRepository.findAll().stream()
-                .filter(u -> u.getUsername().equals(request.username()) && u.getPassword().equals(request.password()))
-                .findFirst()
+        User user = userRepository.findByUsername(request.username())
+                .filter(u -> u.getPassword().equals(request.password()))
                 .orElseThrow(() -> new IllegalArgumentException("아이디 또는 비밀번호가 일치하지 않습니다."));
 
-        // 로그인 성공 시 해당 유저의 접속 상태 정보(UserStatus) 갱신
-        UserStatus status = userStatusRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new IllegalStateException("유저 상태 데이터가 존재하지 않습니다."));
-        status.update(Instant.now());  // 최근 접속 시간 업데이트
-        userStatusRepository.save(status);
+        UserStatus userStatus = user.getUserStatus();
+        if (userStatus == null) {
+            throw new IllegalStateException("유저 상태 데이터가 존재하지 않습니다.");
+        }
 
-        // DTO(UserResponse)로 변환
+        userStatus.update(Instant.now());
+
         return user;
     }
 }
