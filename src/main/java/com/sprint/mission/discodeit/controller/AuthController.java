@@ -1,9 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.AuthApi;
+import com.sprint.mission.discodeit.dto.Dto.UserDto;
 import com.sprint.mission.discodeit.dto.requestRespose.auth.LoginRequest;
-import com.sprint.mission.discodeit.dto.requestRespose.user.UserResponse;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +21,9 @@ public class AuthController implements AuthApi {
 
     // POST /api/auth/login - 로그인
     @PostMapping("/login")
-    public ResponseEntity<UserResponse> login(@RequestBody LoginRequest request) {
-        User response = authService.login(request);
-        return ResponseEntity.ok(userMapper.toResponse(response)); // 로그인 성공 시 사용자 정보를 반환
+    public ResponseEntity<UserDto> login(@RequestBody LoginRequest request) {
+        UserDto response = authService.login(request);
+        return ResponseEntity.ok(response); // 로그인 성공 시 사용자 정보를 반환
     }
 
     // TODO: 로그인 실패 시 예외처리

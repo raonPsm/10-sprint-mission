@@ -1,11 +1,13 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.Dto.UserDto;
 import com.sprint.mission.discodeit.dto.requestRespose.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -22,12 +24,13 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
     // binaryContentRepo, userStatusRepo -> 의존성 필요 없음 / 변경 감지 및 영속성 전이 활용
 
     @Transactional
     @Override
-    public User create(UserCreateRequest userCreateRequest,
-                       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+    public UserDto create(UserCreateRequest userCreateRequest,
+                          Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
         String username = userCreateRequest.username();
         String email = userCreateRequest.email();
         String password = userCreateRequest.password();
@@ -65,7 +68,7 @@ public class BasicUserService implements UserService {
         // -> @Transactional에 의해 메서드가 종료되고 커밋되는 시점(Flush)에,
         // 영속성 컨텍스트에 새로 등록된 3개의 엔티티에 대한 INSERT 쿼리가 한번에 진행
         // * Flush -> 영속성 컨텍스트의 변경 내용을 DB에 반영하는 것 / 영속성 컨텍스트의 변경 내용을 DB에 동기화
-        return userRepository.save(user);
+        return userMapper.toDto(userRepository.save(user));
         // TODO: username 유효성 검사 로직 추가
         // TODO: email 중복 불가능 검사 로직 추가
         // TODO: password 유효성 검사 로직 추가
@@ -73,7 +76,7 @@ public class BasicUserService implements UserService {
 
     @Transactional(readOnly = true)
     @Override
-    public User findByUserId(UUID userId) {
+    public UserDto find(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 id의 유저가 존재하지 않습니다. (userId: " + userId + " )"));
 
@@ -82,18 +85,19 @@ public class BasicUserService implements UserService {
             throw new IllegalStateException("유저 상태 데이터가 누락되었습니다. (userId: " + userId + ")");
         }
 
-        return user;
+        return userMapper.toDto(user);
     }
 
     @Transactional(readOnly = true)
     @Override
-    public List<User> findAll() {
-        return userRepository.findAll();
+    public List<UserDto> findAll() {
+        return userMapper.toDtoList(userRepository.findAll());
+        // TODO: N+1 문제 -> Fetch Join
     }
 
     @Transactional
     @Override
-    public User update(UUID userId,
+    public UserDto update(UUID userId,
                        UserUpdateRequest userUpdateRequest,
                        Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
         // user 존재하는지 조회
@@ -122,7 +126,7 @@ public class BasicUserService implements UserService {
         user.update(newUsername, newEmail, userUpdateRequest.newPassword(), newProfileImage);
 
         // (Dirty Checking) 메서드 종료 시 트랜잭션이 커밋되면서 변경된 엔티티에 대한 UPDATE 쿼리 자동 발생. save() 호출 불필요
-        return user;
+        return userMapper.toDto(user);
     }
 
     @Transactional

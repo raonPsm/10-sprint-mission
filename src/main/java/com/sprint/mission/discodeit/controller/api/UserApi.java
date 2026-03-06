@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.controller.api;
 
+import com.sprint.mission.discodeit.dto.Dto.UserDto;
+import com.sprint.mission.discodeit.dto.Dto.UserStatusDto;
 import com.sprint.mission.discodeit.dto.requestRespose.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.user.UserResponse;
 import com.sprint.mission.discodeit.dto.requestRespose.user.UserUpdateRequest;
@@ -39,7 +41,7 @@ public interface UserApi {
                     )
             )
     })
-    ResponseEntity<List<UserResponse>> findAll();
+    ResponseEntity<List<UserDto>> findAll();
 
     /// POST api/users - User 등록
     @Operation(summary = "User 등록")
@@ -61,7 +63,7 @@ public interface UserApi {
                     )
             )
     })
-    ResponseEntity<UserResponse> create(
+    ResponseEntity<UserDto> create(
             @Parameter(description = "User 생성 정보", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
             @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
 
@@ -117,7 +119,7 @@ public interface UserApi {
                     )
             )
     })
-    ResponseEntity<UserResponse> update(
+    ResponseEntity<UserDto> update(
             @Parameter(description = "수정할 User ID", required = true) UUID userId,
 
             @Parameter(description = "수정할 User 정보", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
@@ -147,7 +149,7 @@ public interface UserApi {
                     )
             )
     })
-    ResponseEntity<UserStatusResponse> updateUserStatusByUserId(
+    ResponseEntity<UserStatusDto> updateUserStatusByUserId(
             @Parameter(description = "상태를 변경할 User ID", required = true) UUID userId,
             @RequestBody UserStatusUpdateRequest userStatusUpdateRequest
     );
