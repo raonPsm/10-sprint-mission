@@ -68,7 +68,7 @@ public class BasicMessageService implements MessageService {
             throw new NoSuchElementException("채널이 존재하지 않습니다. id: " + channelId);
         }
 
-        return messageRepository.findAllByChannelIdOrderByCreatedAtAsc(channelId);
+        return messageRepository.findAllByChannel_IdOrderByCreatedAtAsc(channelId);
     }
 
     // 사진은 update 불가능

@@ -134,8 +134,8 @@ public class BasicChannelService implements ChannelService {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다. id: " + channelId));
 
-        messageRepository.deleteAllByChannelId(channelId);
-        readStatusRepository.deleteAllByChannelId(channelId);
+        messageRepository.deleteAllByChannel_Id(channelId);
+        readStatusRepository.deleteAllByChannel_Id(channelId);
 
         channelRepository.delete(channel);
     }

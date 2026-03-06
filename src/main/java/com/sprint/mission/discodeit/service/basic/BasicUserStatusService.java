@@ -30,7 +30,7 @@ public class BasicUserStatusService implements UserStatusService {
                 .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다. userId: " + request.userId()));
 
         // 같은 User와 관련된 객체가 이미 존재하면 예외를 발생
-        if(userStatusRepository.existsByUserId(request.userId())) {
+        if(userStatusRepository.existsByUser_Id(request.userId())) {
             throw new IllegalArgumentException("이미 해당 유저의 상태 정보(UserStatus)가 존재합니다. userId: " + request.userId());
         }
 
@@ -65,7 +65,7 @@ public class BasicUserStatusService implements UserStatusService {
     @Transactional
     @Override
     public UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest request) {
-        UserStatus userStatus = userStatusRepository.findByUserId(userId)
+        UserStatus userStatus = userStatusRepository.findByUser_Id(userId)
                 .orElseThrow(() -> new NoSuchElementException("수정할 UserStatus를 찾을 수 없습니다."));
         userStatus.update(request.newLastActiveAt());
         return userStatus;

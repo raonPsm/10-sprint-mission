@@ -36,7 +36,7 @@ public class BasicReadStatusService implements ReadStatusService {
         }
 
         // 같은 Channel과 User와 관련된 객체가 이미 존재하면 예외 발생
-        if (readStatusRepository.existsByUserIdAndChannelId(request.userId(), request.channelId())) {
+        if (readStatusRepository.existsByUser_IdAndChannel_Id(request.userId(), request.channelId())) {
             throw new IllegalArgumentException("해당 유저의 readStatus가 이미 존재합니다.");
         }
 
