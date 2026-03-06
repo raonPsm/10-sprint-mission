@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.UUID;
 
 public interface MessageRepository extends JpaRepository<Message, UUID> {
-    void deleteAllByChannelId(UUID channelId);
+    void deleteAllByChannel_Id(UUID channelId);
 
     // SELECT * FROM message
     // WHERE channel_id = ?
     // ORDER BY created_at ASC;
-    List<Message> findAllByChannelIdOrderByCreatedAtAsc(UUID channelId);
+    List<Message> findAllByChannel_IdOrderByCreatedAtAsc(UUID channelId);
 }

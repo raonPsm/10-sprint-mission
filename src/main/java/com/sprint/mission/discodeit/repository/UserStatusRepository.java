@@ -7,7 +7,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface UserStatusRepository extends JpaRepository<UserStatus, UUID> {
-    Optional<UserStatus> findByUserId(UUID userId);  // 유저 id로 유저 상태 조회
-    void deleteByUserId(UUID userId);
-    boolean existsByUserId(UUID userId);
+    Optional<UserStatus> findByUser_Id(UUID userId);  // 유저 id로 유저 상태 조회
+    void deleteByUser_Id(UUID userId);
+    boolean existsByUser_Id(UUID userId);
+
+    <T> Optional<T> findByUserId(UUID id);
 }
