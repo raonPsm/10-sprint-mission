@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public record BinaryContentDto (
         UUID id,
-        String filename,
+        String fileName,
         Long size,
         String contentType,
         byte[] bytes
