@@ -4,11 +4,6 @@ spring:
   server:
     port: 8080
 
-  discodeit:
-    repository:
-      type: jcf # jcf | file (기본값 jcf)
-      file-directory: discodeit.fileRepo # File 기반 저장 시 사용할 디렉토리명
-
   ## Swagger-UI 설정
   springdoc:
     api-docs:
@@ -37,7 +32,15 @@ spring:
     # 심화 요구사항: 성능과 명확한 트랜잭션 경계를 위해 OSIV를 비활성화
     open-in-view: false
 
-  logging:
-    level:
-      # 쿼리 파라미터(PreparedStatement)에 바인딩되는 값을 확인하기 위한 설정
-      org.hibernate.orm.jdbc.bind: trace
+logging:
+  level:
+    # 쿼리 파라미터(PreparedStatement)에 바인딩되는 값을 확인하기 위한 설정
+    org.hibernate.orm.jdbc.bind: trace
+
+discodeit:
+  storage:
+    type: local
+    # 설정값(local)과 어노테이션에 지정된 havingValue가 일치하므로 LocalBinaryContentStorage는 스프링 빈으로 등록됨
+    local:
+      root-path: .discodeit/storage
+      # @Value("${discodeit.storage.local.root-path}") 를 통해서 할당됨
