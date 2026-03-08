@@ -8,8 +8,10 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,8 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     // binaryContentRepo, userStatusRepo -> 의존성 필요 없음 / 변경 감지 및 영속성 전이 활용
+    private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentStorage binaryContentStorage;
 
     @Transactional
     @Override
@@ -46,7 +50,9 @@ public class BasicUserService implements UserService {
         // 프로필 이미지 엔티티 생성
         BinaryContent profileImage = optionalProfileCreateRequest
                 .map(req -> new BinaryContent(
-                        req.fileName(), (long)req.bytes().length, req.contentType())
+                        req.fileName(),
+                        (long)req.bytes().length,
+                        req.contentType())
                 ).orElse(null);
 
         // User 엔티티 생성
@@ -57,6 +63,7 @@ public class BasicUserService implements UserService {
         UserStatus userStatus = new UserStatus(user, Instant.now());
         user.assignUserStatus(userStatus);
 
+        User savedUser = userRepository.save(user);
         // 영속성 전이
         //   JPA에서 엔티티를 저장할 때, 내부적으로는 EntityManager.persist(entity) 메서드가 호출되어
         // 해당 객체를 영속성 컨텍스트에 등록한다. (Managed 상태로 변경)
@@ -68,7 +75,12 @@ public class BasicUserService implements UserService {
         // -> @Transactional에 의해 메서드가 종료되고 커밋되는 시점(Flush)에,
         // 영속성 컨텍스트에 새로 등록된 3개의 엔티티에 대한 INSERT 쿼리가 한번에 진행
         // * Flush -> 영속성 컨텍스트의 변경 내용을 DB에 반영하는 것 / 영속성 컨텍스트의 변경 내용을 DB에 동기화
-        return userMapper.toDto(userRepository.save(user));
+
+        optionalProfileCreateRequest.ifPresent(req ->
+                binaryContentStorage.put(savedUser.getProfile().getId(), req.bytes())
+        );
+
+        return userMapper.toDto(savedUser);
         // TODO: username 유효성 검사 로직 추가
         // TODO: email 중복 불가능 검사 로직 추가
         // TODO: password 유효성 검사 로직 추가
@@ -124,6 +136,10 @@ public class BasicUserService implements UserService {
 
         // orphanRemoval = true 설정으로 새로운 프로필 참조가 할당되면 기존 프로필은 자동으로 DELETE 수행됨
         user.update(newUsername, newEmail, userUpdateRequest.newPassword(), newProfileImage);
+
+        optionalProfileCreateRequest.ifPresent(req ->
+                binaryContentStorage.put(user.getProfile().getId(), req.bytes())
+        );
 
         // (Dirty Checking) 메서드 종료 시 트랜잭션이 커밋되면서 변경된 엔티티에 대한 UPDATE 쿼리 자동 발생. save() 호출 불필요
         return userMapper.toDto(user);
