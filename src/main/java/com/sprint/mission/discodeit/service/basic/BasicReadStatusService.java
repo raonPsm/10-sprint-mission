@@ -1,10 +1,12 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.Dto.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.requestRespose.readstatus.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.readstatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -23,10 +25,11 @@ public class BasicReadStatusService implements ReadStatusService {
     private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
+    private final ReadStatusMapper readStatusMapper;
 
     @Transactional
     @Override
-    public ReadStatus create(ReadStatusCreateRequest request) {
+    public ReadStatusDto create(ReadStatusCreateRequest request) {
         // 관련된 Channel, User 있는지 확인
         if (!userRepository.existsById(request.userId())) {
             throw new NoSuchElementException("존재하지 않는 사용자입니다. id: " + request.userId());
@@ -46,39 +49,40 @@ public class BasicReadStatusService implements ReadStatusService {
 
         ReadStatus readStatus = new ReadStatus(userProxy, channelProxy, request.lastReadAt());
 
-        return readStatusRepository.save(readStatus);
+        return readStatusMapper.toDto(readStatusRepository.save(readStatus));
     }
 
     @Transactional(readOnly = true)
     @Override
-    public ReadStatus find(UUID readStatusId) {
-        return readStatusRepository.findById(readStatusId)
-                .orElseThrow(() -> new NoSuchElementException("읽기 상태(readStatus)를 찾을 수 없습니다. id: " + readStatusId));
+    public ReadStatusDto find(UUID readStatusId) {
+        return readStatusMapper.toDto(readStatusRepository.findById(readStatusId)
+                .orElseThrow(() -> new NoSuchElementException("읽기 상태(readStatus)를 찾을 수 없습니다. id: " + readStatusId))
+        );
     }
 
     @Transactional(readOnly = true)
     @Override
-    public List<ReadStatus> findAllByUserId(UUID userId) {
-        return readStatusRepository.findAllByUserId(userId);
+    public List<ReadStatusDto> findAllByUserId(UUID userId) {
+        return readStatusMapper.toDtoList(readStatusRepository.findAllByUserId(userId));
     }
 
     @Transactional
     @Override
-    public ReadStatus update(UUID readStatusId, ReadStatusUpdateRequest request) {
+    public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest request) {
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)
                 .orElseThrow(() -> new NoSuchElementException("수정할 읽기 상태(readStatus)를 찾을 수 없습니다. id: " + readStatusId));
 
         // 읽은 시간 갱신
         readStatus.updateLastReadAt(request.newLastReadAt());
 
-        return readStatus;
+        return readStatusMapper.toDto(readStatus);
     }
 
     @Transactional
     @Override
     public void delete(UUID readStatusId) {
-        // FIXME: 내부 메서드 사용하지 않도록 수정
-        ReadStatus readStatus = find(readStatusId);
+        ReadStatus readStatus = readStatusRepository.findById(readStatusId)
+                .orElseThrow(() -> new NoSuchElementException("읽기 상태(readStatus)를 찾을 수 없습니다. id: " + readStatusId));
         readStatusRepository.delete(readStatus);
     }
 }

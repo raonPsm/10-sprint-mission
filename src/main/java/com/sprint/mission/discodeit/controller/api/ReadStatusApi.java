@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller.api;
 
+import com.sprint.mission.discodeit.dto.Dto.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.requestRespose.readstatus.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.requestRespose.readstatus.ReadStatusResponse;
 import com.sprint.mission.discodeit.dto.requestRespose.readstatus.ReadStatusUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,11 +29,11 @@ public interface ReadStatusApi {
                     description = "Message 읽음 상태 목록 조회 성공",
                     content = @Content(
                             mediaType = "*/*",
-                            array = @ArraySchema(schema = @Schema(implementation = ReadStatusResponse.class))
+                            array = @ArraySchema(schema = @Schema(implementation = ReadStatusDto.class))
                     )
             )
     })
-    ResponseEntity<List<ReadStatusResponse>> findAllByUserId(
+    ResponseEntity<List<ReadStatusDto>> findAllByUserId(
             @Parameter(description = "조회할 User ID", required = true) UUID userId
     );
 
@@ -45,7 +45,7 @@ public interface ReadStatusApi {
                     description = "Message 읽음 상태가 성공적으로 생성됨",
                     content = @Content(
                             mediaType = "*/*",
-                            schema = @Schema(implementation = ReadStatusResponse.class)
+                            schema = @Schema(implementation = ReadStatusDto.class)
                     )
             ),
             @ApiResponse(
@@ -65,7 +65,7 @@ public interface ReadStatusApi {
                     )
             )
     })
-    ResponseEntity<ReadStatusResponse> create(
+    ResponseEntity<ReadStatusDto> create(
             @RequestBody ReadStatusCreateRequest request
     );
 
@@ -77,7 +77,7 @@ public interface ReadStatusApi {
                     description = "Message 읽음 상태가 성공적으로 수정됨",
                     content = @Content(
                             mediaType = "*/*",
-                            schema = @Schema(implementation = ReadStatusResponse.class)
+                            schema = @Schema(implementation = ReadStatusDto.class)
                     )
             ),
             @ApiResponse(
@@ -89,7 +89,7 @@ public interface ReadStatusApi {
                     )
             )
     })
-    ResponseEntity<ReadStatusResponse> update(
+    ResponseEntity<ReadStatusDto> update(
             @Parameter(description = "수정할 읽음 상태 ID", required = true) UUID readStatusId,
             @RequestBody ReadStatusUpdateRequest request
     );
