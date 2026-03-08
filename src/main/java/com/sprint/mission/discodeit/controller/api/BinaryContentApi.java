@@ -57,4 +57,6 @@ public interface BinaryContentApi {
     ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
             @Parameter(description = "조회할 첨부 파일 ID 목록") List<UUID> binaryContentIds
     );
+
+    // TODO: GET /api/{binaryContentId}/download - 파일 다운로드 -> 문서화 추가
 }

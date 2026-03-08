@@ -107,9 +107,9 @@ GRANT
 
 ### **레포지토리와 서비스에 JPA 도입하기**
 
-- [ ] 기존의 Repository 인터페이스를 JPARepository로 정의하고 쿼리메소드로 대체하세요.
+- [x] 기존의 Repository 인터페이스를 JPARepository로 정의하고 쿼리메소드로 대체하세요.
     - FileRepository와 JCFRepository 구현체는 삭제합니다.
-- [ ] 영속성 컨텍스트의 특징에 맞추어 서비스 레이어를 수정해보세요.
+- [x] 영속성 컨텍스트의 특징에 맞추어 서비스 레이어를 수정해보세요.
     - 힌트: `트랜잭션`, `영속성 전이`, `변경 감지`, `지연로딩`
 
 ### DTO 적극 도입하기
@@ -123,7 +123,7 @@ GRANT
 
 - [x] 다음의 클래스 다이어그램을 참고하여 DTO를 정의하세요. ![hd4c6g1of-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12178&version=1&directory=/hd4c6g1of-image.png&name=hd4c6g1of-image.png)
 
-- [ ] Entity를 DTO로 매핑하는 로직을 책임지는 Mapper 컴포넌트를 정의해 반복되는 코드를 줄여보세요.
+- [x] Entity를 DTO로 매핑하는 로직을 책임지는 Mapper 컴포넌트를 정의해 반복되는 코드를 줄여보세요.
 
     - 패키지명: `com.sprint.mission.discodeit.mapper` ![buo7cmjvp-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12178&version=1&directory=/buo7cmjvp-image.png&name=buo7cmjvp-image.png)
 
@@ -131,9 +131,9 @@ GRANT
 
 데이터베이스에 이미지와 같은 파일을 저장하면 성능 상 불리한 점이 많습니다. 따라서 실제 바이너리 데이터는 별도의 공간에 저장하고, 데이터베이스에는 바이너리 데이터에 대한 메타 정보(파일명, 크기, 유형 등)만 저장하는 것이 좋습니다.
 
-- [ ] BinaryContent 엔티티는 파일의 메타 정보(`fileName`, `size`, `contentType`)만 표현하도록 `bytes` 속성을 제거하세요.
+- [x] BinaryContent 엔티티는 파일의 메타 정보(`fileName`, `size`, `contentType`)만 표현하도록 `bytes` 속성을 제거하세요.
 
-- [ ] BinaryContent의 `byte[]` 데이터 저장을 담당하는 인터페이스를 설계하세요.
+- [x] BinaryContent의 `byte[]` 데이터 저장을 담당하는 인터페이스를 설계하세요.
 
   저장 매체의 확장성(로컬 저장소, 원격 저장소)을 고려해 인터페이스부터 설계합니다.
 

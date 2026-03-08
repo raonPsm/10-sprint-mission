@@ -30,8 +30,8 @@ public interface BinaryContentStorage {
     /**
      * HTTP API로 다운로드 기능을 제공
      * BinaryContentDto 정보를 바탕으로 파일을 다운로드할 수 있는 응답을 반환
-     * @param dataInfo
+     * @param metaData
      * @return
      */
-    ResponseEntity<?> download(BinaryContentDto dataInfo);
+    ResponseEntity<?> download(BinaryContentDto metaData);
 }

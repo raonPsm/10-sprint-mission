@@ -9,10 +9,12 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,11 +33,12 @@ public class BasicMessageService implements MessageService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final MessageMapper messageMapper;
+    private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentStorage binaryContentStorage;
 
     @Transactional
     @Override
     public MessageDto create(MessageCreateRequest request, List<BinaryContentCreateRequest> attachments) {
-
         // TODO: getReferenceById -> 프록시 사용 가능 -> 고려
         Channel channel = channelRepository.findById(request.channelId())
                 .orElseThrow(() -> new NoSuchElementException("채널이 존재하지 않습니다. id: " + request.channelId()));
@@ -45,16 +48,25 @@ public class BasicMessageService implements MessageService {
         // 첨부파일 엔티티 생성
         List<BinaryContent> attachmentEntities = new ArrayList<>();
         if (attachments != null && !attachments.isEmpty()) {
-            for (BinaryContentCreateRequest fileReq : attachments) {
+            for(BinaryContentCreateRequest fileReq : attachments) {
                 attachmentEntities.add(new BinaryContent(fileReq.fileName(), (long) fileReq.bytes().length, fileReq.contentType()));
             }
         }
 
         // Message 엔티티 생성
         Message message = new Message(request.content(), channel, author, attachmentEntities);
+        Message savedMessage = messageRepository.save(message);
+
+        if (attachments != null && !attachments.isEmpty()) {
+            for (int i = 0; i < attachments.size(); i++) {
+                BinaryContentCreateRequest file = attachments.get(i);
+                BinaryContent savedAttachment = savedMessage.getAttachments().get(i);
+                binaryContentStorage.put(savedAttachment.getId(), file.bytes());
+            }
+        }
 
         // 영속성 전이
-        return messageMapper.toDto(messageRepository.save(message));
+        return messageMapper.toDto(savedMessage);
     }
 
     @Transactional(readOnly = true)
