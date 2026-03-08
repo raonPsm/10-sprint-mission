@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.dto.Dto.MessageDto;
 import com.sprint.mission.discodeit.dto.requestRespose.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.message.MessageUpdateRequest;
-import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,7 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MessageController implements MessageApi {
     private final MessageService messageService;
-    private final MessageMapper messageMapper;
+
 
     /// GET /api/messages - Channel의 Message 목록 조회
     @GetMapping

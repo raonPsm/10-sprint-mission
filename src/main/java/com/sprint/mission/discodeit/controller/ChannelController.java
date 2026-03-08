@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.dto.Dto.ChannelDto;
 import com.sprint.mission.discodeit.dto.requestRespose.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.channel.PublicChannelUpdateRequest;
-import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,7 +19,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ChannelController implements ChannelApi {
     private final ChannelService channelService;
-    private final ChannelMapper channelMapper;
 
     /// POST /api/channels/public - Public Channel 생성
     @PostMapping("/public")
