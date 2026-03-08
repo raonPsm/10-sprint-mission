@@ -26,9 +26,16 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Transactional
     @Override
     public BinaryContentDto create(BinaryContentCreateRequest request) {
-        long size = request.bytes() != null ? request.bytes().length : 0L;
-        BinaryContent binaryContent = new BinaryContent(request.fileName(), size, request.contentType());
-        return binaryContentMapper.toDto(binaryContentRepository.save(binaryContent));
+        BinaryContent binaryContent = new BinaryContent(
+                request.fileName(),
+                (long) request.bytes().length,
+                request.contentType()
+        );
+
+        BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
+        binaryContentStorage.put(savedBinaryContent.getId(), request.bytes());
+
+        return binaryContentMapper.toDto(savedBinaryContent);
     }
     // TODO: (Later) createAll - 다건 저장 로직 추가
 
@@ -55,4 +62,5 @@ public class BasicBinaryContentService implements BinaryContentService {
                 .orElseThrow(() -> new NoSuchElementException("해당 첨부파일(BinaryContent)을 찾을 수 없습니다. id: " + id));
         binaryContentRepository.delete(binaryContent);
     }
+    // TODO: (Later) delete -> 실제 파일도 storage에서 삭제 필요
 }
