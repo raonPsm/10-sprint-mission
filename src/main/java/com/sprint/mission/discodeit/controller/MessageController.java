@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.dto.Dto.MessageDto;
 import com.sprint.mission.discodeit.dto.requestRespose.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.message.MessageUpdateRequest;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +32,6 @@ public class MessageController implements MessageApi {
     @GetMapping
     public ResponseEntity<List<MessageDto>> findAllByChannelId(@RequestParam UUID channelId) {
         List<MessageDto> responses = messageService.findAllByChannelId(channelId).stream()
-                .map(messageMapper::toDto)
                 .toList();
         return ResponseEntity.ok(responses);
     }
@@ -59,11 +57,11 @@ public class MessageController implements MessageApi {
                         })
                         .toList())
                 .orElse(new ArrayList<>());
-        Message message = messageService.create(messageCreateRequest, fileRequests);
+        MessageDto message = messageService.create(messageCreateRequest, fileRequests);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(messageMapper.toDto(message));
+                .body(message);
     }
 
     /// DELETE /api/messages/{messageId} - Message 삭제
@@ -79,7 +77,7 @@ public class MessageController implements MessageApi {
             @PathVariable UUID messageId,
             @RequestBody MessageUpdateRequest request
     ) {
-        Message message = messageService.update(messageId, request);
-        return ResponseEntity.ok(messageMapper.toDto(message));
+        MessageDto message = messageService.update(messageId, request);
+        return ResponseEntity.ok(message);
     }
 }

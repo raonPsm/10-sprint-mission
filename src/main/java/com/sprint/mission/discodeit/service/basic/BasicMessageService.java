@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.Dto.MessageDto;
 import com.sprint.mission.discodeit.dto.requestRespose.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.message.MessageUpdateRequest;
@@ -7,6 +8,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -28,10 +30,11 @@ public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
+    private final MessageMapper messageMapper;
 
     @Transactional
     @Override
-    public Message create(MessageCreateRequest request, List<BinaryContentCreateRequest> attachments) {
+    public MessageDto create(MessageCreateRequest request, List<BinaryContentCreateRequest> attachments) {
 
         // TODO: getReferenceById -> 프록시 사용 가능 -> 고려
         Channel channel = channelRepository.findById(request.channelId())
@@ -51,34 +54,35 @@ public class BasicMessageService implements MessageService {
         Message message = new Message(request.content(), channel, author, attachmentEntities);
 
         // 영속성 전이
-        return messageRepository.save(message);
+        return messageMapper.toDto(messageRepository.save(message));
     }
 
     @Transactional(readOnly = true)
     @Override
-    public Message findById(UUID messageId) {
-        return messageRepository.findById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("해당 메시지가 존재하지 않습니다. id: " + messageId));
+    public MessageDto findById(UUID messageId) {
+        return messageMapper.toDto(messageRepository.findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("해당 메시지가 존재하지 않습니다. id: " + messageId))
+        );
     }
 
     @Transactional(readOnly = true)
     @Override
-    public List<Message> findAllByChannelId(UUID channelId) {
+    public List<MessageDto> findAllByChannelId(UUID channelId) {
         if(!channelRepository.existsById(channelId)) {
             throw new NoSuchElementException("채널이 존재하지 않습니다. id: " + channelId);
         }
 
-        return messageRepository.findAllByChannel_IdOrderByCreatedAtAsc(channelId);
+        return messageMapper.toDtoList(messageRepository.findAllByChannel_IdOrderByCreatedAtAsc(channelId));
     }
 
     // 사진은 update 불가능
     @Transactional
     @Override
-    public Message update(UUID messageId, MessageUpdateRequest request) {
+    public MessageDto update(UUID messageId, MessageUpdateRequest request) {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("해당 메시지가 존재하지 않습니다. id: " + messageId));
         message.update(request.newContent());
-        return message;
+        return messageMapper.toDto(message);
     }
 
     @Transactional
