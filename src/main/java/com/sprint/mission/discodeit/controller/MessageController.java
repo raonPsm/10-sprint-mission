@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.MessageApi;
+import com.sprint.mission.discodeit.dto.Dto.MessageDto;
 import com.sprint.mission.discodeit.dto.requestRespose.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.requestRespose.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.requestRespose.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
@@ -31,16 +31,16 @@ public class MessageController implements MessageApi {
 
     /// GET /api/messages - Channel의 Message 목록 조회
     @GetMapping
-    public ResponseEntity<List<MessageResponse>> findAllByChannelId(@RequestParam UUID channelId) {
-        List<MessageResponse> responses = messageService.findAllByChannelId(channelId).stream()
-                .map(messageMapper::toResponse)
+    public ResponseEntity<List<MessageDto>> findAllByChannelId(@RequestParam UUID channelId) {
+        List<MessageDto> responses = messageService.findAllByChannelId(channelId).stream()
+                .map(messageMapper::toDto)
                 .toList();
         return ResponseEntity.ok(responses);
     }
 
     /// POST /api/messages - Message 생성
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<MessageResponse> create(
+    public ResponseEntity<MessageDto> create(
             @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
@@ -63,7 +63,7 @@ public class MessageController implements MessageApi {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(messageMapper.toResponse(message));
+                .body(messageMapper.toDto(message));
     }
 
     /// DELETE /api/messages/{messageId} - Message 삭제
@@ -75,11 +75,11 @@ public class MessageController implements MessageApi {
 
     /// PATCH /api/messages/{messageId} - Message 내용 수정
     @PatchMapping(value = "/{messageId}")
-    public ResponseEntity<MessageResponse> update(
+    public ResponseEntity<MessageDto> update(
             @PathVariable UUID messageId,
             @RequestBody MessageUpdateRequest request
     ) {
         Message message = messageService.update(messageId, request);
-        return ResponseEntity.ok(messageMapper.toResponse(message));
+        return ResponseEntity.ok(messageMapper.toDto(message));
     }
 }

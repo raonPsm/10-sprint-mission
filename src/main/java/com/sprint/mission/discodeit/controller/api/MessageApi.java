@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller.api;
 
+import com.sprint.mission.discodeit.dto.Dto.MessageDto;
 import com.sprint.mission.discodeit.dto.requestRespose.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.requestRespose.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.requestRespose.message.MessageUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,11 +32,11 @@ public interface MessageApi {
                     description = "Message 목록 조회 성공",
                     content = @Content(
                             mediaType = "*/*",
-                            array = @ArraySchema(schema = @Schema(implementation = MessageResponse.class))
+                            array = @ArraySchema(schema = @Schema(implementation = MessageDto.class))
                     )
             )
     })
-    ResponseEntity<List<MessageResponse>> findAllByChannelId(
+    ResponseEntity<List<MessageDto>> findAllByChannelId(
             @Parameter(description = "조회할 Channel ID", required = true) UUID channelId
     );
 
@@ -48,7 +48,7 @@ public interface MessageApi {
                     description = "Message가 성공적으로 생성됨",
                     content = @Content(
                             mediaType = "*/*",
-                            schema = @Schema(implementation = MessageResponse.class)
+                            schema = @Schema(implementation = MessageDto.class)
                     )
             ),
             @ApiResponse(
@@ -60,7 +60,7 @@ public interface MessageApi {
                     )
             )
     })
-    ResponseEntity<MessageResponse> create(
+    ResponseEntity<MessageDto> create(
             @Parameter(description = "Message 생성 정보", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
             @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
 
@@ -96,7 +96,7 @@ public interface MessageApi {
                     description = "Message가 성공적으로 수정됨",
                     content = @Content(
                             mediaType = "*/*",
-                            schema = @Schema(implementation = MessageResponse.class)
+                            schema = @Schema(implementation = MessageDto.class)
                     )
             ),
             @ApiResponse(
@@ -108,7 +108,7 @@ public interface MessageApi {
                     )
             )
     })
-    ResponseEntity<MessageResponse> update(
+    ResponseEntity<MessageDto> update(
             @Parameter(description = "수정할 Message ID", required = true) UUID messageId,
             @RequestBody MessageUpdateRequest request
     );

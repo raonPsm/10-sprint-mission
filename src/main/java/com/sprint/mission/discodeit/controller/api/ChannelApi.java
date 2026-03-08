@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.controller.api;
 
-import com.sprint.mission.discodeit.dto.requestRespose.channel.ChannelResponse;
+import com.sprint.mission.discodeit.dto.Dto.ChannelDto;
 import com.sprint.mission.discodeit.dto.requestRespose.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.channel.PublicChannelUpdateRequest;
@@ -30,11 +30,11 @@ public interface ChannelApi {
                     description = "Public Channel이 성공적으로 생성됨",
                     content = @Content(
                             mediaType = "*/*",
-                            schema = @Schema(implementation = ChannelResponse.class)
+                            schema = @Schema(implementation = ChannelDto.class)
                     )
             )
     })
-    ResponseEntity<ChannelResponse> createPublicChannel(
+    ResponseEntity<ChannelDto> createPublicChannel(
             @RequestBody PublicChannelCreateRequest request
     );
     
@@ -46,11 +46,11 @@ public interface ChannelApi {
                     description = "Private Channel이 성공적으로 생성됨",
                     content = @Content(
                             mediaType = "*/*",
-                            schema = @Schema(implementation = ChannelResponse.class)
+                            schema = @Schema(implementation = ChannelDto.class)
                     )
             )
     })
-    ResponseEntity<ChannelResponse> createPrivateChannel(
+    ResponseEntity<ChannelDto> createPrivateChannel(
             @RequestBody PrivateChannelCreateRequest request
     );
 
@@ -99,11 +99,11 @@ public interface ChannelApi {
                     description = "Channel 정보가 성공적으로 수정됨",
                     content = @Content(
                             mediaType = "*/*",
-                            schema = @Schema(implementation = ChannelResponse.class)
+                            schema = @Schema(implementation = ChannelDto.class)
                     )
             )
     })
-    ResponseEntity<ChannelResponse> update(
+    ResponseEntity<ChannelDto> update(
             @Parameter(description = "수정할 Channel ID") UUID channelId,
             @RequestBody PublicChannelUpdateRequest request
     );
@@ -116,11 +116,11 @@ public interface ChannelApi {
                     description = "Channel 목록 조회 성공",
                     content = @Content(
                             mediaType = "*/*",
-                            array = @ArraySchema(schema = @Schema(implementation = ChannelResponse.class))
+                            array = @ArraySchema(schema = @Schema(implementation = ChannelDto.class))
                     )
             )
     })
-    ResponseEntity<List<ChannelResponse>> findAllByUserId(
+    ResponseEntity<List<ChannelDto>> findAllByUserId(
             @Parameter(description = "조회할 User ID", required = true) UUID userId
     );
 }

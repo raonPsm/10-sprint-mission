@@ -8,8 +8,6 @@ import com.sprint.mission.discodeit.dto.requestRespose.binarycontent.BinaryConte
 import com.sprint.mission.discodeit.dto.requestRespose.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.userstatus.UserStatusUpdateRequest;
-import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import jakarta.validation.Valid;
@@ -31,8 +29,6 @@ import java.util.UUID;
 public class UserController implements UserApi {
     private final UserService userService;
     private final UserStatusService userStatusService;
-    private final UserMapper userMapper;
-    private final UserStatusMapper userStatusMapper;
 
     /// GET /api/users - 전체 User 목록 조회
     @GetMapping
