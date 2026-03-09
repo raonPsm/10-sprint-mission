@@ -1,11 +1,21 @@
+
+-- 연결 검증 SQL
+SELECT current_database(), current_user, current_schema();
+
 -- 기존 테이블 삭제 (초기화용)
+-- 1. 가장 하위 자식 테이블 (다른 테이블들을 참조함)
 DROP TABLE IF EXISTS message_attachments;
-DROP TABLE IF EXISTS read_status;
+DROP TABLE IF EXISTS read_statuses;
+
+-- 2. 중간 계층 테이블 (상위 부모를 참조함)
 DROP TABLE IF EXISTS messages;
-DROP TABLE IF EXISTS user_status;
-DROP TABLE IF EXISTS channels;
+DROP TABLE IF EXISTS user_statuses;
+
+-- 3. 최상위 부모 테이블 (참조를 당하는 입장이므로 가장 마지막에 삭제)
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS channels;
 DROP TABLE IF EXISTS binary_contents;
+
 --
 
 CREATE TABLE binary_contents (
@@ -13,8 +23,8 @@ CREATE TABLE binary_contents (
                                  created_at TIMESTAMP WITH TIME ZONE NOT NULL,
                                  file_name VARCHAR(255) NOT NULL,
                                  size BIGINT NOT NULL,
-                                 content_type VARCHAR(100) NOT NULL,
-                                 bytes BYTEA NOT NULL
+                                 content_type VARCHAR(100) NOT NULL
+    -- bytes BYTEA NOT NULL
 );
 
 CREATE TABLE users (

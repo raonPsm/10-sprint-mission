@@ -1,7 +1,7 @@
 {
   "info": {
     "_postman_id": "f76d973a-738f-4a49-aeb9-e3eb65fdac1b",
-    "name": "Sprint05",
+    "name": "Sprint06",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -778,37 +778,37 @@
   ],
   "variable": [
     {
-      "id": "db1ca1d7-4d27-4268-a2d0-5ad40003cc47",
+      "id": "9ae334fc-0c5f-409b-92a5-61f36a0dbad7",
       "key": "baseURL",
       "value": ""
     },
     {
-      "id": "56572637-4877-4bf5-af01-9a6d8e4d9da2",
+      "id": "3242d8b9-4787-4b40-882f-1ca9d0069bee",
       "key": "userId",
       "value": ""
     },
     {
-      "id": "d5218376-65b8-4321-9a6b-0f937c5426d2",
+      "id": "7f37513b-fd39-4956-b96b-74f353959310",
       "key": "channelId",
       "value": ""
     },
     {
-      "id": "f744082f-7f9c-4314-8ddb-57eb70d217d2",
+      "id": "d2c56b45-716c-4a8b-b9d5-12210aaa3a96",
       "key": "messageId",
       "value": ""
     },
     {
-      "id": "4be1ef1a-c3c6-4d3b-9cfe-2d869ee27a36",
+      "id": "bb5b46d6-f091-42d6-a422-1a6585c50d70",
       "key": "readStatusId",
       "value": ""
     },
     {
-      "id": "fcdd8aac-1b8a-402a-a096-a0d32e1dd501",
+      "id": "57983840-f026-4f82-bd8a-821482a932ce",
       "key": "binaryContentId",
       "value": ""
     },
     {
-      "id": "25dc5c21-b07e-492e-bf92-18b359957f7d",
+      "id": "560ed984-55d3-4a53-84e7-e1ebb66cd0e6",
       "key": "currentTimestamp",
       "value": ""
     }
