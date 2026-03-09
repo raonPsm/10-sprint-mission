@@ -49,11 +49,22 @@ public class BasicUserService implements UserService {
 
         // 프로필 이미지 엔티티 생성
         BinaryContent profileImage = optionalProfileCreateRequest
-                .map(req -> new BinaryContent(
-                        req.fileName(),
-                        (long)req.bytes().length,
-                        req.contentType())
-                ).orElse(null);
+                .map(req -> {
+                    BinaryContent binaryContent = new BinaryContent(
+                            req.fileName(),
+                            (long)req.bytes().length,
+                            req.contentType()
+                    );
+
+                    // DB에 메타데이터 저장
+                    binaryContentRepository.save(binaryContent);
+
+                    // 실제 파일 데이터를 스토리지에 저장
+                    binaryContentStorage.put(binaryContent.getId(), req.bytes());
+
+                    return binaryContent;
+                })
+                .orElse(null);
 
         // User 엔티티 생성
         User user = new User(username, email, password, profileImage);
@@ -61,7 +72,7 @@ public class BasicUserService implements UserService {
         // UserStatus 엔티티 생성 + 양방향 연관관계(1:1) 설정
         // TODO: 단방향 연관관계가 맞는 건지 확인 요망
         UserStatus userStatus = new UserStatus(user, Instant.now());
-        user.assignUserStatus(userStatus);
+        user.assignUserStatus(userStatus); // TODO: 필요한 것인지 검토 요망
 
         User savedUser = userRepository.save(user);
         // 영속성 전이
@@ -75,10 +86,6 @@ public class BasicUserService implements UserService {
         // -> @Transactional에 의해 메서드가 종료되고 커밋되는 시점(Flush)에,
         // 영속성 컨텍스트에 새로 등록된 3개의 엔티티에 대한 INSERT 쿼리가 한번에 진행
         // * Flush -> 영속성 컨텍스트의 변경 내용을 DB에 반영하는 것 / 영속성 컨텍스트의 변경 내용을 DB에 동기화
-
-        optionalProfileCreateRequest.ifPresent(req ->
-                binaryContentStorage.put(savedUser.getProfile().getId(), req.bytes())
-        );
 
         return userMapper.toDto(savedUser);
         // TODO: username 유효성 검사 로직 추가
