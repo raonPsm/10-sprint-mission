@@ -114,13 +114,39 @@ GRANT
 
 ### DTO 적극 도입하기
 
-- [ ] Entity를 Controller 까지 그대로 노출했을 때 발생할 수 있는 문제점에 대해 정리해보세요. DTO를 적극 도입했을 때 보일러플레이트 코드가 많아지지만, 그럼에도 불구하고 어떤 이점이 있는지 알 수 있을거에요.**(이 내용은 PR에 첨부해주세요.)**
+- [x] Entity를 Controller 까지 그대로 노출했을 때 발생할 수 있는 문제점에 대해 정리해보세요. DTO를 적극 도입했을 때 보일러플레이트 코드가 많아지지만, 그럼에도 불구하고 어떤 이점이 있는지 알 수 있을거에요.**(이 내용은 PR에 첨부해주세요.)**
     - 힌트
         - Entity와 API의 결합
         - 프로덕션 환경에서는 성능을 고려해 OSIV를 false로 설정하는 경우가 대부분
         - 양방향 연관관계 시 순환 참조
         - 민감한 데이터
+```markdown
 
+### Entity 직접 노출 시 발생할 수 있는 주요 문제점
+
+1. Entity와 API 스펙의 강한 결합 (Tight Coupling)
+   Entity는 데이터베이스 테이블 구조와 1:1 매핑되는 도메인 모델이다.
+   만약 Entity를 API 응답으로 직접 반환하면, DB 스키마가 변경될 때마다 API 스펙(JSON 구조)이 함께 변하게 된다. 이는 API를 소비하는 프론트엔드나 외부 클라이언트의 코드를 강제로 수정하게 만드는 결합도를 유발한다.
+
+2. OSIV(Open Session In View) Off 환경에서의 지연 로딩 문제
+   실무 프로덕션 환경에서는 [[커넥션 풀]]의 효율적인 관리를 위해 spring.jpa.open-session-in-view 옵션을 false로 설정하는 경우가 많다.
+- 문제: 트랜잭션 범위(Service 레이어) 밖인 Controller에서는 영속성 컨텍스트가 종료된다.
+- 결과: Controller에서 Entity의 연관관계 객체를 참조하려고 하면 LazyInitializationException이 발생하여 정상적인 응답이 불가능하다.
+
+3. 양방향 연관관계에 따른 순환 참조
+   JPA의 양방향 연관관계 상황에서 Entity를 그대로 JSON 직렬화할 경우, Jackson 라이브러리가 서로를 무한히 참조하며 호출하다가 결국 StackOverflowError를 일으키며 서버가 다운될 수 있다.
+
+4. 민감한 데이터 노출 및 보안 이슈
+   Entity에는 비즈니스 로직상 필요한 비밀번호, 주민번호, 내부 시스템용 생성일자 등 클라이언트에게 노출되어서는 안 되는 민감한 정보가 포함될 수 있다. DTO 없이 Entity를 반환하면 이를 제어하기 위해 @JsonIgnore 같은 어노테이션을 Entity에 덕지덕지 붙이게 되어 도메인 모델이 오염된다.
+
+### DTO 도입을 통한 아키텍처적 이점
+보일러플레이트 코드가 다소 늘어나더라도 DTO를 사용함으로써 얻는 실익이 훨씬 크다
+- API 스펙의 독립성 보장: DB 스키마가 변경되어도 DTO 구조만 유지하면 API 스펙을 안정적으로 관리할 수 있다. (유지보수성 향상)
+- Validation 로직의 분리: @NotBlank, @Min 같은 빈 검증 어노테이션을 Entity가 아닌 DTO에 작성함으로써, 도메인 모델을 순수하게 유지하고 각 API 스펙에 맞는 검증 규칙을 적용할 수 있다.
+- 데이터 필터링 및 가공: 필요한 데이터만 골라 담거나, 여러 Entity의 데이터를 조합하여 클라이언트가 요구하는 최적화된 형태의 JSON을 구성하기 용이하다.
+- 가독성 및 문서화: DTO의 필드명만 봐도 해당 API가 어떤 데이터를 주고받는지 명확히 알 수 있으며, Swagger(OpenAPI) 문서화 시에도 훨씬 깔끔한 명세 작성이 가능하다.
+
+```
 - [x] 다음의 클래스 다이어그램을 참고하여 DTO를 정의하세요. ![hd4c6g1of-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12178&version=1&directory=/hd4c6g1of-image.png&name=hd4c6g1of-image.png)
 
 - [x] Entity를 DTO로 매핑하는 로직을 책임지는 Mapper 컴포넌트를 정의해 반복되는 코드를 줄여보세요.
@@ -193,10 +219,10 @@ GRANT
 
 ### 페이징과 정렬
 
-- [ ] 메시지 목록을 조회할 때 다음의 조건에 따라 페이지네이션 처리를 해보세요.
+- [x] 메시지 목록을 조회할 때 다음의 조건에 따라 페이지네이션 처리를 해보세요.
     - 50개씩 최근 메시지 순으로 조회합니다.
     - 총 메시지가 몇개인지 알 필요는 없습니다.
-- [ ] 일관된 페이지네이션 응답을 위해 제네릭을 활용해 DTO로 구현하세요.
+- [x] 일관된 페이지네이션 응답을 위해 제네릭을 활용해 DTO로 구현하세요.
     - 패키지명: `com.sprint.mission.discodeit.dto.response`
 
     - 클래스 다이어그램 ![wj4q7nhn3-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12178&version=1&directory=/wj4q7nhn3-image.png&name=wj4q7nhn3-image.png)
@@ -209,7 +235,7 @@ GRANT
 
     - `totalElements`: T 데이터의 총 갯수를 의미하며, null일 수 있습니다.
 
-- [ ] Slice 또는 Page 객체로부터 DTO를 생성하는 Mapper를 구현하세요.
+- [x] Slice 또는 Page 객체로부터 DTO를 생성하는 Mapper를 구현하세요.
     - 패키지명: `com.sprint.mission.discodeit.mapper`
 
       ![x7qjncxm0-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12178&version=1&directory=/x7qjncxm0-image.png&name=x7qjncxm0-image.png)
@@ -223,7 +249,7 @@ GRANT
 
 ### 읽기전용 트랜잭션 활용
 
-- [ ] 프로덕션 환경에서는 OSIV를 비활성화하는 경우가 많습니다. 이때 서비스 레이어의 조회 메소드에서 발생할 수 있는 문제를 식별하고, 읽기 전용 트랜잭션을 활용해 문제를 해결해보세요.
+- [x] 프로덕션 환경에서는 OSIV를 비활성화하는 경우가 많습니다. 이때 서비스 레이어의 조회 메소드에서 발생할 수 있는 문제를 식별하고, 읽기 전용 트랜잭션을 활용해 문제를 해결해보세요.
     - OSIV 비활성화하기
 
       `spring:   jpa:     open-in-view: false`
@@ -231,9 +257,32 @@ GRANT
 
 ### 페이지네이션 최적화
 
-- [ ] 오프셋 페이지네이션과 커서 페이지네이션 방식의 차이에 대해 정리해보세요.
+- [x] 오프셋 페이지네이션과 커서 페이지네이션 방식의 차이에 대해 정리해보세요.
 
 이 내용은 PR에 첨부해주세요.
+```markdown
+
+### 오프셋 페이지네이션 (Offset-based Pagination)
+전통적인 방식으로, SQL의 LIMIT과 OFFSET절을 사용하여 특정 지점부터 일정 개수의 데이터를 가져오는 방식이다.
+- 데이터베이스가 처음부터 OFFSET 수만큼의 레코드를 읽은 후, 이를 버리고 LIMIT만큼의 데이터를 반환한다.
+- 특징:
+	- 임의 접근: 사용자가 특정 페이지로 바로 이동하는 것이 가능하다
+	- 구현 난이도: 매우 단순하며 대부분의 ORM에서 기본적으로 지원한다
+- 단점:
+	- 성능 저하: OFFSET 값이 커질수록 데이터베이스는 앞선 레코드를 모두 읽어야 하므로 시간 복잡도는 O(N)에 비례하여 성능이 급격히 저하된다.
+	- 데이터 정합성 문제: 조회를 수행하는 사이에 새로운 데이터가 삽입되거나 삭제되면, 사용자가 다음 페이지로 넘어갔을 때 중복된 데이터를 보거나 일부 데이터를 건너뛰는 현상이 발생한다
+### 커서 페이지네이션 (Cursor-based Pagination)
+사용자에게 제공한 마지막 데이터의 식별자(Cursor)를 기준으로 다음 데이터를 가져오는 방식이다. 'No-offset' 방식이라고도 불린다.
+- WHERE 절에서 마지막으로 읽은 고유 값을 조건으로 걸고 LIMIT을 적용한다. 
+	- `WHERE id < last_seen_id ORDER BY id DESC LIMIT 10`
+- 특징:
+	- 고성능: 인덱싱된 컬럼을 커서로 사용하면 데이터베이스는 해당 위치로 즉시 점프하므로, 전체 데이터 양과 관계없이 일정한 성능(O(1)에 근접)을 유지한다.
+	- 데이터 정합성 유지: 현재 페이지 이후에 데이터가 추가되거나 삭제되어도 커서 기준 다음 페이지를 가져오므로 누락이나 중복이 발생하지 않는다. 
+- 단점: 
+	- 제한적 접근: 특정 페이지로의 점프가 불가능하며, '다음/이전' 버튼 형식의 무한 스크롤이나 더보기 방식에 적합하다.
+	- 구현 복잡도: 정렬 조건이 여러 개일 경우 커서 로직을 구성하기 까다롭다.
+
+```
 
 - [ ] 기존에 구현한 오프셋 페이지네이션을 커서 페이지네이션으로 리팩토링하세요.
     - PageResponse는 다음과 같이 변경하세요. ![73leqaemv-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12179&version=1&directory=/73leqaemv-image.png&name=73leqaemv-image.png)
@@ -250,7 +299,7 @@ GRANT
 
 ### MapStruct 적용
 
-- [ ] Entity와 DTO를 매핑하는 보일러플레이트 코드를 [MapStruct](https://mapstruct.org/) 라이브러리를 활용해 간소화해보세요.
+- [x] Entity와 DTO를 매핑하는 보일러플레이트 코드를 [MapStruct](https://mapstruct.org/) 라이브러리를 활용해 간소화해보세요.
 
 ## 🔄 주요 변경사항
 ## 📸 스크린샷
