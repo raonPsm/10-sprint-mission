@@ -18,16 +18,15 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 
 
@@ -94,22 +93,19 @@ public class BasicMessageService implements MessageService {
             Pageable pageable,
             Instant createdAt
     ) {
-        if(!channelRepository.existsById(channelId)) {
-            throw new NoSuchElementException("채널이 존재하지 않습니다. id: " + channelId);
+        Slice<MessageDto> slice = messageRepository.findAllByChannelIdWithAuthor(channelId,
+                        Optional.ofNullable(createdAt).orElse(Instant.now()),
+                        pageable)
+                .map(messageMapper::toDto);
+
+        String nextCursor = null;
+        if (!slice.getContent().isEmpty()) {
+            nextCursor = slice.getContent().get(slice.getContent().size() - 1)
+                    .createdAt()
+                    .toString();
         }
 
-        // 50개씩, 최근 생성일자(createdAt) 기준 내림차순 정렬 조건의 Pageable 생성
-        Pageable customPageable = PageRequest.of(
-                pageable.getPageNumber(),
-                50,
-                Sort.by(Sort.Direction.DESC, "createdAt")
-        );
-
-        Slice<Message> messageSlice = messageRepository.findAllByChannel_IdOrderByCreatedAtDesc(channelId, pageable);
-
-        Slice<MessageDto> dtoSlice = messageSlice.map(messageMapper::toDto);
-
-        return pageResponseMapper.fromSlice(dtoSlice, pageable.getPageNumber());
+        return pageResponseMapper.fromSlice(slice, nextCursor);
     }
 
     // 사진은 update 불가능

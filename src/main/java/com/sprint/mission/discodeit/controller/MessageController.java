@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -33,9 +34,10 @@ public class MessageController implements MessageApi {
     @GetMapping
     public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
             @RequestParam UUID channelId,
+            @RequestParam(value = "cursor", required = false) Instant cursor,
             Pageable pageable // 페이징 파라미터 - 기본값 0
     ) {
-        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, pageable);
+        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, pageable, cursor);
         return ResponseEntity.ok(messages);
     }
 

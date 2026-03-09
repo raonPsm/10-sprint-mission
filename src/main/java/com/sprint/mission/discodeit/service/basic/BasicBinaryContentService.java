@@ -31,11 +31,10 @@ public class BasicBinaryContentService implements BinaryContentService {
                 (long) request.bytes().length,
                 request.contentType()
         );
+        binaryContentRepository.save(binaryContent);
+        binaryContentStorage.put(binaryContent.getId(), request.bytes());
 
-        BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
-        binaryContentStorage.put(savedBinaryContent.getId(), request.bytes());
-
-        return binaryContentMapper.toDto(savedBinaryContent);
+        return binaryContentMapper.toDto(binaryContent);
     }
     // TODO: (Later) createAll - 다건 저장 로직 추가
 

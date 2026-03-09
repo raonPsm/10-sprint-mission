@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,6 +40,7 @@ public interface MessageApi {
     })
     ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
             @Parameter(description = "조회할 Channel ID", required = true) UUID channelId,
+            @Parameter Instant cursor,
             @Parameter(description = "페이징 정보") Pageable pageable
     );
 
