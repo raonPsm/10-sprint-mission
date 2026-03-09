@@ -25,6 +25,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -86,7 +87,11 @@ public class BasicMessageService implements MessageService {
 
     @Transactional(readOnly = true)
     @Override
-    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Pageable pageable) {
+    public PageResponse<MessageDto> findAllByChannelId(
+            UUID channelId,
+            Pageable pageable,
+            Instant createdAt
+    ) {
         if(!channelRepository.existsById(channelId)) {
             throw new NoSuchElementException("채널이 존재하지 않습니다. id: " + channelId);
         }
@@ -102,7 +107,7 @@ public class BasicMessageService implements MessageService {
 
         Slice<MessageDto> dtoSlice = messageSlice.map(messageMapper::toDto);
 
-        return pageResponseMapper.fromSlice(dtoSlice);
+        return pageResponseMapper.fromSlice(dtoSlice, pageable.getPageNumber());
 
     }
 

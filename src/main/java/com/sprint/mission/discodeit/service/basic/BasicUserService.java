@@ -50,19 +50,19 @@ public class BasicUserService implements UserService {
         // 프로필 이미지 엔티티 생성
         BinaryContent profileImage = optionalProfileCreateRequest
                 .map(req -> {
-                    BinaryContent binaryContent = new BinaryContent(
+                    BinaryContent profile = new BinaryContent(
                             req.fileName(),
                             (long)req.bytes().length,
                             req.contentType()
                     );
 
                     // DB에 메타데이터 저장
-                    binaryContentRepository.save(binaryContent);
+                    binaryContentRepository.save(profile);
 
                     // 실제 파일 데이터를 스토리지에 저장
-                    binaryContentStorage.put(binaryContent.getId(), req.bytes());
+                    binaryContentStorage.put(profile.getId(), req.bytes());
 
-                    return binaryContent;
+                    return profile;
                 })
                 .orElse(null);
 
@@ -127,6 +127,7 @@ public class BasicUserService implements UserService {
         String newEmail = userUpdateRequest.newEmail();
 
         // 본인의 현재 정보와 다를 때만 중복 검사 실시
+        // TODO: (LATER) 원래 정보하고 같을 경우 다른 Exception 던지기
         if (!user.getEmail().equals(newEmail) && userRepository.existsByEmail(newEmail)) {
             throw new IllegalArgumentException("이미 사용중인 이메일(email)입니다.: " + newEmail);
         }
@@ -134,19 +135,23 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("이미 존재하는 사용자 이름(username)입니다.: " + newUsername);
         }
 
-
         // 회원가입 시 사진을 등록했다면 기본 프로필로 돌아갈 수 있는 기능 없음
         // -> 업데이트 시 파일이 존재하면 기존 사진 삭제 후 새로 저장, 파일이 없으면 기존 사진 유지
         BinaryContent newProfileImage = optionalProfileCreateRequest
-                .map(req -> new BinaryContent(req.fileName(), (long)req.bytes().length, req.contentType()))
+                .map(req -> {
+                    BinaryContent newProfile = new BinaryContent(
+                            req.fileName(),
+                            (long)req.bytes().length,
+                            req.contentType()
+                    );
+                    binaryContentRepository.save(newProfile);
+                    binaryContentStorage.put(newProfile.getId(), req.bytes());
+                    return newProfile;
+                })
                 .orElse(user.getProfile());
 
         // orphanRemoval = true 설정으로 새로운 프로필 참조가 할당되면 기존 프로필은 자동으로 DELETE 수행됨
         user.update(newUsername, newEmail, userUpdateRequest.newPassword(), newProfileImage);
-
-        optionalProfileCreateRequest.ifPresent(req ->
-                binaryContentStorage.put(user.getProfile().getId(), req.bytes())
-        );
 
         // (Dirty Checking) 메서드 종료 시 트랜잭션이 커밋되면서 변경된 엔티티에 대한 UPDATE 쿼리 자동 발생. save() 호출 불필요
         return userMapper.toDto(user);

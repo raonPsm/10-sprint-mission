@@ -7,20 +7,21 @@ import org.springframework.data.domain.Slice;
 
 @Mapper(componentModel = "spring")
 public interface PageResponseMapper {
-    default <T> PageResponse<T> fromSlice(Slice<T> slice) {
+    // TODO: (Later) Object nextCursor -> Instant, Long, UUID, String... 다 받을 수 있도록 할 것인지 고려
+    default <T> PageResponse<T> fromSlice(Slice<T> slice, String nextCursor) {
         return new PageResponse<>(
                 slice.getContent(),
-                slice.getNumber(),
+                nextCursor,
                 slice.getSize(),
                 slice.hasNext(),
                 null
         );
     }
 
-    default <T> PageResponse<T> fromPage(Page<T> page) {
+    default <T> PageResponse<T> fromPage(Page<T> page, String nextCursor) {
         return new PageResponse<>(
                 page.getContent(),
-                page.getNumber(),
+                nextCursor,
                 page.getSize(),
                 page.hasNext(),
                 page.getTotalElements()

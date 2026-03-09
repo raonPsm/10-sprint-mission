@@ -7,16 +7,21 @@ import com.sprint.mission.discodeit.dto.requestRespose.message.MessageCreateRequ
 import com.sprint.mission.discodeit.dto.requestRespose.message.MessageUpdateRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 public interface MessageService {
-    MessageDto create(MessageCreateRequest request, List<BinaryContentCreateRequest> attachments);
+    MessageDto create(
+            MessageCreateRequest request,
+            List<BinaryContentCreateRequest> attachments
+    );
 
-    MessageDto findById(UUID messageId);
+    MessageDto find(UUID messageId);
 
-    // List<MessageDto> findAllByChannelId(UUID channelId);
-    PageResponse<MessageDto> findAllByChannelId(UUID channelId, Pageable pageable);
+    PageResponse<MessageDto> findAllByChannelId(
+            UUID channelId, Pageable pageable, Instant createdAt
+    );
 
     MessageDto update(UUID messageId, MessageUpdateRequest request);
 
