@@ -153,9 +153,9 @@ GRANT
         - `ResponseEntity<?> download(BinaryContentDto)`
             - HTTP API로 다운로드 기능을 제공합니다.
             - BinaryContentDto 정보를 바탕으로 파일을 다운로드할 수 있는 응답을 반환합니다.
-- [ ] 서비스 레이어에서 기존에 BinaryContent를 저장하던 로직을 BinaryContentStorage를 활용하도록 리팩토링하세요.
+- [x] 서비스 레이어에서 기존에 BinaryContent를 저장하던 로직을 BinaryContentStorage를 활용하도록 리팩토링하세요.
 
-- [ ] BinaryContentController에 파일을 다운로드하는 API를 추가하고, BinaryContentStorage에 로직을 위임하세요.
+- [x] BinaryContentController에 파일을 다운로드하는 API를 추가하고, BinaryContentStorage에 로직을 위임하세요.
 
     - 엔드포인트: `GET /api/binaryContents/{binaryContentId}/download`
 
@@ -169,13 +169,13 @@ GRANT
 
       ![5qwe2kqno-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12178&version=1&directory=/5qwe2kqno-image.png&name=5qwe2kqno-image.png)
 
-- [ ] 로컬 디스크 저장 방식으로 BinaryContentStorage 구현체를 구현하세요.
+- [x] 로컬 디스크 저장 방식으로 BinaryContentStorage 구현체를 구현하세요.
 
     - 클래스 다이어그램
 
       ![skptrmm5p-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12178&version=1&directory=/skptrmm5p-image.png&name=skptrmm5p-image.png)
 
-- [ ] `discodeit.storage.type` 값이 `local` 인 경우에만 Bean으로 등록되어야 합니다.
+- [x] `discodeit.storage.type` 값이 `local` 인 경우에만 Bean으로 등록되어야 합니다.
 
     - `Path root`
         - 로컬 디스크의 루트 경로입니다.

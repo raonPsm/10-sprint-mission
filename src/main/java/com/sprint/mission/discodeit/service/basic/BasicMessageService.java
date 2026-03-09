@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.Dto.MessageDto;
+import com.sprint.mission.discodeit.dto.requestRespose.PageResponse;
 import com.sprint.mission.discodeit.dto.requestRespose.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.message.MessageUpdateRequest;
@@ -9,6 +10,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -16,6 +18,10 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,8 +39,9 @@ public class BasicMessageService implements MessageService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final MessageMapper messageMapper;
-    private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentRepository binaryContentRepository; // FIXME: binaryContentRepository 코드에서 구현 필요
     private final BinaryContentStorage binaryContentStorage;
+    private final PageResponseMapper pageResponseMapper;
 
     @Transactional
     @Override
@@ -79,12 +86,20 @@ public class BasicMessageService implements MessageService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<MessageDto> findAllByChannelId(UUID channelId) {
+    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, int page) {
         if(!channelRepository.existsById(channelId)) {
             throw new NoSuchElementException("채널이 존재하지 않습니다. id: " + channelId);
         }
 
-        return messageMapper.toDtoList(messageRepository.findAllByChannel_IdOrderByCreatedAtAsc(channelId));
+        // 50개씩, 최근 생성일자(createdAt) 기준 내림차순 정렬 조건의 Pageable 생성
+        Pageable pageable = PageRequest.of(page, 50, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Slice<Message> messageSlice = messageRepository.findAllByChannel_IdOrderByCreatedAtDesc(channelId, pageable);
+
+        Slice<MessageDto> dtoSlice = messageSlice.map(messageMapper::toDto);
+
+        return pageResponseMapper.fromSlice(dtoSlice);
+
     }
 
     // 사진은 update 불가능

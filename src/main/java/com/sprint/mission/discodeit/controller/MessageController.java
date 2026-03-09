@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.MessageApi;
 import com.sprint.mission.discodeit.dto.Dto.MessageDto;
+import com.sprint.mission.discodeit.dto.requestRespose.PageResponse;
 import com.sprint.mission.discodeit.dto.requestRespose.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.message.MessageUpdateRequest;
@@ -29,10 +30,12 @@ public class MessageController implements MessageApi {
 
     /// GET /api/messages - Channel의 Message 목록 조회
     @GetMapping
-    public ResponseEntity<List<MessageDto>> findAllByChannelId(@RequestParam UUID channelId) {
-        List<MessageDto> responses = messageService.findAllByChannelId(channelId).stream()
-                .toList();
-        return ResponseEntity.ok(responses);
+    public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
+            @RequestParam UUID channelId,
+            @RequestParam(defaultValue = "0") int page // 페이징 파라미터 - 기본값 0
+    ) {
+        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, page);
+        return ResponseEntity.ok(messages);
     }
 
     /// POST /api/messages - Message 생성

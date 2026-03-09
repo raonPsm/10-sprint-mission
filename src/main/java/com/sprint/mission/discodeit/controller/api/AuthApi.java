@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.controller.api;
 
 import com.sprint.mission.discodeit.dto.Dto.UserDto;
 import com.sprint.mission.discodeit.dto.requestRespose.auth.LoginRequest;
-import com.sprint.mission.discodeit.dto.requestRespose.user.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -23,7 +22,7 @@ public interface AuthApi {
                     description = "로그인 성공",
                     content = @Content(
                             mediaType = "*/*",
-                            schema = @Schema(implementation = UserResponse.class)
+                            schema = @Schema(implementation = UserDto.class)
                     )
             ),
             @ApiResponse(

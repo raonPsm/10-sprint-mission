@@ -9,7 +9,6 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface BinaryContentMapper {
-    @Mapping(target = "filename", source = "fileName")
     @Mapping(target = "bytes", expression = "java(null)")
     BinaryContentDto toDto(BinaryContent entity);
 

@@ -7,6 +7,5 @@ import java.util.List;
 import java.util.UUID;
 
 public interface BinaryContentRepository extends JpaRepository<BinaryContent, UUID> {
-
     List<BinaryContent> findAllByIdIn(List<UUID> ids);
 }

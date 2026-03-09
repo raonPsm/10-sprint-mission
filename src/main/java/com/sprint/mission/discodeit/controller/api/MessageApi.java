@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.controller.api;
 
 import com.sprint.mission.discodeit.dto.Dto.MessageDto;
+import com.sprint.mission.discodeit.dto.requestRespose.PageResponse;
 import com.sprint.mission.discodeit.dto.requestRespose.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.message.MessageUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,19 +26,20 @@ import java.util.UUID;
 public interface MessageApi {
 
     /// GET /api/messages - Channel의 Message 목록 조회
-    @Operation(summary = "Channel의 Message 목록 조회")
+    @Operation(summary = "Channel의 Message 목록 페이징 조회")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "Message 목록 조회 성공",
                     content = @Content(
                             mediaType = "*/*",
-                            array = @ArraySchema(schema = @Schema(implementation = MessageDto.class))
+                            array = @ArraySchema(schema = @Schema(implementation = PageResponse.class))
                     )
             )
     })
-    ResponseEntity<List<MessageDto>> findAllByChannelId(
-            @Parameter(description = "조회할 Channel ID", required = true) UUID channelId
+    ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
+            @Parameter(description = "조회할 Channel ID", required = true) UUID channelId,
+            @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") int page
     );
 
     /// POST /api/messages - Message 생성
