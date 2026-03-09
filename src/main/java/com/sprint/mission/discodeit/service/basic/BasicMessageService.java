@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -53,35 +52,38 @@ public class BasicMessageService implements MessageService {
         User author = userRepository.findById(request.authorId())
                 .orElseThrow(() -> new NoSuchElementException("작성자가 존재하지 않습니다. id: " + request.authorId()));
 
-        // 첨부파일 엔티티 생성
-        List<BinaryContent> attachmentEntities = new ArrayList<>();
-        if (attachments != null && !attachments.isEmpty()) {
-            for(BinaryContentCreateRequest fileReq : attachments) {
-                attachmentEntities.add(new BinaryContent(fileReq.fileName(), (long) fileReq.bytes().length, fileReq.contentType()));
-            }
-        }
+        // List<BinaryContent> attachments 생성
+        List<BinaryContent> attachmentList = attachments.stream()
+                .map(req -> {
+                    BinaryContent binaryContent = new BinaryContent(
+                            req.fileName(),
+                            (long)req.bytes().length,
+                            req.contentType()
+                    );
+                    binaryContentRepository.save(binaryContent);
+                    binaryContentStorage.put(binaryContent.getId(), req.bytes());
+                    return binaryContent;
+                })
+                .toList();
 
-        // Message 엔티티 생성
-        Message message = new Message(request.content(), channel, author, attachmentEntities);
-        Message savedMessage = messageRepository.save(message);
-
-        if (attachments != null && !attachments.isEmpty()) {
-            for (int i = 0; i < attachments.size(); i++) {
-                BinaryContentCreateRequest file = attachments.get(i);
-                BinaryContent savedAttachment = savedMessage.getAttachments().get(i);
-                binaryContentStorage.put(savedAttachment.getId(), file.bytes());
-            }
-        }
+        // Message 생성
+        Message message = new Message(
+                request.content(),
+                channel,
+                author,
+                attachmentList
+        );
 
         // 영속성 전이
-        return messageMapper.toDto(savedMessage);
+        return messageMapper.toDto(messageRepository.save(message));
     }
 
     @Transactional(readOnly = true)
     @Override
-    public MessageDto findById(UUID messageId) {
-        return messageMapper.toDto(messageRepository.findById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("해당 메시지가 존재하지 않습니다. id: " + messageId))
+    public MessageDto find(UUID messageId) {
+        return messageMapper.toDto(
+                messageRepository.findById(messageId)
+                        .orElseThrow(() -> new NoSuchElementException("해당 메시지가 존재하지 않습니다. id: " + messageId))
         );
     }
 
@@ -108,7 +110,6 @@ public class BasicMessageService implements MessageService {
         Slice<MessageDto> dtoSlice = messageSlice.map(messageMapper::toDto);
 
         return pageResponseMapper.fromSlice(dtoSlice, pageable.getPageNumber());
-
     }
 
     // 사진은 update 불가능
