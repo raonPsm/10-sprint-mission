@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.dto.requestRespose.message.MessageCreateRequ
 import com.sprint.mission.discodeit.dto.requestRespose.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,9 +33,9 @@ public class MessageController implements MessageApi {
     @GetMapping
     public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
             @RequestParam UUID channelId,
-            @RequestParam(defaultValue = "0") int page // 페이징 파라미터 - 기본값 0
+            Pageable pageable // 페이징 파라미터 - 기본값 0
     ) {
-        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, page);
+        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, pageable);
         return ResponseEntity.ok(messages);
     }
 

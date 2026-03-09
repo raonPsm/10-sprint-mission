@@ -86,13 +86,17 @@ public class BasicMessageService implements MessageService {
 
     @Transactional(readOnly = true)
     @Override
-    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, int page) {
+    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Pageable pageable) {
         if(!channelRepository.existsById(channelId)) {
             throw new NoSuchElementException("채널이 존재하지 않습니다. id: " + channelId);
         }
 
         // 50개씩, 최근 생성일자(createdAt) 기준 내림차순 정렬 조건의 Pageable 생성
-        Pageable pageable = PageRequest.of(page, 50, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable customPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                50,
+                Sort.by(Sort.Direction.DESC, "createdAt")
+        );
 
         Slice<Message> messageSlice = messageRepository.findAllByChannel_IdOrderByCreatedAtDesc(channelId, pageable);
 
