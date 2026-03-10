@@ -70,7 +70,6 @@ public class BasicUserService implements UserService {
         User user = new User(username, email, password, profileImage);
 
         // UserStatus 엔티티 생성 + 양방향 연관관계(1:1) 설정
-        // TODO: 단방향 연관관계가 맞는 건지 확인 요망
         UserStatus userStatus = new UserStatus(user, Instant.now());
         user.assignUserStatus(userStatus); // TODO: 필요한 것인지 검토 요망
 

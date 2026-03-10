@@ -89,11 +89,12 @@ public class BasicMessageService implements MessageService {
     @Transactional(readOnly = true)
     @Override
     public PageResponse<MessageDto> findAllByChannelId(
-            UUID channelId,
-            Pageable pageable,
-            Instant createdAt
+            UUID channelId, // 메시지를 조회할 특정 채널의 식별자
+            Instant createdAt, // 페이징의 기준점이 되는 cursor값. 이 시간보다 이전에 생성된 데이터를 찾는 용도로 사용
+            Pageable pageable // 페이지의 크기, 정렬 등의 페이징 정보를 담고 있음
+
     ) {
-        Slice<MessageDto> slice = messageRepository.findAllByChannelIdWithAuthor(channelId,
+        Slice<MessageDto> slice = messageRepository.findAllByChannel_IdWithAuthor(channelId,
                         Optional.ofNullable(createdAt).orElse(Instant.now()),
                         pageable)
                 .map(messageMapper::toDto);

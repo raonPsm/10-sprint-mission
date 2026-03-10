@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
+
     private final ChannelRepository channelRepository;
     private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
@@ -48,6 +49,7 @@ public class BasicChannelService implements ChannelService {
                 request.name(),
                 request.description()
         );
+
         return channelMapper.toDto(channelRepository.save(channel));
     }
 
@@ -78,18 +80,19 @@ public class BasicChannelService implements ChannelService {
         Channel savedChannel = channelRepository.save(channel);
 
         // 참여자별 ReadStatus 생성
-        for (UUID userId : requestedUserIds) {
-            User userProxy = userRepository.getReferenceById(userId);
-            ReadStatus readStatus = new ReadStatus(userProxy, savedChannel, Instant.now());
-            readStatusRepository.save(readStatus);
-        }
+        Instant now = Instant.now(); // 루프 내에서 호출 X
+        List<User> users = userRepository.findAllById(requestedUserIds);
+        List<ReadStatus> readStatuses = users.stream()
+                .map(user -> new ReadStatus(user, savedChannel, now))
+                .toList();
+        readStatusRepository.saveAll(readStatuses);
 
         return channelMapper.toDto(savedChannel);
     }
 
     @Transactional(readOnly = true)
     @Override
-    public ChannelDto findByChannelId(UUID channelId) {
+    public ChannelDto find(UUID channelId) {
         return channelMapper.toDto(channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다. channelId: " + channelId)));
     }

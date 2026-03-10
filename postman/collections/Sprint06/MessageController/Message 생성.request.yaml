@@ -1,0 +1,41 @@
+$kind: http-request
+url: "{{baseURL}}/api/messages"
+method: POST
+body:
+  type: formdata
+  content:
+    - type: text
+      key: messageCreateRequest
+      value: |-
+        { 
+            "content": "메시지 테스트입니다.",
+            "channelId": "{{channelId}}", 
+            "authorId": "{{userId}}"
+        }
+      contentType: application/json
+    - type: file
+      key: attachments
+      src: []
+scripts:
+  - type: afterResponse
+    code: "// 1. 응답 데이터를 JSON으로 변환\r
+
+      const jsonData = pm.response.json();\r
+
+      \r
+
+      // 2. 응답 데이터에서 메시지 ID 추출 및 저장\r
+
+      if (jsonData && jsonData.id) {\r
+
+      \    pm.collectionVariables.set(\"messageId\", jsonData.id);\r
+
+      \    console.log(\"메시지 ID 저장 완료: \" + jsonData.id);\r
+
+      } else {\r
+
+      \    console.error(\"응답에 id가 없어서 messageId를 저장하지 못했습니다.\");\r
+
+      }"
+    language: text/javascript
+order: 2000

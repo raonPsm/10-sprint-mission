@@ -16,6 +16,7 @@ import java.time.Instant;
 @Service
 @RequiredArgsConstructor
 public class BasicAuthService implements AuthService {
+
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     // 연관관계 탐색을 활용하므로 UserStatusRepository 의존성 제거

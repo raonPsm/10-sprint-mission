@@ -1,0 +1,9 @@
+$kind: http-request
+url: "{{baseURL}}/api/readStatuses?userId={{userId}}"
+method: GET
+queryParams:
+  userId: "{{userId}}"
+body:
+  type: json
+  content: ""
+order: 3000
