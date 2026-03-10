@@ -8,7 +8,15 @@ import java.util.UUID;
 
 // JpaRepository<엔티티 타입, PK 타입> 상속
 public interface UserRepository extends JpaRepository<User, UUID> {
-    // JpaRepository에서 기본적인 CRUD 메서드 제공 (save, findById, findAll, existsById, deleteById)
+    // JpaRepository에서 기본적인 CRUD 메서드 제공
+        // boolean existsById(ID id);
+        // boolean existsById(UUID id);
+        // List<User> findAllById(Iterable<UUID> ids);
+        // Optional<User> findById(UUID id);
+        // User save(User user);
+        // List<User> findAll();
+        // void delete(User user);
+        // User getReferenceById(UUID id);
 
     // Spring Data JPA 쿼리 메소드
 
@@ -23,5 +31,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByEmail(String email);
 
     // find + By + Username
+    // JPQL -> SELECT u FROM User u WHERE u.username = :username
+    // SQL -> SELECT * FROM users WHERE username = ?
     Optional<User> findByUsername(String username);
 }

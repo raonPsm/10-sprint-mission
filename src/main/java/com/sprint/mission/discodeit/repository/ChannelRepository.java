@@ -11,6 +11,18 @@ import java.util.Set;
 import java.util.UUID;
 
 public interface ChannelRepository extends JpaRepository<Channel, UUID> {
+        // save(Channel entity);
+        // findById(UUID id);
+        // delete(Channel entity);
+        // existsById(UUID id);
+        // findAll();
+        // findAllByIds(Iterable<UUID> ids);
+        // deleteById(UUID id);
+        // getReferenceById(UUID id);
+
+    // 채널명 중복 여부 확인
+    // JPQL -> SELECT COUNT(c) > 0 FROM Channel c WHERE c.name = :channelName
+    // SQL  -> SELECT COUNT(*) > 0 FROM channels WHERE name = ?
     boolean existsByName(String channelName);
 
     // PUBLIC + 내가 속한 PRIVATE 채널 조회
