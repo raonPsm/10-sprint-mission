@@ -284,7 +284,7 @@ GRANT
 
 ```
 
-- [ ] 기존에 구현한 오프셋 페이지네이션을 커서 페이지네이션으로 리팩토링하세요.
+- [x] 기존에 구현한 오프셋 페이지네이션을 커서 페이지네이션으로 리팩토링하세요.
     - PageResponse는 다음과 같이 변경하세요. ![73leqaemv-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12179&version=1&directory=/73leqaemv-image.png&name=73leqaemv-image.png)
 
     - 다음의 API 명세를 준수하세요.
