@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.controller.api.AuthApi;
 import com.sprint.mission.discodeit.dto.Dto.UserDto;
 import com.sprint.mission.discodeit.dto.requestRespose.auth.LoginRequest;
-import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("api/auth")
 public class AuthController implements AuthApi {
+
     private final AuthService authService;
-    private final UserMapper userMapper;
 
     // POST /api/auth/login - 로그인
     @PostMapping("/login")

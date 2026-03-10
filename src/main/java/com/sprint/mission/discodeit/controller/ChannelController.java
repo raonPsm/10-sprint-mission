@@ -18,6 +18,7 @@ import java.util.UUID;
 @RequestMapping("/api/channels")
 @RequiredArgsConstructor
 public class ChannelController implements ChannelApi {
+
     private final ChannelService channelService;
 
     /// POST /api/channels/public - Public Channel 생성

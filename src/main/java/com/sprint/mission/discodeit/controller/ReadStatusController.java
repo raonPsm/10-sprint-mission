@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.controller.api.ReadStatusApi;
 import com.sprint.mission.discodeit.dto.Dto.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.requestRespose.readstatus.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.readstatus.ReadStatusUpdateRequest;
-import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,8 +17,8 @@ import java.util.UUID;
 @RequestMapping("/api/readStatuses")
 @RequiredArgsConstructor
 public class ReadStatusController implements ReadStatusApi {
+
     private final ReadStatusService readStatusService;
-    private final ReadStatusMapper readStatusMapper;
 
     /// GET /api/readStatuses - User의 Message 읽음 상태 목록 조회
     @GetMapping

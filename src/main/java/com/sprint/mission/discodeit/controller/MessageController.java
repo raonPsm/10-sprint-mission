@@ -9,6 +9,8 @@ import com.sprint.mission.discodeit.dto.requestRespose.message.MessageUpdateRequ
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,17 +29,23 @@ import java.util.UUID;
 @RequestMapping("/api/messages")
 @RequiredArgsConstructor
 public class MessageController implements MessageApi {
+
     private final MessageService messageService;
 
 
     /// GET /api/messages - Channel의 Message 목록 조회
     @GetMapping
     public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
-            @RequestParam UUID channelId,
+            @RequestParam("channelId") UUID channelId,
             @RequestParam(value = "cursor", required = false) Instant cursor,
-            Pageable pageable // 페이징 파라미터 - 기본값 0
+            @PageableDefault (
+                    size = 50, // 한 번에 50개 -> 명세
+                    page = 0, // 0 페이지
+                    sort = "createdAt", // createdAt 기준으로
+                    direction = Sort.Direction.DESC // 내림차순 정렬
+            ) Pageable pageable
     ) {
-        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, pageable, cursor);
+        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, cursor, pageable);
         return ResponseEntity.ok(messages);
     }
 
