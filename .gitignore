@@ -29,6 +29,8 @@ hs_err_pid*
 # 로컬 테스트용 데이터 저장소 제외
 *.ser
 discodeit.fileRepo/
+# storage 파일 제외
+.discodeit
 
 # --- Security & Config ---
 .env
