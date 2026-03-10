@@ -44,6 +44,8 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     // JPQL -> SELECT m FROM Message M WHERE m.channel.id = :channelId ORDER BY m.createdAt DESC + setMaxResults(1)
     // SQL  -> SELECT m.* FROM message m WHERE m.channel_id = ? ORDER BY m.created_at DESC LIMIT 1;
     Optional<Message> findTopByChannel_IdOrderByCreatedAtDesc(UUID channelId);
+
+    void deleteAllByChannel_Id(UUID channelId);
 }
 
 /**
