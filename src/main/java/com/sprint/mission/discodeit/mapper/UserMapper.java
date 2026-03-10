@@ -17,9 +17,11 @@ import java.util.List;
 // MapStruct -> 컴파일 할 때 UserMapperImpl 이라는 클래스를 만들고, 구현체 코드 작성
 
 public interface UserMapper {
-    @Mapping(target = "profile", source = "profile")
-    @Mapping(target = "online",
-            expression = "java(entity.getUserStatus() != null ? entity.getUserStatus().isOnline() : null)")
+    @Mapping(
+            target = "online",
+            expression = "java(entity.getUserStatus() != null ? entity.getUserStatus().isOnline() : null)"
+    )
     UserDto toDto(User entity);
+
     List<UserDto> toDtoList(List<User> entities);
 }

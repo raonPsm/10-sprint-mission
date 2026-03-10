@@ -10,6 +10,7 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface ReadStatusMapper {
     @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "channelId", source = "channel.id")
     ReadStatusDto toDto(ReadStatus entity);
 
     List<ReadStatusDto> toDtoList(List<ReadStatus> entities);

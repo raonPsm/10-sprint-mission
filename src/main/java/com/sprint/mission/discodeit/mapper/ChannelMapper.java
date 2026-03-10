@@ -8,15 +8,11 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 @Mapper(
@@ -24,39 +20,48 @@ import java.util.List;
         uses = {UserMapper.class}
 )
 public abstract class ChannelMapper {
+
     @Autowired protected MessageRepository messageRepository;
     @Autowired protected ReadStatusRepository readStatusRepository;
     @Autowired protected UserMapper userMapper;
 
+    // target: 결과 DTO의 어떤 필드에 대한 설정인지 지정
+    // ignore = true: 그 target 필드는 MapStruct 자동 매핑에서 제외
     @Mapping(target = "participants", ignore = true)
     @Mapping(target = "lastMessageAt", ignore = true)
-    public abstract ChannelDto toDto(Channel entity);
+    protected abstract ChannelDto toBaseDto(Channel entity);
 
-    public abstract List<ChannelDto> toDtoList(List<Channel> entities);
+    public ChannelDto toDto(Channel entity) {
+        ChannelDto base = toBaseDto(entity);
 
-    @AfterMapping
-    protected void enrich(Channel entity, @MappingTarget ChannelDto dto) {
-        Instant lastMessageAt = messageRepository.findAll().stream()
-                .filter(msg -> msg.getChannel().getId().equals(entity.getId()))
+        Instant lastMessageAt = messageRepository
+                .findTopByChannel_IdOrderByCreatedAtDesc(entity.getId())
                 .map(Message::getCreatedAt)
-                .max(Comparator.naturalOrder())
                 .orElse(entity.getCreatedAt());
 
         List<UserDto> participants = entity.getType() == ChannelType.PRIVATE
-                ? readStatusRepository.findAll().stream()
-                    .filter(rs -> rs.getChannel().getId().equals(entity.getId()))
-                    .map(ReadStatus::getUser)
-                    .map(userMapper::toDto)
-                    .toList()
-                : Collections.emptyList();
+                ? readStatusRepository.findAllByChannel_Id(entity.getId()).stream()
+                .map(ReadStatus::getUser)
+                .map(userMapper::toDto)
+                .toList()
+                : List.of();
 
-        dto = new ChannelDto (
-                dto.id(),
-                dto.type(),
-                dto.name(),
-                dto.description(),
-                dto.participants(),
-                dto.lastMessageAt()
+        return new ChannelDto(
+                base.id(),
+                base.type(),
+                base.name(),
+                base.description(),
+                participants,
+                lastMessageAt
         );
+    }
+
+    public List<ChannelDto> toDtoList(List<Channel> entities) {
+        if (entities == null || entities.isEmpty()) {
+            return List.of();
+        }
+        return entities.stream()
+                .map(this::toDto)
+                .toList();
     }
 }
