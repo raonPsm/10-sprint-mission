@@ -68,6 +68,7 @@ CREATE TABLE messages (
 
     FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE,
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL
+    -- 부모 테이블의 행이 삭제될 때 그 행을 참조하고 있던 자식 테이블의 외래키 값을 자동으로 NULL로 변경
 );
 
 CREATE TABLE read_statuses (

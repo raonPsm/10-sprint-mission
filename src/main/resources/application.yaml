@@ -14,11 +14,11 @@ spring:
     driver-class-name: org.postgresql.Driver # PostgreSQL JDBC 드라이버 클래스 명시
 
   jpa:
-    hibernate:
+    # hibernate:
       # schema.sql을 통해 테이블을 직접 생성하므로,
       # 애플리케이션 실행 시 DB 구조가 일치하는지 검증만 수행
       # 엔티티에 필드가 있는데 DB 컬럼이 없으면 예외를 내고 실행이 실패할 수 있음 => validate
-      ddl-auto: validate # create -> 엔티티로 등록된 클래스와 매핑되는 테이블을 자동으로 생성
+      # ddl-auto: validate # create -> 엔티티로 등록된 클래스와 매핑되는 테이블을 자동으로 생성
     # show-sql: true # Hibernate가 실행하는 SQL을 콘솔에 출력 -> org.hibernate.SQL: debug와 겹침
     properties:
       hibernate:
@@ -31,6 +31,14 @@ spring:
     # Lazy 연관관계를 컨트롤러 / 직렬화 시점에 건드리면 LazyInitializationException이 발생할 수 있음
     # -> DTO로 변환 시점에 필요한 데이터를 모두 조회하도록 쿼리를 최적화해야 함
     open-in-view: false
+
+  # 사용이유 1 - JPA가 자동으로 생성해주는 DDL은 ON DELETE SET NULL 같은 상세한 DB 제약 조건을 완벽하게 생성하지 못하는 경우가 많다.
+  # 사용이유 2 - ddl-auto는 코드에 따라 실시간으로 변하므로 git을 통해 이력 관리가 어렵다
+    # ddl-auto가 생성한 SQL 코드는 기본적으로 파일 형태로 남지 않고 메모리상에서 실행된후 사라진다.
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
 
 server:
   port: 8080 # 내장 Tomcat 서버 8080 포트에서 실행

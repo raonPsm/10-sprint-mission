@@ -16,7 +16,6 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Message extends BaseUpdatableEntity {
 
-    @Column(nullable = false)
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -27,8 +26,8 @@ public class Message extends BaseUpdatableEntity {
     // nullable = false : ddl-auto 속성으로 테이블을 자동 생성할 때, 해당 외래키 컬럼에 NOT NULL DLL 강제
     private Channel channel;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "author_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id")
     private User author;
 
     @BatchSize(size = 100) // N+1 문제 해결을 위한 In Query 최적화 (size = 100~1000 사이로 보통 설정)
