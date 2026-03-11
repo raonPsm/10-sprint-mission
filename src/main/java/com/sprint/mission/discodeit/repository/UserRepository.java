@@ -2,7 +2,9 @@ package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -34,4 +36,12 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     // JPQL -> SELECT u FROM User u WHERE u.username = :username
     // SQL -> SELECT * FROM users WHERE username = ?
     Optional<User> findByUsername(String username);
+
+    // @EntityGraph(attributePaths = {"profile", "userStatus"})
+    // @Query("SELECT u FROM User u")
+    @Query("SELECT u " +
+            "FROM User u " +
+            "LEFT JOIN FETCH u.profile " +
+            "LEFT JOIN FETCH u.userStatus")
+    List<User> findAllWithProfileAndUserStatus();
 }

@@ -109,8 +109,8 @@ public class BasicUserService implements UserService {
     @Transactional(readOnly = true)
     @Override
     public List<UserDto> findAll() {
-        return userMapper.toDtoList(userRepository.findAll());
-        // TODO: N+1 문제 -> Fetch Join
+        // [1] N+1 문제 -> profile, UserStatus 한 번에 조회
+        return userMapper.toDtoList(userRepository.findAllWithProfileAndUserStatus());
     }
 
     @Transactional
