@@ -1,305 +1,341 @@
 # [SB] 스프린트 미션 6
 ## 🏔️ 프로젝트 마일스톤
-  - 데이터베이스 환경 설정 및 모델링
-  - Spring Data JPA 환경 적용
-  - Entity 연관 관계 매핑
-  - 레포지토리와 서비스 계층에 JPA 적용
-  - Transaction 처리
-  - 페이지네이션과 정렬
-  - DTO의 적극적인 도입과 MapStruct의 활용
-  - BinaryContent 저장 로직 고도화
-  - 메타정보와 바이너리 정보 분리
-  - N+1 문제 해결
+- 로그 관리
+- 커스텀 예외 설계
+- 유효성 검사
+- Actuator를 활용한 모니터링
+- 단위 테스트
+- 슬라이스 테스트
+- 통합 테스트
+
 ## 📝 요구사항
 ### ✏️ 기본 요구사항
-API 명세
 
-- 이번 미션은 아래의 API 스펙과 비교하며 구현해보세요.
+### 프로파일 기반 설정 관리
 
-    - [API 스펙 v1.1](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12178&version=1&directory=/api-docs_1.1.json&name=api-docs_1.1.json)
-- API 스펙을 준수한다면, 아래의 프론트엔드 코드와 호환됩니다.
+- [ ] 개발, 운영 환경에 대한 프로파일을 구성하세요.
+  - [ ] `application-dev.yaml`, `application-prod.yaml` 파일을 생성하세요.
+    - [ ] 다음과 같은 설정값을 프로파일별로 분리하세요.
+        - [ ] 데이터베이스 연결 정보
+        - [ ] 서버 포트
 
-    - [정적 리소스 v1.1.4](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12178&version=1&directory=/Release%201.1.4%20dist.zip&name=Release%201.1.4%20dist.zip)
-    - [소스 코드(참고용) v1.1.4](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12178&version=1&directory=/0%20Sprint%20Mission%20Front%201.1.4.zip&name=0%20Sprint%20Mission%20Front%201.1.4.zip)
+### 로그 관리
 
-프론트엔드 소스 코드는 참고용으로만 활용하세요. 수정하여 활용하는 경우 이어지는 요구사항 또는 미션을 수행하는 데 어려움이 있을 수 있습니다.
+- [ ] Lombok의 `@Slf4j` 어노테이션을 활용해 로깅을 쉽게 추가할 수 있도록 구성하세요.
+  - [ ] `application.yaml`에 기본 로깅 레벨을 설정하세요.
+    - 기본적으로 `info` 레벨로 설정합니다.
+- [ ] 환경 별 적절한 로깅 레벨을 프로파일 별로 설정해보세요.
+    - SQL 로그를 보기위해 설정했던 레벨은 유지합니다.
+    - 우리가 작성한 프로젝트의 로그는 개발 환경에서 `debug`, 운영 환경에서는 `info` 레벨로 설정합니다.
+- [ ] Spring Boot의 기본 로깅 구현체인 Logback의 설정 파일을 구성하세요.
+    - [ ] `logback-spring.xml` 파일을 생성하세요.
 
-### **데이터베이스**
+    - [ ] 다음 예시와 같은 로그 메시지를 출력하기 위한 로깅 패턴과 출력 방식을 커스터마이징하세요.
 
-- [x] 아래와 같이 데이터베이스 환경을 설정하세요.
-    - 데이터베이스: `discodeit`
-    - 유저: `discodeit_user`
-    - 패스워드: `discodeit1234`
-```powershell
-postgres=# CREATE USER discodeit_user WITH PASSWORD 'discodeit1234';
-CREATE ROLE
+        - 로그 출력 예시
 
-postgres=# CREATE DATABASE discodeit OWNER discodeit_user;
-CREATE DATABASE
+          `# 패턴 {년}-{월}-{일} {시}:{분}:{초}:{밀리초} [{스레드명}] {로그 레벨(5글자로 맞춤)} {로거 이름(최대 36글자)} - {로그 메시지}{줄바꿈}  # 예시 25-01-01 10:33:55.740 [main] DEBUG c.s.m.discodeit.DiscodeitApplication - Running with Spring Boot v3.4.0, Spring v6.2.0`
 
-postgres=# GRANT ALL PRIVILEGES ON DATABASE discodeit TO discodeit_user;
-GRANT
-```
-- [x] ERD를 참고하여 DDL을 작성하고, 테이블을 생성하세요.
-    - 작성한 DDL 파일은 /src/main/resources/schema.sql 경로에 포함하세요. ![u0ghedzoz-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12178&version=1&directory=/u0ghedzoz-image.png&name=u0ghedzoz-image.png)
+    - [ ] 콘솔과 파일에 동시에 로그를 기록하도록 설정하세요.
 
-        - `PK`: Primary Key
-        - `UK`: Unique Key
-        - `NN`: Not Null
-        - `FK`: Foreign Key
-            - `ON DELETE CASCADE`: 연관 엔티티 삭제 시 같이 삭제
-            - `ON DELETE SET NULL`: 연관 엔티티 삭제 시 NULL로 변경
+        - [ ] 파일은 `{프로젝트 루트}/.logs` 경로에 저장되도록 설정하세요.
+    - [ ] 로그 파일은 일자별로 롤링되도록 구성하세요.
 
-### **Spring Data JPA 적용하기**
+    - [ ] 로그 파일은 30일간 보관하도록 구성하세요.
 
-- [x] Spring Data JPA와 PostgreSQL을 위한 의존성을 추가하세요.
-- [x] 앞서 구성한 데이터베이스에 연결하기 위한 설정값을 `application.yaml` 파일에 작성하세요.
-- [x] 디버깅을 위해 SQL 로그와 관련된 설정값을 `application.yaml` 파일에 작성하세요.
+- [ ] 서비스 레이어와 컨트롤러 레이어의 주요 메소드에 로깅을 추가하세요.
+    - [ ] 로깅 레벨을 적절히 사용하세요: ERROR, WARN, INFO, DEBUG
+    - [ ] 다음과 같은 메소드에 로깅을 추가하세요:
+        - [ ] 사용자 생성/수정/삭제
+        - [ ] 채널 생성/수정/삭제
+        - [ ] 메시지 생성/수정/삭제
+        - [ ] 파일 업로드/다운로드
 
-### **엔티티 정의하기**
+### 예외 처리 고도화
 
-- [x] 클래스 다이어그램을 참고해 도메인 모델의 공통 속성을 추상 클래스로 정의하고 상속 관계를 구현하세요.
+- [ ] 커스텀 예외를 설계하고 구현하세요.
 
-    - 이때 Serializable 인터페이스는 제외합니다.
+    - 패키지명: `com.sprint.mission.discodeit.exception[.{도메인}]`
 
-    - 패키지명: `com.sprint.mission.discodeit.entity.base`
+    - [ ] `ErrorCode` Enum 클래스를 통해 예외 코드명과 메시지를 정의하세요.
 
-    - 클래스 다이어그램
+        - 아래는 예시입니다. 필요하다고 판단되는 다양한 코드를 정의하세요.
 
-      ![xs6bzcvs6-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12178&version=1&directory=/xs6bzcvs6-image.png&name=xs6bzcvs6-image.png)
+        - 예시
 
-- [x] JPA의 어노테이션을 활용해 `createdAt`, `updatedAt` 속성이 자동으로 설정되도록 구현하세요.
+          ![6ag3lzl9i-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=13906&version=1&directory=/6ag3lzl9i-image.png&name=6ag3lzl9i-image.png)
 
-    - `@CreatedDate`, `@LastModifiedDate`
-- [x] 클래스 다이어그램을 참고해 클래스 참조 관계를 수정하세요. 필요한 경우 생성자, update 메소드를 수정할 수 있습니다. 단, 아직 JPA Entity와 관련된 어노테이션은 작성하지 마세요.
+    - [ ] 모든 예외의 기본이 되는 `DiscodeitException` 클래스를 정의하세요.
 
-    - 클래스 다이어그램 ![pq5iz92wt-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12178&version=1&directory=/pq5iz92wt-image.png&name=pq5iz92wt-image.png)
+        - 클래스 다이어그램
 
-    - 화살표의 방향과 화살표 유무에 유의하세요.
+          ![j5vtp941a-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=13906&version=1&directory=/j5vtp941a-image.png&name=j5vtp941a-image.png)
 
-- [x] ERD와 클래스 다이어그램을 토대로 연관관계 매핑 정보를 표로 정리해보세요.**(이 내용은 PR에 첨부해주세요.)**
+        - `details`는 예외 발생 상황에 대한 추가정보를 저장하기 위한 속성입니다.
 
-    - 예시
+            - 예시
+                - 조회 시도한 사용자의 ID 정보
+                - 업데이트 시도한 PRIVATE 채널의 ID 정보
+    - [ ] `DiscodeitException`을 상속하는 주요 도메인 별 메인 예외 클래스를 정의하세요.
 
-|엔티티 관계|다중성|방향성|부모-자식 관계|연관관계의 주인|
-|---|---|---|---|---|
-|A:B|1:N|B→A 단방향|부모: A, 자식: B|B|
-||||||
-||||||
+        - `UserException`, `ChannelException` 등
+        - 실제로 활용되는 클래스라기보다는 예외 클래스의 계층 구조를 명확하게 하기 위한 클래스 입니다.
+    - [ ] 도메인 메인 예외 클래스를 상속하는 구체적인 예외 클래스를 정의하세요.
 
-| 엔티티 관계                   | 다중성   | 방향성                         | 부모-자식 관계                     | 연관관계의 주인   | 비고 (FK 식별자)                       |
-|--------------------------| ----- |-----------------------------| ---------------------------- | ---------- | --------------------------------- |
-| Channel : Message        | 1 : N | Message → Channel 단방향       | 부모: Channel자식: Message       | Message    | Message 테이블이 channel_id FK 소유     |
-| User : Message           | 1 : N | Message → User 단방향          | 부모: User자식: Message          | Message    | Message 테이블이 author_id FK 소유      |
-| User : UserStatus        | 1 : 1 | UserStatus → User 양방향       | 부모: User자식: UserStatus       | UserStatus | UserStatus 테이블이 user_id FK 소유     |
-| Channel : ReadStatus     | 1 : N | ReadStatus → Channel 단방향    | 부모: Channel자식: ReadStatus    | ReadStatus | ReadStatus 테이블이 channel_id FK 소유  |
-| User : ReadStatus        | 1 : N | ReadStatus → User 단방향       | 부모: User자식: ReadStatus       | ReadStatus | ReadStatus 테이블이 user_id FK 소유     |
-| User : BinaryContent     | 1 : 1 | User → BinaryContent 단방향    | 부모: User자식: BinaryContent    | User       | User 테이블이 profile_id FK 소유        |
-| Message : BinaryContent  | 1 : N | Message → BinaryContent 단방향 | 부모: Message자식: BinaryContent | Message    | 조인 테이블(message_attachments) 방식 사용 |
+        - `UserNotFoundException`, `UserAlreadyExistException` 등 필요한 예외를 정의하세요.
 
-- [x] JPA 주요 어노테이션을 활용해 ERD, 연관관계 매핑 정보를 도메인 모델에 반영해보세요.
-    - `@Entity`, `@Table`
-    - `@Column`, `@Enumerated`
-    - `@OneToMany`, `@OneToOne`, `@ManyToOne`
-    - `@JoinColumn`, `@JoinTable`
-- [x] ERD의 외래키 제약 조건과 연관관계 매핑 정보의 부모-자식 관계를 고려해 영속성 전이와 고아 객체를 정의하세요.
-    - `cascade`, `orphanRemoval`
+        - 예시
 
-### **레포지토리와 서비스에 JPA 도입하기**
+          ![a6f585icy-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=13906&version=1&directory=/a6f585icy-image.png&name=a6f585icy-image.png)
 
-- [x] 기존의 Repository 인터페이스를 JPARepository로 정의하고 쿼리메소드로 대체하세요.
-    - FileRepository와 JCFRepository 구현체는 삭제합니다.
-- [x] 영속성 컨텍스트의 특징에 맞추어 서비스 레이어를 수정해보세요.
-    - 힌트: `트랜잭션`, `영속성 전이`, `변경 감지`, `지연로딩`
+- [ ] 기존에 구현했던 예외를 커스텀 예외로 대체하세요.
 
-### DTO 적극 도입하기
-
-- [x] Entity를 Controller 까지 그대로 노출했을 때 발생할 수 있는 문제점에 대해 정리해보세요. DTO를 적극 도입했을 때 보일러플레이트 코드가 많아지지만, 그럼에도 불구하고 어떤 이점이 있는지 알 수 있을거에요.**(이 내용은 PR에 첨부해주세요.)**
-    - 힌트
-        - Entity와 API의 결합
-        - 프로덕션 환경에서는 성능을 고려해 OSIV를 false로 설정하는 경우가 대부분
-        - 양방향 연관관계 시 순환 참조
-        - 민감한 데이터
-```markdown
-
-### Entity 직접 노출 시 발생할 수 있는 주요 문제점
-
-1. Entity와 API 스펙의 강한 결합 (Tight Coupling)
-   Entity는 데이터베이스 테이블 구조와 1:1 매핑되는 도메인 모델이다.
-   만약 Entity를 API 응답으로 직접 반환하면, DB 스키마가 변경될 때마다 API 스펙(JSON 구조)이 함께 변하게 된다. 이는 API를 소비하는 프론트엔드나 외부 클라이언트의 코드를 강제로 수정하게 만드는 결합도를 유발한다.
-
-2. OSIV(Open Session In View) Off 환경에서의 지연 로딩 문제
-   실무 프로덕션 환경에서는 [[커넥션 풀]]의 효율적인 관리를 위해 spring.jpa.open-session-in-view 옵션을 false로 설정하는 경우가 많다.
-- 문제: 트랜잭션 범위(Service 레이어) 밖인 Controller에서는 영속성 컨텍스트가 종료된다.
-- 결과: Controller에서 Entity의 연관관계 객체를 참조하려고 하면 LazyInitializationException이 발생하여 정상적인 응답이 불가능하다.
-
-3. 양방향 연관관계에 따른 순환 참조
-   JPA의 양방향 연관관계 상황에서 Entity를 그대로 JSON 직렬화할 경우, Jackson 라이브러리가 서로를 무한히 참조하며 호출하다가 결국 StackOverflowError를 일으키며 서버가 다운될 수 있다.
-
-4. 민감한 데이터 노출 및 보안 이슈
-   Entity에는 비즈니스 로직상 필요한 비밀번호, 주민번호, 내부 시스템용 생성일자 등 클라이언트에게 노출되어서는 안 되는 민감한 정보가 포함될 수 있다. DTO 없이 Entity를 반환하면 이를 제어하기 위해 @JsonIgnore 같은 어노테이션을 Entity에 덕지덕지 붙이게 되어 도메인 모델이 오염된다.
-
-### DTO 도입을 통한 아키텍처적 이점
-보일러플레이트 코드가 다소 늘어나더라도 DTO를 사용함으로써 얻는 실익이 훨씬 크다
-- API 스펙의 독립성 보장: DB 스키마가 변경되어도 DTO 구조만 유지하면 API 스펙을 안정적으로 관리할 수 있다. (유지보수성 향상)
-- Validation 로직의 분리: @NotBlank, @Min 같은 빈 검증 어노테이션을 Entity가 아닌 DTO에 작성함으로써, 도메인 모델을 순수하게 유지하고 각 API 스펙에 맞는 검증 규칙을 적용할 수 있다.
-- 데이터 필터링 및 가공: 필요한 데이터만 골라 담거나, 여러 Entity의 데이터를 조합하여 클라이언트가 요구하는 최적화된 형태의 JSON을 구성하기 용이하다.
-- 가독성 및 문서화: DTO의 필드명만 봐도 해당 API가 어떤 데이터를 주고받는지 명확히 알 수 있으며, Swagger(OpenAPI) 문서화 시에도 훨씬 깔끔한 명세 작성이 가능하다.
-
-```
-- [x] 다음의 클래스 다이어그램을 참고하여 DTO를 정의하세요. ![hd4c6g1of-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12178&version=1&directory=/hd4c6g1of-image.png&name=hd4c6g1of-image.png)
-
-- [x] Entity를 DTO로 매핑하는 로직을 책임지는 Mapper 컴포넌트를 정의해 반복되는 코드를 줄여보세요.
-
-    - 패키지명: `com.sprint.mission.discodeit.mapper` ![buo7cmjvp-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12178&version=1&directory=/buo7cmjvp-image.png&name=buo7cmjvp-image.png)
-
-### BinaryContent 저장 로직 고도화
-
-데이터베이스에 이미지와 같은 파일을 저장하면 성능 상 불리한 점이 많습니다. 따라서 실제 바이너리 데이터는 별도의 공간에 저장하고, 데이터베이스에는 바이너리 데이터에 대한 메타 정보(파일명, 크기, 유형 등)만 저장하는 것이 좋습니다.
-
-- [x] BinaryContent 엔티티는 파일의 메타 정보(`fileName`, `size`, `contentType`)만 표현하도록 `bytes` 속성을 제거하세요.
-
-- [x] BinaryContent의 `byte[]` 데이터 저장을 담당하는 인터페이스를 설계하세요.
-
-  저장 매체의 확장성(로컬 저장소, 원격 저장소)을 고려해 인터페이스부터 설계합니다.
-
-    - 패키지명: `com.sprint.mission.discodeit.storage`
-
-    - 클래스 다이어그램 ![nqt5zw2pk-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12178&version=1&directory=/nqt5zw2pk-image.png&name=nqt5zw2pk-image.png)
-
-    - BinaryContentStorage
-
-        - 바이너리 데이터의 저장/로드를 담당하는 컴포넌트입니다.
-        - `UUID put(UUID, byte[])`
-            - UUID 키 정보를 바탕으로 `byte[]` 데이터를 저장합니다.
-            - UUID는 BinaryContent의 Id 입니다.
-        - `InputStream get(UUID)`
-            - 키 정보를 바탕으로 `byte[]` 데이터를 읽어 InputStream 타입으로 반환합니다.
-            - UUID는 BinaryContent의 Id 입니다.
-        - `ResponseEntity<?> download(BinaryContentDto)`
-            - HTTP API로 다운로드 기능을 제공합니다.
-            - BinaryContentDto 정보를 바탕으로 파일을 다운로드할 수 있는 응답을 반환합니다.
-- [x] 서비스 레이어에서 기존에 BinaryContent를 저장하던 로직을 BinaryContentStorage를 활용하도록 리팩토링하세요.
-
-- [x] BinaryContentController에 파일을 다운로드하는 API를 추가하고, BinaryContentStorage에 로직을 위임하세요.
-
-    - 엔드포인트: `GET /api/binaryContents/{binaryContentId}/download`
-
-    - 요청
-
-        - 값: BinaryContentId
-        - 방식: Query Parameter
-    - 응답: `ResponseEntity<?>`
+    - `NoSuchElementException`
+    - `IllegalArgumentException`
+    - …
+- [ ] `ErrorResponse`를 통해 일관된 예외 응답을 정의하세요.
 
     - 클래스 다이어그램
 
-      ![5qwe2kqno-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12178&version=1&directory=/5qwe2kqno-image.png&name=5qwe2kqno-image.png)
+      ![3gqeampkw-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=13906&version=1&directory=/3gqeampkw-image.png&name=3gqeampkw-image.png)
 
-- [x] 로컬 디스크 저장 방식으로 BinaryContentStorage 구현체를 구현하세요.
+    - `int status`: HTTP 상태코드
 
-    - 클래스 다이어그램
+    - `String exceptionType`: 발생한 예외의 클래스 이름
 
-      ![skptrmm5p-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12178&version=1&directory=/skptrmm5p-image.png&name=skptrmm5p-image.png)
+- [ ] 앞서 정의한 `ErrorResponse`와 `@RestControllerAdvice`를 활용해 예외를 처리하는 예외 핸들러를 구현하세요.
 
-- [x] `discodeit.storage.type` 값이 `local` 인 경우에만 Bean으로 등록되어야 합니다.
+    - 모든 핸들러는 일관된 응답(`ErrorResponse`)을 가져야 합니다.
 
-    - `Path root`
-        - 로컬 디스크의 루트 경로입니다.
-        - `discodeit.storage.local.root-path` 설정값을 정의하고, 이 값을 통해 주입합니다.
-    - `void init()`
-        - 루트 디렉토리를 초기화합니다.
-        - Bean이 생성되면 자동으로 호출되도록 합니다.
-    - `Path resolvePath(UUID)`
-        - 파일의 실제 저장 위치에 대한 규칙을 정의합니다.
-            - 파일 저장 위치 규칙 예시: `{root}/{UUID}`
-        - `put`, `get` 메소드에서 호출해 일관된 파일 경로 규칙을 유지합니다.
-    - `ResponseEntity<Resource> donwload(BinaryContentDto)`
-        - `get` 메소드를 통해 파일의 바이너리 데이터를 조회합니다.
-        - BinaryContentDto와 바이너리 데이터를 활용해 `ResponseEntity<Resource>` 응답을 생성 후 반환합니다.
+### 유효성 검사
 
-### 페이징과 정렬
+- [ ] Spring Validation 의존성을 추가하세요.
+- [ ] 주요 Request DTO에 제약 조건 관련 어노테이션을 추구하세요.
+    - `@NotNull`, `@NotBlank`, `@Size`, `@Email` 등
+- [ ] 컨트롤러에 `@Valid` 를 사용해 요청 데이터를 검증하세요.
+- [ ] 검증 실패 시 발생하는 `MethodArgumentNotValidException`을 전역 예외 핸들러에서 처리하세요.
+- [ ] 유효성 검증 실패 시 상세한 오류 메시지를 포함한 응답을 반환하세요.
 
-- [x] 메시지 목록을 조회할 때 다음의 조건에 따라 페이지네이션 처리를 해보세요.
-    - 50개씩 최근 메시지 순으로 조회합니다.
-    - 총 메시지가 몇개인지 알 필요는 없습니다.
-- [x] 일관된 페이지네이션 응답을 위해 제네릭을 활용해 DTO로 구현하세요.
-    - 패키지명: `com.sprint.mission.discodeit.dto.response`
+### Actuator
 
-    - 클래스 다이어그램 ![wj4q7nhn3-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12178&version=1&directory=/wj4q7nhn3-image.png&name=wj4q7nhn3-image.png)
+- [ ] Spring Boot Actuator 의존성을 추가하세요.
+- [ ] 기본 Actuator 엔트포인트를 설정하세요.
+    - health, info, metrics, loggers
+- [ ] Actuator info를 위한 애플리케이션 정보를 추가하세요.
+    - 애플리케이션 이름: `Discodeit`
+    - 애플리케이션 버전: `1.7.0`
+    - 자바 버전: `17`
+    - 스프링 부트 버전: `3.4.0`
+    - 주요 설정 정보
+        - 데이터소스: url, 드라이버 클래스 이름
+        - jpa: ddl-auto
+        - storage 설정: type, path
+        - multipart 설정: max-file-size, max-request-size
+- [ ] Spring Boot 서버를 실행 후 각종 정보를 확인해보세요.
+    - `/actuator/info`
+    - `/actuator/metrics`
+    - `/actuator/health`
+    - `/actuator/loggers`
 
-    - `content`: 실제 데이터입니다.
+### 단위 테스트
 
-    - `number`: 페이지 번호입니다.
+- [ ] 서비스 레이어의 주요 메소드에 대한 단위 테스트를 작성하세요.
+    - [ ] 다음 서비스의 핵심 메소드에 대해 각각 최소 2개 이상(성공, 실패)의 테스트 케이스를 작성하세요.
+        - [ ] UserService: create, update, delete 메소드
+        - [ ] ChannelService: create(PUBLIC, PRIVATE), update, delete, findByUserId 메소드
+        - [ ] MessageService: create, update, delete, findByChannelId 메소드
+          - [ ] `Mockito`를 활용해 Repository 의존성을 모의(mock)하세요.
+          - [ ] `BDDMockito`를 활용해 테스트 가독성을 높이세요.
 
-    - `size`: 페이지의 크기입니다.
+### 슬라이스 테스트
 
-    - `totalElements`: T 데이터의 총 갯수를 의미하며, null일 수 있습니다.
+- [ ] 레포지토리 레이어의 슬라이스 테스트를 작성하세요.
+  - [ ] `@DataJpaTest`를 활용해 테스트를 구현하세요.
+    - [ ] 테스트 환경을 구성하는 프로파일을 구성하세요.
+      - [ ] `application-test.yaml`을 생성하세요.
+        - [ ] 데이터소스는 H2 인메모리 데이터 베이스를 사용하고, PostgreSQL 호환 모드로 설정하세요.
+        - [ ] H2 데이터베이스를 위해 필요한 의존성을 추가하세요.
+        - [ ] 테스트 시작 시 스키마를 새로 생성하도록 설정하세요.
+        - [ ] 디버깅에 용이하도록 로그 레벨을 적절히 설정하세요.
+    - [ ] 테스트 실행 간 `test` 프로파일을 활성화 하세요.
+    - [ ] JPA Audit 기능을 활성화 하기 위해 테스트 클래스에 `@EnableJpaAuditing`을 추가하세요.
+    - [ ] 주요 레포지토리(User, Channel, Message)의 주요 쿼리 메소드에 대해 각각 최소 2개 이상(성공, 실패)의 테스트 케이스를 작성하세요.
+        - [ ] 커스텀 쿼리 메소드
+        - [ ] 페이징 및 정렬 메소드
+- [ ] 컨트롤러 레이어의 슬라이스 테스트를 작성하세요.
+    - [ ] `@WebMvcTest`를 활용해 테스트를 구현하세요.
 
-- [x] Slice 또는 Page 객체로부터 DTO를 생성하는 Mapper를 구현하세요.
-    - 패키지명: `com.sprint.mission.discodeit.mapper`
+    - [ ] `WebMvcTest`에서 자동으로 등록되지 않는 유형의 Bean이 필요하다면 `@Import`를 활용해 추가하세요.
 
-      ![x7qjncxm0-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12178&version=1&directory=/x7qjncxm0-image.png&name=x7qjncxm0-image.png)
+        - 예시
 
-    - 확장성을 위해 제네릭 메소드로 구현하세요.
+          `@Import({ErrorCodeStatusMapper.class})`
+
+    - [ ] 주요 컨트롤러(User, Channel, Message)에 대해 최소 2개 이상(성공, 실패)의 테스트 케이스를 작성하세요.
+
+    - [ ] MockMvc를 활용해 컨트롤러를 테스트하세요.
+
+    - [ ] 서비스 레이어를 모의(mock)하여 컨트롤러 로직만 테스트하세요.
+
+    - [ ] JSON 응답을 검증하는 테스트를 포함하세요.
+
+
+### 통합 테스트
+
+- [ ] 통합 테스트 환경을 구성하세요.
+  - [ ] `@SpringBootTest`를 활용해 Spring 애플리케이션 컨텍스트를 로드하세요.
+    - [ ] H2 인메모리 데이터베이스를 활용하세요.
+    - [ ] 테스트용 프로파일을 구성하세요.
+- [ ] 주요 API 엔드포인트에 대한 통합 테스트를 작성하세요.
+    - [ ] 주요 API에 대해 최소 2개 이상의 테스트 케이스를 작성하세요.
+        - [ ] 사용자 관련 API (생성, 수정, 삭제, 목록 조회)
+        - [ ] 채널 관련 API (생성, 수정, 삭제)
+        - [ ] 메시지 관련 API (생성, 수정, 삭제, 목록 조회)
+    - [ ] 각 테스트는 `@Transactional`을 활용해 독립적으로 실행하세요.
+
+
 
 ### ✏️ 심화 요구사항
-### N+1 문제
 
-- [ ] N+1 문제가 발생하는 쿼리를 찾고 해결해보세요.
+### MDC를 활용한 로깅 고도화
 
-### 읽기전용 트랜잭션 활용
+- [ ] 요청 ID, 요청 URL, 요청 방식 등의 정보를 MDC에 추가하는 인터셉터를 구현하세요.
+    - [ ] 클래스명: `MDCLoggingInterceptor`
+    - [ ] 패키지명: `com.**.discodeit.config`
+    - [ ] 요청 ID는 랜덤한 문자열로 생성합니다. (UUID)
+    - [ ] 요청 ID는 응답 헤더에 포함시켜 더 많은 분석이 가능하도록 합니다.
+        - 헤더 이름: `Discodeit-Request-ID`
+          - [ ] `WebMvcConfigurer`를 통해 `MDCLoggingInterceptor`를 등록하세요.
+    - [ ] 클래스명: `WebMvcConfig`
+    - [ ] 패키지명: `com.**.discodeit.config`
+- [ ] Logback 패턴에 MDC 값을 포함시키세요.
+    - 로그 출력 예시
+```Markdown
+# 패턴
+{년}-{월}-{일} {시}:{분}:{초}:{밀리초} [{스레드명}] {로그 레벨(5글자로 맞춤)} {로거 이름(최대 36글자)} [{MDC:요청ID} | {MDC:요청 메소드} | {MDC:요청 URL}] - {로그 메시지}{줄바꿈}
 
-- [x] 프로덕션 환경에서는 OSIV를 비활성화하는 경우가 많습니다. 이때 서비스 레이어의 조회 메소드에서 발생할 수 있는 문제를 식별하고, 읽기 전용 트랜잭션을 활용해 문제를 해결해보세요.
-    - OSIV 비활성화하기
+# 예시
+25-01-01 10:33:55.740 [main] DEBUG o.s.api.AbstractOpenApiResource [827cbc0b | GET | /v3/api-docs] - Init duration for springdoc-openapi is: 216 ms
+```
+### Spring Boot Admin을 활용한 메트릭 가시화
 
-      `spring:   jpa:     open-in-view: false`
+- [ ] Spring Boot Admin 서버를 구현할 모듈을 생성하세요.
 
+    - IntelliJ 화면 참고
 
-### 페이지네이션 최적화
+      ![9l6b0q2dn-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=13907&version=1&directory=/9l6b0q2dn-image.png&name=9l6b0q2dn-image.png)
 
-- [x] 오프셋 페이지네이션과 커서 페이지네이션 방식의 차이에 대해 정리해보세요.
+    - 모듈 정보는 다음과 같습니다.
 
-이 내용은 PR에 첨부해주세요.
-```markdown
+      ![b8812d4su-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=13907&version=1&directory=/b8812d4su-image.png&name=b8812d4su-image.png)
 
-### 오프셋 페이지네이션 (Offset-based Pagination)
-전통적인 방식으로, SQL의 LIMIT과 OFFSET절을 사용하여 특정 지점부터 일정 개수의 데이터를 가져오는 방식이다.
-- 데이터베이스가 처음부터 OFFSET 수만큼의 레코드를 읽은 후, 이를 버리고 LIMIT만큼의 데이터를 반환한다.
-- 특징:
-	- 임의 접근: 사용자가 특정 페이지로 바로 이동하는 것이 가능하다
-	- 구현 난이도: 매우 단순하며 대부분의 ORM에서 기본적으로 지원한다
-- 단점:
-	- 성능 저하: OFFSET 값이 커질수록 데이터베이스는 앞선 레코드를 모두 읽어야 하므로 시간 복잡도는 O(N)에 비례하여 성능이 급격히 저하된다.
-	- 데이터 정합성 문제: 조회를 수행하는 사이에 새로운 데이터가 삽입되거나 삭제되면, 사용자가 다음 페이지로 넘어갔을 때 중복된 데이터를 보거나 일부 데이터를 건너뛰는 현상이 발생한다
-### 커서 페이지네이션 (Cursor-based Pagination)
-사용자에게 제공한 마지막 데이터의 식별자(Cursor)를 기준으로 다음 데이터를 가져오는 방식이다. 'No-offset' 방식이라고도 불린다.
-- WHERE 절에서 마지막으로 읽은 고유 값을 조건으로 걸고 LIMIT을 적용한다. 
-	- `WHERE id < last_seen_id ORDER BY id DESC LIMIT 10`
-- 특징:
-	- 고성능: 인덱싱된 컬럼을 커서로 사용하면 데이터베이스는 해당 위치로 즉시 점프하므로, 전체 데이터 양과 관계없이 일정한 성능(O(1)에 근접)을 유지한다.
-	- 데이터 정합성 유지: 현재 페이지 이후에 데이터가 추가되거나 삭제되어도 커서 기준 다음 페이지를 가져오므로 누락이나 중복이 발생하지 않는다. 
-- 단점: 
-	- 제한적 접근: 특정 페이지로의 점프가 불가능하며, '다음/이전' 버튼 형식의 무한 스크롤이나 더보기 방식에 적합하다.
-	- 구현 복잡도: 정렬 조건이 여러 개일 경우 커서 로직을 구성하기 까다롭다.
+    - 의존성
 
+      ![zjh3frl0m-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=13907&version=1&directory=/zjh3frl0m-image.png&name=zjh3frl0m-image.png)
+
+- [ ] `admin` 모듈의 메인 클래스에 `@EnableAdminServer` 어노테이션을 추가하고, 서버는 9090번 포트로 설정합니다.
+```Java
+import de.codecentric.boot.admin.server.config.EnableAdminServer;
+
+@SpringBootApplication
+@EnableAdminServer
+public class AdminApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(AdminApplication.class, args);
+    }
+}
 ```
 
-- [x] 기존에 구현한 오프셋 페이지네이션을 커서 페이지네이션으로 리팩토링하세요.
-    - PageResponse는 다음과 같이 변경하세요. ![73leqaemv-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12179&version=1&directory=/73leqaemv-image.png&name=73leqaemv-image.png)
+```YAML
+# application.yaml
+spring:
+    application:
+        name: admin
+server:
+    port: 9090
+```
 
-    - 다음의 API 명세를 준수하세요.
+- [ ] `admin` 서버 실행 후 [localhost:9090/applications](http://localhost:9090/applications) 에 접속해봅니다.
 
-        - [API 스펙 v1.2](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12179&version=1&directory=/%E1%84%86%E1%85%B5%E1%84%89%E1%85%A7%E1%86%AB%20%E1%84%8B%E1%85%A1%E1%86%AB%E1%84%82%E1%85%A2%20API%20%E1%84%86%E1%85%AE%E1%86%AB%E1%84%89%E1%85%A5%201.2.json&name=%E1%84%86%E1%85%B5%E1%84%89%E1%85%A7%E1%86%AB%20%E1%84%8B%E1%85%A1%E1%86%AB%E1%84%82%E1%85%A2%20API%20%E1%84%86%E1%85%AE%E1%86%AB%E1%84%89%E1%85%A5%201.2.json)
-    - API 스펙을 준수한다면, 아래의 프론트엔드 코드와 호환됩니다.
+- [ ] discodeit 프로젝트에 Spring Boot Admin Client를 적용합니다.
 
-        - [정적 리소스 v1.2.4](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12179&version=1&directory=/Release%201.2.4%20dist.zip&name=Release%201.2.4%20dist.zip)
-        - [소스 코드(참고용) v1.2.4](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=12179&version=1&directory=/0%20Sprint%20Mission%20Front%201.2.4.zip&name=0%20Sprint%20Mission%20Front%201.2.4.zip)
+    - [ ] 의존성을 추가합니다.
+```Gradle
+dependencies {
+    ...
+    implementation 'de.codecentric:spring-boot-admin-starter-client:3.4.5
+}
+```
+- [ ] admin 서버에 등록될 수 있도록 설정 정보를 추가합니다.
+```YAML
+# application.yml
+spring:
+  application:
+    name: discodeit
+    ...
+  boot:
+    admin:
+      client:
+        instance:
+          name: discodeit
+...
+```
 
-프론트엔드 소스 코드는 참고용으로만 활용하세요. 수정하여 활용하는 경우 이어지는 요구사항 또는 미션을 수행하는 데 어려움이 있을 수 있습니다.
+```YAML
+# application-dev.yml
+spring:
+  application:
+    name: discodeit
+    ...
+  boot:
+    admin:
+      client:
+        url: http://localhost:9090
+...
+```
 
-### MapStruct 적용
+```YAML
+# application-prod.yml
+spring:
+  application:
+    name: discodeit
+    ...
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+...
+```
+- [ ] discodeit 서버를 실행하고, admin 대시보드에 discodeit 인스턴스가 추가되었는지 확인합니다.
 
-- [x] Entity와 DTO를 매핑하는 보일러플레이트 코드를 [MapStruct](https://mapstruct.org/) 라이브러리를 활용해 간소화해보세요.
+- [ ] admin 대시보드 화면을 조작해보면서 각종 메트릭 정보를 확인해보세요.
+
+    - 주요 API의 요청 횟수, 응답시간 등
+    - 서비스 정보
+
+### 테스트 커버리지 관리
+
+- [ ] JaCoCo 플러그인을 추가하세요.
+```Gradle
+plugins {
+    id 'jacoco'
+}
+
+test {
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+```
+- [ ] 테스트 실행 후 생성된 리포트를 분석해보세요.
+    - 리포트는 `build/reports/jacoco` 경로에서 확인할 수 있습니다.
+- [ ] `com.sprint.mission.discodeit.service.basic` 패키지에 대해서 **60%** 이상의 코드 커버리지를 달성하세요.
 
 ## 🔄 주요 변경사항
 ## 📸 스크린샷
