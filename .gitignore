@@ -83,28 +83,42 @@ $RECYCLE.BIN/
 *.lnk
 
 # --- IntelliJ IDEA ---
-.idea/ # IDE 설정 디렉토리
-*.iws # 워크스페이스 설정 파일
-*.iml # 모듈 설정 파일
-*.ipr # 프로젝트 설정 파일
-out/ # IDE 빌드 출력 디렉토리
+# IDE 설정 디렉토리
+.idea/
+# 워크스페이스 설정 파일
+*.iws
+# 모듈 설정 파일
+*.iml
+# 프로젝트 설정 파일
+*.ipr
+# IDE 빌드 출력 디렉토리
+out/
 
 # --- Gradle ---
-.gradle/ # Gradle 캐시 및 빌드 메타데이터
-build/ # 빌드 결과물 디렉토리
-!gradle/wrapper/gradle-wrapper.jar # Wrapper JAR (버전 고정용, 추적 필요)
-!gradle/wrapper/gradle-wrapper.properties # Wrapper 버전 설정 (추적 필요)
-.gradle-user-home/ # Gradle 배포판 바이너리 캐시
+# Gradle 캐시 및 빌드 메타데이터
+.gradle/
+# 빌드 결과물 디렉토리
+build/
+# Wrapper JAR & 버전 설정 (버전 고정용, 추적 필요)
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+# Gradle 배포판 바이너리 캐시
+.gradle-user-home/
 
 # --- Spring Boot ---
-logs/                  # 런타임 로그 디렉토리
+# 런타임 로그 디렉토리
+logs/
 
 # --- Local File Storage ---
-*.ser                  # Java 직렬화 파일 (로컬 파일 저장소)
-discodeit.fileRepo     # 파일 기반 레포지토리 저장소 (로컬 전용)
+# Java 직렬화 파일 (로컬 파일 저장소)
+*.ser
+# 파일 기반 레포지토리 저장소 (로컬 전용)
+discodeit.fileRepo
 
 # --- Security & Config ---
-.env           # 환경변수 파일 (시크릿 키, DB 접속 정보 등)
+# 환경변수 파일 (시크릿 키, DB 접속 정보 등)
+.env
 
-# --- CLAUDE.md ---
-CLAUDE.md      # Claude Code AI 설정 파일 (로컬 전용)
+# --- Claude Code ---
+# Claude Code AI 설정 파일 (로컬 전용)
+CLAUDE.md
