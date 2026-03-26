@@ -1,0 +1,21 @@
+server:
+  port: 8080 # 내장 Tomcat 서버 8080 포트에서 실행
+
+spring:
+  # 애플리케이션이 사용할 DB 연결 정보
+  datasource:
+    url: ${DB_URL} # PostgreSQL DB에 접속하기 위한 JDBC URL
+    # jdbc:postgresql: -> PostgreSQL JDBC 드라이버 사용
+    # localhost -> DB 서버 주소
+    # 5432 -> PostgreSQL의 기본 포트 번호
+    # discodeit -> 접속할 데이터베이스 이름
+    username: ${DB_USERNAME} # DB 접속 계정명
+    password: ${DB_PASSWORD} # 비밀번호
+    driver-class-name: org.postgresql.Driver # PostgreSQL JDBC 드라이버 클래스 명시
+
+logging:
+  level: # TRACE > DEBUG > INFO > WARN > ERROR > FATAL
+    root: debug # 개발 단계에서 디버깅을 위한 로그 레벨
+    org.hibernate.SQL: debug # Hibernate가 실행하는 SQL 쿼리문 자체를 로그로 출력
+    org.hibernate.orm.jdbc.bind: trace # 쿼리 파라미터에 바인딩되는 값을 확인하기 위한 설정
+
