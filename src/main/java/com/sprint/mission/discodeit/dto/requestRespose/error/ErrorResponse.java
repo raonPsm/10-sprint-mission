@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.dto.requestRespose.error;
 
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import java.time.Instant;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -11,13 +12,35 @@ public record ErrorResponse(
     Instant timestamp,            // 예외가 발생한 시각
     String code,                  // ErrorCode Enum 이름
     String message,               // 에러 메시지
-    Map<String, String> details,  // 예외 발생 상황에 대한 추가 정보
+    Map<String, Object> details,  // 예외 발생 상황에 대한 추가 정보
     String exceptionType,         // 발생한 예외의 클래스 이름
     int status                    // HTTP 상태 코드
 ) {
 
+  // 커스텀 예외 처리 시 사용하는 메서드
+  public static ErrorResponse of(
+      Instant timestamp,
+      ErrorCode errorCode,
+      HttpStatus httpStatus,
+      String exceptionType,
+      Map<String, Object> details
+  ) {
+    return new ErrorResponse(
+        timestamp,
+        errorCode.name(),
+        errorCode.getMessage(),
+        details,
+        exceptionType,
+        httpStatus.value()
+    );
+  }
+
   // 커스텀 예외가 아닌 일반 예외 처리시 사용하는 메서드
-  public static ErrorResponse of(HttpStatus httpStatus, String message, String exceptionType) {
+  public static ErrorResponse of(
+      String message,
+      String exceptionType,
+      HttpStatus httpStatus
+  ) {
     return new ErrorResponse(
         Instant.now(),
         null, // ErrorCode가 없으므로 code는 null

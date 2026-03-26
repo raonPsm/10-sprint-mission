@@ -1,7 +1,8 @@
 package com.sprint.mission.discodeit.controller.exception;
 
 import com.sprint.mission.discodeit.dto.requestRespose.error.ErrorResponse;
-import java.util.NoSuchElementException;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
+import java.security.DigestException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,29 +16,23 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 public class GlobalExceptionHandler {
 
-  // IllegalArgumentException (잘못된 인자 전달)
-  @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
-    // 400 Bad Request
-    return ResponseEntity
-        .status(HttpStatus.BAD_REQUEST)
-        .body(new ErrorResponse(e.getMessage(), "IllegalArgumentException"));
-  }
-
-  // NoSuchElementException (데이터가 없을 때)
-  @ExceptionHandler(NoSuchElementException.class)
-  public ResponseEntity<ErrorResponse> handleNoSuchElementException(NoSuchElementException e) {
-    // 404 Not Found
-    return ResponseEntity
-        .status(HttpStatus.NOT_FOUND)
-        .body(new ErrorResponse(e.getMessage(), "NoSuchElementException"));
-  }
-
-  @ExceptionHandler(FileProcessException.class)
-  public ResponseEntity<ErrorResponse> handleFileProcessException(FileProcessException e) {
-    return ResponseEntity
-        .status(HttpStatus.BAD_REQUEST)
-        .body(new ErrorResponse(e.getMessage(), "FileProcessException"));
+  // 커스텀 예외 처리
+  @ExceptionHandler(DigestException.class)
+  public ResponseEntity<ErrorResponse> handleDigestException(DiscodeitException e) {
+    HttpStatus status = e.getErrorCode().getHttpStatus();
+    log.warn("[{}] {}: {}",
+        e.getErrorCode().name(),
+        e.getClass().getSimpleName(),
+        e.getDetails()
+    );
+    return ResponseEntity.status(status)
+        .body(ErrorResponse.of(
+            e.getTimestamp(),             // timestamp
+            e.getErrorCode(),             // errorCode
+            status,                       // httpStatus
+            e.getClass().getSimpleName(), // exceptionType
+            e.getDetails()                 // details
+        ));
   }
 
   // 처리하지 않은 모든 예외
@@ -46,10 +41,9 @@ public class GlobalExceptionHandler {
     log.error("[UNHANDLED_EXCEPTION] {}: {}", e.getClass().getSimpleName(), e.getMessage(), e);
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(ErrorResponse.of(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                e.getMessage(),
-                e.getClass().getSimpleName()
-            )
-        );
+            e.getMessage(),                   // message
+            e.getClass().getSimpleName(),     // exceptionType
+            HttpStatus.INTERNAL_SERVER_ERROR  // httpStatus
+        ));
   }
 }
