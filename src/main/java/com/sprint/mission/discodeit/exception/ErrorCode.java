@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+// FIXME(Later): 사용자 or 유저 이름 통일 할 것 -> log랑 맞출 것
 @Getter
 @AllArgsConstructor
 public enum ErrorCode {
