@@ -120,5 +120,5 @@ discodeit.fileRepo
 .env
 
 # --- Claude Code ---
-# Claude Code AI 설정 파일 (로컬 전용)
 CLAUDE.md
+.claude
