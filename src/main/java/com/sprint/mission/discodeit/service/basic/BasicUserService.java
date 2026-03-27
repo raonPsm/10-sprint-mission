@@ -22,11 +22,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
@@ -44,11 +46,15 @@ public class BasicUserService implements UserService {
     String email = userCreateRequest.email();
     String password = userCreateRequest.password();
 
+    log.info("[USER_CREATE] 사용자 생성 요청: username={}, email={}", username, email);
+
     // email, username 중복 검증
     if (userRepository.existsByEmail(email)) {
+      log.warn("[USER_CREATE] 이미 사용중인 이메일: email={}", email);
       throw new EmailAlreadyExistsException(Map.of("email", email));
     }
     if (userRepository.existsByUsername(username)) {
+      log.warn("[USER_CREATE] 이미 존재하는 사용자 이름: username={}", username);
       throw new UsernameAlreadyExistsException(Map.of("username", username));
     }
 
@@ -80,6 +86,9 @@ public class BasicUserService implements UserService {
 
     User savedUser = userRepository.save(user);
 
+    log.info("[USER_CREATE] 사용자 생성 완료: userId={}, username={}",
+        savedUser.getId(), savedUser.getUsername()
+    );
     return userMapper.toDto(savedUser);
     // TODO: username 유효성 검사 로직 추가
     // TODO: email 중복 불가능 검사 로직 추가
@@ -89,11 +98,13 @@ public class BasicUserService implements UserService {
   @Transactional(readOnly = true)
   @Override
   public UserDto find(UUID userId) {
+    log.debug("[USER_FIND] 사용자 조회 요청: userId={}", userId);
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException(Map.of("userId", userId)));
 
     // UserStatus 무결성 검증
     if (user.getUserStatus() == null) {
+      log.warn("[USER_FIND] 유저 상태 데이터 누락: userId={}", userId);
       throw new UserStatusMissingException(Map.of("userId", userId));
     }
 
@@ -103,6 +114,7 @@ public class BasicUserService implements UserService {
   @Transactional(readOnly = true)
   @Override
   public List<UserDto> findAll() {
+    log.debug("[USER_FIND] 전체 사용자 목록 조회 요청");
     // [1] N+1 문제 -> profile, UserStatus 한 번에 조회
     return userMapper.toDtoList(userRepository.findAllWithProfileAndUserStatus());
   }
@@ -111,7 +123,10 @@ public class BasicUserService implements UserService {
   @Override
   public UserDto update(UUID userId,
       UserUpdateRequest userUpdateRequest,
-      Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+      Optional<BinaryContentCreateRequest> optionalProfileCreateRequest
+  ) {
+    log.info("[USER_UPDATE] 사용자 수정 요청: userId={}", userId);
+
     // user 존재하는지 조회
     User user = userRepository.findById(userId)
         .orElseThrow(
@@ -123,9 +138,11 @@ public class BasicUserService implements UserService {
     // 본인의 현재 정보와 다를 때만 중복 검사 실시
     // TODO: (LATER) 원래 정보하고 같을 경우 다른 Exception 던지기
     if (!user.getEmail().equals(newEmail) && userRepository.existsByEmail(newEmail)) {
+      log.warn("[USER_UPDATE] 이미 사용중인 이메일: email={}", newEmail);
       throw new EmailAlreadyExistsException(Map.of("email", newEmail));
     }
     if (!user.getUsername().equals(newUsername) && userRepository.existsByUsername(newUsername)) {
+      log.warn("[USER_UPDATE] 이미 존재하는 사용자 이름: username={}", newUsername);
       throw new UsernameAlreadyExistsException(Map.of("username", newUsername));
     }
 
@@ -147,6 +164,7 @@ public class BasicUserService implements UserService {
     // orphanRemoval = true 설정으로 새로운 프로필 참조가 할당되면 기존 프로필은 자동으로 DELETE 수행됨
     user.update(newUsername, newEmail, userUpdateRequest.newPassword(), newProfileImage);
 
+    log.info("[USER_UPDATE] 사용자 수정 완료: userId={}, username={}", userId, newUsername);
     // (Dirty Checking) 메서드 종료 시 트랜잭션이 커밋되면서 변경된 엔티티에 대한 UPDATE 쿼리 자동 발생. save() 호출 불필요
     return userMapper.toDto(user);
   }
@@ -154,9 +172,14 @@ public class BasicUserService implements UserService {
   @Transactional
   @Override
   public void delete(UUID userId) {
+    log.info("[USER_DELETE] 사용자 삭제 요청: userId={}", userId);
+
     User user = userRepository.findById(userId)
         .orElseThrow(
             () -> new UserNotFoundException(Map.of("userId", userId)));
+
+    log.info("[USER_DELETE] 사용자 삭제 완료: userId={}", userId);
+
     // cascade = CascadeType.ALL, orphanRemoval = true 적용
     // User만 삭제해도 연관된 UserStatus, BinaryContent에 대한 DELETE 쿼리가 자동으로 발생
     userRepository.delete(user);

@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 // FIXME: 메서드 내부 DTO 사용 부분 entity로 수정 및 기타 부수효과 문제 수정
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class BasicMessageService implements MessageService {
 
   private final MessageRepository messageRepository;
@@ -48,8 +50,12 @@ public class BasicMessageService implements MessageService {
   @Transactional
   @Override
   public MessageDto create(MessageCreateRequest request,
-      List<BinaryContentCreateRequest> attachments) {
-    // TODO: getReferenceById -> 프록시 사용 가능 -> 고려
+      List<BinaryContentCreateRequest> attachments
+  ) {
+    log.info("[MESSAGE_CREATE] 메시지 생성 요청: channelId={}, authorId={}, attachmentCount={}",
+        request.channelId(), request.authorId(), attachments.size()
+    );
+
     Channel channel = channelRepository.findById(request.channelId())
         .orElseThrow(() -> new ChannelNotFoundException(Map.of("channelId", request.channelId())));
     User author = userRepository.findById(request.authorId())
@@ -78,12 +84,17 @@ public class BasicMessageService implements MessageService {
     );
 
     // 영속성 전이
-    return messageMapper.toDto(messageRepository.save(message));
+    MessageDto result = messageMapper.toDto(messageRepository.save(message));
+    log.info("[MESSAGE_CREATE] 메시지 생성 완료: messageId={}, channelId={}, authorId={}",
+        result.id(), request.channelId(), request.authorId()
+    );
+    return result;
   }
 
   @Transactional(readOnly = true)
   @Override
   public MessageDto find(UUID messageId) {
+    log.debug("[MESSAGE_FIND] 메시지 조회 요청: messageId={}", messageId);
     return messageMapper.toDto(
         messageRepository.findById(messageId)
             .orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)))
@@ -98,6 +109,9 @@ public class BasicMessageService implements MessageService {
       Pageable pageable // 페이지의 크기, 정렬 등의 페이징 정보를 담고 있음
 
   ) {
+    log.debug("[MESSAGE_FIND_BY_CHANNEL] 채널 메시지 목록 조회 요청: channelId={}, cursor={}, pageSize={}",
+        channelId, createdAt, pageable.getPageSize()
+    );
     Slice<MessageDto> slice = messageRepository.findAllByChannel_IdWithAuthor(channelId,
             Optional.ofNullable(createdAt).orElse(Instant.now()),
             pageable)
@@ -117,19 +131,26 @@ public class BasicMessageService implements MessageService {
   @Transactional
   @Override
   public MessageDto update(UUID messageId, MessageUpdateRequest request) {
+    log.info("[MESSAGE_UPDATE] 메시지 수정 요청: messageId={}", messageId);
+
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)));
     message.update(request.newContent());
+
+    log.info("[MESSAGE_UPDATE] 메시지 수정 완료: messageId={}", messageId);
     return messageMapper.toDto(message);
   }
 
   @Transactional
   @Override
   public void delete(UUID messageId) {
+    log.info("[MESSAGE_DELETE] 메시지 삭제 요청: messageId={}", messageId);
+
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)));
 
     // 영속성 전이 + 고아 객체 제거
     messageRepository.delete(message);
+    log.info("[MESSAGE_DELETE] 메시지 삭제 완료: messageId={}", messageId);
   }
 }
