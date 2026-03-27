@@ -10,7 +10,9 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNameAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.channel.PrivateChannelAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelParticipantsEmptyException;
+import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateNotAllowedException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -80,7 +82,7 @@ public class BasicChannelService implements ChannelService {
           log.warn("[CHANNEL_CREATE_PRIVATE] 동일 참여자 구성의 비공개 채널 이미 존재: existingChannelId={}",
               existingChannel.getId()
           );
-          throw new PrivateChannelParticipantsEmptyException(
+          throw new PrivateChannelAlreadyExistsException(
               Map.of("existingChannelId", existingChannel.getId())
           );
         });
@@ -138,7 +140,7 @@ public class BasicChannelService implements ChannelService {
 
     // PRIVATE 채널은 수정 불가
     if (channel.getType() == ChannelType.PRIVATE) {
-      throw new PrivateChannelParticipantsEmptyException(Map.of("channelId", channelId));
+      throw new PrivateChannelUpdateNotAllowedException(Map.of("channelId", channelId));
     }
 
     // 채널 이름 중복 검사
