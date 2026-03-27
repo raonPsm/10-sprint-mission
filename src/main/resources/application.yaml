@@ -5,6 +5,11 @@ spring:
   profiles:
     active: dev # 기본 프로파일
 
+  servlet:
+    multipart:
+      max-file-size: 10MB # 파일 하나의 최대 크기
+      max-request-size: 20MB # 한 번에 최대 업로드 가능 용량
+
   jpa:
     properties:
       hibernate:
@@ -30,6 +35,7 @@ springdoc:
     enabled: true # Swagger UI 웹 화면을 활성화 -> http://localhost:8080/swagger-ui/index.html
   default-produces-media-type: application/json # API 문서에서 기본 응답 콘텐츠 타입을 application/json으로 간주하도록 설정
 
+# === 로깅 설정 ===
 logging:
   level:
     root: info # 전체 기본 로깅 레벨
@@ -43,3 +49,43 @@ discodeit:
     local:
       root-path: .discodeit/storage
       # @Value("${discodeit.storage.local.root-path}") 를 통해서 할당됨
+
+# === Actuator 설정 ===
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, loggers # 노출할 엔드포인트 목록
+        # health: 서버 정상 여부, DB 연결 여부
+        # info: 앱 버전, 빌드 정보, 커스텀 정보
+        # metrics: JVM 메모리, HTTP 요청 수, CPU, GC 등 지표
+        # loggers: 로거 레벨 조회/변경
+  endpoint:
+    health:
+      show-details: always # 상세 health 정보 표시 (DB, 디스크 등)
+  info:
+    env:
+      enabled: true # info.* 설정값을 /actuator/info에 노출
+
+# === /actuator/info 노출 정보 ===
+info:
+  app:
+    name: Discodeit # 애플리케이션 이름
+    version: 1.7.0 # 애플리케이션 버전
+  java:
+    version: 17 # 자바 버전
+  spring-boot:
+    version: 3.4.0 # 스프링 부트 버전
+  # 주요 설정 정보
+  config:
+    datasource:
+      url: ${DB_URL}
+      driver-class-name: org.postgresql.Driver
+    jpa:
+      ddl-auto: none # 아무 작업 안함 / 실제 설정에서는 ddl-auto로 설정 안 해 놓음
+    storage:
+      type: ${discodeit.storage.type}
+      path: ${discodeit.storage.local.root-path}
+    multipart:
+      max-file-size: ${spring.servlet.multipart.max-file-size}
+      max-request-size: ${spring.servlet.multipart.max-request-size}

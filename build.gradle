@@ -1,7 +1,7 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.4.0'
-	id 'io.spring.dependency-management' version '1.1.7'
+    id 'java'
+    id 'org.springframework.boot' version '3.4.0'
+    id 'io.spring.dependency-management' version '1.1.7'
 }
 
 group = 'com.sprint.mission'
@@ -14,13 +14,13 @@ java {
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
@@ -45,7 +45,7 @@ dependencies {
     // JPA 및 트랜잭션 관리를 위한 라이브러리
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-    // Validation
+    // Validation - Spring Validation 의존성
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     // PostgreSQL Driver
