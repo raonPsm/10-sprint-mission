@@ -46,8 +46,6 @@ public class BasicUserService implements UserService {
     String email = userCreateRequest.email();
     String password = userCreateRequest.password();
 
-    log.info("[USER_CREATE] 사용자 생성 요청: username={}, email={}", username, email);
-
     // email, username 중복 검증
     if (userRepository.existsByEmail(email)) {
       log.warn("[USER_CREATE] 이미 사용중인 이메일: email={}", email);
@@ -98,7 +96,6 @@ public class BasicUserService implements UserService {
   @Transactional(readOnly = true)
   @Override
   public UserDto find(UUID userId) {
-    log.debug("[USER_FIND] 사용자 조회 요청: userId={}", userId);
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException(Map.of("userId", userId)));
 
@@ -114,7 +111,6 @@ public class BasicUserService implements UserService {
   @Transactional(readOnly = true)
   @Override
   public List<UserDto> findAll() {
-    log.debug("[USER_FIND] 전체 사용자 목록 조회 요청");
     // [1] N+1 문제 -> profile, UserStatus 한 번에 조회
     return userMapper.toDtoList(userRepository.findAllWithProfileAndUserStatus());
   }
@@ -125,8 +121,6 @@ public class BasicUserService implements UserService {
       UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest
   ) {
-    log.info("[USER_UPDATE] 사용자 수정 요청: userId={}", userId);
-
     // user 존재하는지 조회
     User user = userRepository.findById(userId)
         .orElseThrow(
@@ -172,8 +166,6 @@ public class BasicUserService implements UserService {
   @Transactional
   @Override
   public void delete(UUID userId) {
-    log.info("[USER_DELETE] 사용자 삭제 요청: userId={}", userId);
-
     User user = userRepository.findById(userId)
         .orElseThrow(
             () -> new UserNotFoundException(Map.of("userId", userId)));

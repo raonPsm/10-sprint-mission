@@ -28,7 +28,6 @@ public class AuthController implements AuthApi {
 
     UserDto response = authService.login(request);
 
-    log.info("[LOGIN] 로그인 API 응답: userId={}, username={}", response.id(), response.username());
     return ResponseEntity.ok(response); // 로그인 성공 시 사용자 정보를 반환
   }
 

@@ -29,9 +29,6 @@ public class BasicBinaryContentService implements BinaryContentService {
   @Transactional
   @Override
   public BinaryContentDto create(BinaryContentCreateRequest request) {
-    log.info("[FILE_UPLOAD] 파일 업로드 요청: fileName={}, contentType={}, size={}bytes",
-        request.fileName(), request.contentType(), request.bytes().length
-    );
     BinaryContent binaryContent = new BinaryContent(
         request.fileName(),
         (long) request.bytes().length,
@@ -49,7 +46,6 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   @Override
   public BinaryContentDto find(UUID id) {
-    log.debug("[FILE_FIND] 파일 조회 요청: binaryContentId={}", id);
     return binaryContentMapper.toDto(binaryContentRepository.findById(id)
         .orElseThrow(() -> new BinaryContentNotFoundException(Map.of("binaryContentId", id)))
     );
@@ -62,14 +58,11 @@ public class BasicBinaryContentService implements BinaryContentService {
       return Collections.emptyList();
     }
 
-    log.debug("[FILE_LIST_FIND] 파일 다건 조회 요청: count={}", ids.size());
     return binaryContentMapper.toDtoList(binaryContentRepository.findAllByIdIn(ids));
   }
 
   @Override
   public void delete(UUID id) {
-    log.info("[FILE_DELETE] 파일 삭제 요청: binaryContentId={}", id);
-
     BinaryContent binaryContent = binaryContentRepository.findById(id)
         .orElseThrow(() -> new BinaryContentNotFoundException(Map.of("binaryContentId", id)));
     binaryContentRepository.delete(binaryContent);

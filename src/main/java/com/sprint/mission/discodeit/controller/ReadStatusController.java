@@ -47,7 +47,6 @@ public class ReadStatusController implements ReadStatusApi {
 
     ReadStatusDto readStatus = readStatusService.create(request);
 
-    log.info("[READ_STATUS_CREATE] 읽음 상태 생성 API 응답: readStatusId={}", readStatus.id());
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(readStatus);
@@ -63,7 +62,6 @@ public class ReadStatusController implements ReadStatusApi {
 
     ReadStatusDto readStatus = readStatusService.update(readStatusId, request);
 
-    log.debug("[READ_STATUS_UPDATE] 읽음 상태 수정 API 응답: readStatusId={}", readStatusId);
     return ResponseEntity.ok(readStatus);
   }
 }

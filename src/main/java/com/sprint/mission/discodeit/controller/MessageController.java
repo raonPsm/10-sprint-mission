@@ -95,7 +95,6 @@ public class MessageController implements MessageApi {
         .orElse(new ArrayList<>());
     MessageDto message = messageService.create(messageCreateRequest, fileRequests);
 
-    log.info("[MESSAGE_CREATE] Message 생성 API 응답: messageId={}", message.id());
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(message);
@@ -108,7 +107,6 @@ public class MessageController implements MessageApi {
 
     messageService.delete(messageId);
 
-    log.info("[MESSAGE_DELETE] Message 삭제 API 응답: messageId={}", messageId);
     return ResponseEntity.noContent().build();
   }
 
@@ -122,7 +120,6 @@ public class MessageController implements MessageApi {
 
     MessageDto message = messageService.update(messageId, request);
 
-    log.info("[MESSAGE_UPDATE] Message 내용 수정 API 응답: messageId={}", messageId);
     return ResponseEntity.ok(message);
   }
 }

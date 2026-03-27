@@ -52,10 +52,6 @@ public class BasicMessageService implements MessageService {
   public MessageDto create(MessageCreateRequest request,
       List<BinaryContentCreateRequest> attachments
   ) {
-    log.info("[MESSAGE_CREATE] 메시지 생성 요청: channelId={}, authorId={}, attachmentCount={}",
-        request.channelId(), request.authorId(), attachments.size()
-    );
-
     Channel channel = channelRepository.findById(request.channelId())
         .orElseThrow(() -> new ChannelNotFoundException(Map.of("channelId", request.channelId())));
     User author = userRepository.findById(request.authorId())
@@ -94,7 +90,6 @@ public class BasicMessageService implements MessageService {
   @Transactional(readOnly = true)
   @Override
   public MessageDto find(UUID messageId) {
-    log.debug("[MESSAGE_FIND] 메시지 조회 요청: messageId={}", messageId);
     return messageMapper.toDto(
         messageRepository.findById(messageId)
             .orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)))
@@ -109,9 +104,6 @@ public class BasicMessageService implements MessageService {
       Pageable pageable // 페이지의 크기, 정렬 등의 페이징 정보를 담고 있음
 
   ) {
-    log.debug("[MESSAGE_FIND_BY_CHANNEL] 채널 메시지 목록 조회 요청: channelId={}, cursor={}, pageSize={}",
-        channelId, createdAt, pageable.getPageSize()
-    );
     Slice<MessageDto> slice = messageRepository.findAllByChannel_IdWithAuthor(channelId,
             Optional.ofNullable(createdAt).orElse(Instant.now()),
             pageable)
@@ -131,8 +123,6 @@ public class BasicMessageService implements MessageService {
   @Transactional
   @Override
   public MessageDto update(UUID messageId, MessageUpdateRequest request) {
-    log.info("[MESSAGE_UPDATE] 메시지 수정 요청: messageId={}", messageId);
-
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)));
     message.update(request.newContent());
@@ -144,8 +134,6 @@ public class BasicMessageService implements MessageService {
   @Transactional
   @Override
   public void delete(UUID messageId) {
-    log.info("[MESSAGE_DELETE] 메시지 삭제 요청: messageId={}", messageId);
-
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)));
 

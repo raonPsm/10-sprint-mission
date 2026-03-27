@@ -64,7 +64,6 @@ public class UserController implements UserApi {
         .flatMap(this::resolveProfileRequest);
     UserDto createdUser = userService.create(userCreateRequest, profileRequest);
 
-    log.info("[USER_CREATE] User 등록 API 응답: userId={}", createdUser.id());
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(createdUser);
@@ -77,7 +76,6 @@ public class UserController implements UserApi {
 
     userService.delete(userId);
 
-    log.info("[USER_DELETE] User 삭제 API 응답: userId={}", userId);
     return ResponseEntity.noContent().build();
   }
   // TODO: (Later) 삭제 요청한 주체 본인 or 관리자 확인
@@ -95,7 +93,6 @@ public class UserController implements UserApi {
         .flatMap(this::resolveProfileRequest);
     UserDto updateUser = userService.update(userId, userUpdateRequest, profileRequest);
 
-    log.info("[USER_UPDATE] User 정보 수정 API 응답: userId={}", userId);
     return ResponseEntity.ok(updateUser);
   }
   // TODO: (Later) 현재 API는 id만 알면 누구나 다른 사람의 정보를 수정할 수 있는 구조 -> 보안 문제
@@ -110,7 +107,6 @@ public class UserController implements UserApi {
 
     UserStatusDto response = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
 
-    log.debug("[USER_STATUS_UPDATE] User 온라인 상태 업데이트 API 응답: userId={}", userId);
     return ResponseEntity.ok(response);
   }
 

@@ -40,8 +40,6 @@ public class ChannelController implements ChannelApi {
 
     ChannelDto createdPublicChannel = channelService.create(request);
 
-    log.info("[CHANNEL_CREATE_PUBLIC] Public Channel 생성 API 응답: channelId={}",
-        createdPublicChannel.id());
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(createdPublicChannel);
@@ -56,8 +54,6 @@ public class ChannelController implements ChannelApi {
 
     ChannelDto createdPrivateChannel = channelService.create(request);
 
-    log.info("[CHANNEL_CREATE_PRIVATE] Private Channel 생성 API 응답: channelId={}",
-        createdPrivateChannel.id());
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(createdPrivateChannel);
@@ -70,7 +66,6 @@ public class ChannelController implements ChannelApi {
 
     channelService.delete(channelId);
 
-    log.info("[CHANNEL_DELETE] Channel 삭제 API 응답: channelId={}", channelId);
     return ResponseEntity.noContent().build();
   }
 
@@ -85,7 +80,6 @@ public class ChannelController implements ChannelApi {
 
     ChannelDto updatedChannel = channelService.update(channelId, request);
 
-    log.info("[CHANNEL_UPDATE] Channel 정보 수정 API 응답: channelId={}", channelId);
     return ResponseEntity.ok(updatedChannel);
   }
 

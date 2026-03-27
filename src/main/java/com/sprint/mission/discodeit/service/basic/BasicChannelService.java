@@ -44,7 +44,6 @@ public class BasicChannelService implements ChannelService {
   @Transactional
   @Override
   public ChannelDto create(PublicChannelCreateRequest request) {
-    log.info("[CHANNEL_CREATE_PUBLIC] 공개 채널 생성 요청: name={}", request.name());
 
     // 채널 이름 중복 검사
     if (channelRepository.existsByName(request.name())) {
@@ -68,9 +67,6 @@ public class BasicChannelService implements ChannelService {
   @Override
   public ChannelDto create(PrivateChannelCreateRequest request) {
     Set<UUID> requestedUserIds = request.participantIds();
-    log.info("[CHANNEL_CREATE_PRIVATE] 비공개 채널 생성 요청: participantCount={}",
-        requestedUserIds == null ? 0 : requestedUserIds.size()
-    );
 
     // 유효성 검증 - 참여자가 없는 경우 검증
     if (requestedUserIds == null || requestedUserIds.isEmpty()) {
@@ -115,7 +111,6 @@ public class BasicChannelService implements ChannelService {
   @Transactional(readOnly = true)
   @Override
   public ChannelDto find(UUID channelId) {
-    log.debug("[CHANNEL_FIND] 채널 조회 요청: channelId={}", channelId);
     return channelMapper.toDto(channelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(Map.of("channelId", channelId)))
     );
@@ -125,7 +120,6 @@ public class BasicChannelService implements ChannelService {
   @Transactional(readOnly = true)
   @Override
   public List<ChannelDto> findAllByUserId(UUID userId) {
-    log.debug("[CHANNEL_FIND_BY_USER] 특정 사용자가 참여 중인 채널 목록 조회: userId={}", userId);
     // 모든 채널 조회 -> PUBLIC 채널은 모두 포함 / PRIVATE 채널은 해당 유저가 ReadStatus를 가지고 있는 경우만 포함
 
     Set<UUID> accessiblePrivateChannelIds = readStatusRepository.findAllByUserId(userId).stream()
@@ -139,8 +133,6 @@ public class BasicChannelService implements ChannelService {
   @Transactional
   @Override
   public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
-    log.info("[CHANNEL_UPDATE] 채널 수정 요청: channelId={}", channelId);
-
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(Map.of("channelId", channelId)));
 
@@ -165,7 +157,6 @@ public class BasicChannelService implements ChannelService {
   @Transactional
   @Override
   public void delete(UUID channelId) {
-    log.info("[CHANNEL_DELETE] 채널 삭제 요청: channelId={}", channelId);
     // TODO: Channel channel = findByChannelId(channelId); vs Helper Method -> 어떤 방식이 더 나은지?
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(Map.of("channelId", channelId)));
