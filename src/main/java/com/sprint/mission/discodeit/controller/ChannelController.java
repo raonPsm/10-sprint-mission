@@ -92,7 +92,7 @@ public class ChannelController implements ChannelApi {
   /// GET /api/channels - User가 참여 중인 Channel 목록 조회
   @GetMapping
   public ResponseEntity<List<ChannelDto>> findAllByUserId(@RequestParam UUID userId) {
-    log.info("[CHANNEL_FIND_BY_USER] User가 참여 중인 Channel 목록 조회 API 요청: userId={}", userId);
+    log.debug("[CHANNEL_FIND_BY_USER] User가 참여 중인 Channel 목록 조회 API 요청: userId={}", userId);
 
     List<ChannelDto> channels = channelService.findAllByUserId(userId);
     return ResponseEntity.ok(channels);

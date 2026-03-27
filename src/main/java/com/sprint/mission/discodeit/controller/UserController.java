@@ -44,7 +44,8 @@ public class UserController implements UserApi {
   /// GET /api/users - 전체 User 목록 조회
   @GetMapping
   public ResponseEntity<List<UserDto>> findAll() {
-    log.info("[USER_FIND] 전체 User 목록 조회 API 요청");
+    // FIXME: 조회는 주로 필요한 경우에만 로깅 (로그양이 방대해짐) -> 없애거나 log.debug로 수정
+    log.debug("[USER_FIND] 전체 User 목록 조회 API 요청");
 
     List<UserDto> responseList = userService.findAll();
     return ResponseEntity.ok(responseList);
@@ -105,11 +106,11 @@ public class UserController implements UserApi {
       @PathVariable UUID userId,
       @Valid @RequestBody UserStatusUpdateRequest userStatusUpdateRequest
   ) {
-    log.info("[USER_STATUS_UPDATE] User 온라인 상태 업데이트 API 요청: userId={}", userId);
+    log.debug("[USER_STATUS_UPDATE] User 온라인 상태 업데이트 API 요청: userId={}", userId);
 
     UserStatusDto response = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
 
-    log.info("[USER_STATUS_UPDATE] User 온라인 상태 업데이트 API 응답: userId={}", userId);
+    log.debug("[USER_STATUS_UPDATE] User 온라인 상태 업데이트 API 응답: userId={}", userId);
     return ResponseEntity.ok(response);
   }
 

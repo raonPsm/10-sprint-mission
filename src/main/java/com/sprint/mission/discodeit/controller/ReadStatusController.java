@@ -32,7 +32,7 @@ public class ReadStatusController implements ReadStatusApi {
   /// GET /api/readStatuses - User의 Message 읽음 상태 목록 조회
   @GetMapping
   public ResponseEntity<List<ReadStatusDto>> findAllByUserId(@RequestParam UUID userId) {
-    log.info("[READ_STATUS_FIND] 읽음 상태 목록 조회 API 요청: userId={}", userId);
+    log.debug("[READ_STATUS_FIND] 읽음 상태 목록 조회 API 요청: userId={}", userId);
 
     List<ReadStatusDto> readStatuses = readStatusService.findAllByUserId(userId);
     return ResponseEntity.ok(readStatuses);
@@ -41,7 +41,7 @@ public class ReadStatusController implements ReadStatusApi {
   /// POST /api/readStatuses - Message 읽음 상태 생성
   @PostMapping
   public ResponseEntity<ReadStatusDto> create(@Valid @RequestBody ReadStatusCreateRequest request) {
-    log.info("[READ_STATUS_CREATE] 읽음 상태 생성 API 요청: userId={}, channelId={}",
+    log.debug("[READ_STATUS_CREATE] 읽음 상태 생성 API 요청: userId={}, channelId={}",
         request.userId(), request.channelId()
     );
 
@@ -59,11 +59,11 @@ public class ReadStatusController implements ReadStatusApi {
       @PathVariable UUID readStatusId,
       @Valid @RequestBody ReadStatusUpdateRequest request
   ) {
-    log.info("[READ_STATUS_UPDATE] 읽음 상태 수정 API 요청: readStatusId={}", readStatusId);
+    log.debug("[READ_STATUS_UPDATE] 읽음 상태 수정 API 요청: readStatusId={}", readStatusId);
 
     ReadStatusDto readStatus = readStatusService.update(readStatusId, request);
 
-    log.info("[READ_STATUS_UPDATE] 읽음 상태 수정 API 응답: readStatusId={}", readStatusId);
+    log.debug("[READ_STATUS_UPDATE] 읽음 상태 수정 API 응답: readStatusId={}", readStatusId);
     return ResponseEntity.ok(readStatus);
   }
 }

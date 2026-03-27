@@ -55,7 +55,7 @@ public class MessageController implements MessageApi {
           direction = Sort.Direction.DESC // 내림차순 정렬
       ) Pageable pageable
   ) {
-    log.info("[MESSAGE_FIND_BY_CHANNEL] Channel의 Message 목록 조회 API 요청: channelId={}, cursor={}",
+    log.debug("[MESSAGE_FIND_BY_CHANNEL] Channel의 Message 목록 조회 API 요청: channelId={}, cursor={}",
         channelId,
         cursor
     );
