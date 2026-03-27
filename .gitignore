@@ -113,7 +113,7 @@ logs/
 # Java 직렬화 파일 (로컬 파일 저장소)
 *.ser
 # 파일 기반 레포지토리 저장소 (로컬 전용)
-discodeit.fileRepo
+.discodeit
 
 # --- Security & Config ---
 # 환경변수 파일 (시크릿 키, DB 접속 정보 등)
@@ -122,3 +122,6 @@ discodeit.fileRepo
 # --- Claude Code ---
 CLAUDE.md
 .claude
+
+# --- log 파일 ---
+.logs

@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.requestRespose.auth.LoginRequest;
 import com.sprint.mission.discodeit.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("api/auth")
+@Slf4j
 public class AuthController implements AuthApi {
 
   private final AuthService authService;
@@ -22,7 +24,11 @@ public class AuthController implements AuthApi {
   // POST /api/auth/login - 로그인
   @PostMapping("/login")
   public ResponseEntity<UserDto> login(@Valid @RequestBody LoginRequest request) {
+    log.info("[LOGIN] 로그인 API 요청: username={}", request.username());
+
     UserDto response = authService.login(request);
+
+    log.info("[LOGIN] 로그인 API 응답: userId={}, username={}", response.id(), response.username());
     return ResponseEntity.ok(response); // 로그인 성공 시 사용자 정보를 반환
   }
 

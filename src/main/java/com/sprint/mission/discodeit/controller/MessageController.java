@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -37,10 +38,10 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/messages")
 @RequiredArgsConstructor
+@Slf4j
 public class MessageController implements MessageApi {
 
   private final MessageService messageService;
-
 
   /// GET /api/messages - Channel의 Message 목록 조회
   @GetMapping
@@ -54,8 +55,14 @@ public class MessageController implements MessageApi {
           direction = Sort.Direction.DESC // 내림차순 정렬
       ) Pageable pageable
   ) {
-    PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, cursor,
-        pageable);
+    log.info("[MESSAGE_FIND_BY_CHANNEL] Channel의 Message 목록 조회 API 요청: channelId={}, cursor={}",
+        channelId,
+        cursor
+    );
+
+    PageResponse<MessageDto> messages = messageService.findAllByChannelId(
+        channelId, cursor, pageable
+    );
     return ResponseEntity.ok(messages);
   }
 
@@ -65,6 +72,12 @@ public class MessageController implements MessageApi {
       @Valid @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
+    log.info("[MESSAGE_CREATE] Message 생성 API 요청: channelId={}, authorId={}, attachmentCount={}",
+        messageCreateRequest.channelId(),
+        messageCreateRequest.authorId(),
+        attachments == null ? 0 : attachments.size()
+    );
+
     List<BinaryContentCreateRequest> fileRequests = Optional.ofNullable(attachments)
         .map(files -> files.stream()
             .map(file -> {
@@ -82,6 +95,7 @@ public class MessageController implements MessageApi {
         .orElse(new ArrayList<>());
     MessageDto message = messageService.create(messageCreateRequest, fileRequests);
 
+    log.info("[MESSAGE_CREATE] Message 생성 API 응답: messageId={}", message.id());
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(message);
@@ -90,7 +104,11 @@ public class MessageController implements MessageApi {
   /// DELETE /api/messages/{messageId} - Message 삭제
   @DeleteMapping("/{messageId}")
   public ResponseEntity<Void> delete(@PathVariable UUID messageId) {
+    log.info("[MESSAGE_DELETE] Message 삭제 API 요청: messageId={}", messageId);
+
     messageService.delete(messageId);
+
+    log.info("[MESSAGE_DELETE] Message 삭제 API 응답: messageId={}", messageId);
     return ResponseEntity.noContent().build();
   }
 
@@ -100,7 +118,11 @@ public class MessageController implements MessageApi {
       @PathVariable UUID messageId,
       @Valid @RequestBody MessageUpdateRequest request
   ) {
+    log.info("[MESSAGE_UPDATE] Message 내용 수정 API 요청: messageId={}", messageId);
+
     MessageDto message = messageService.update(messageId, request);
+
+    log.info("[MESSAGE_UPDATE] Message 내용 수정 API 응답: messageId={}", messageId);
     return ResponseEntity.ok(message);
   }
 }
