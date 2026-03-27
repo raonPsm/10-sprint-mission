@@ -3,7 +3,8 @@ spring:
     name: discodeit # 애플리케이션 이름 -> discodeit
 
   profiles:
-    active: dev # 기본 프로파일
+    # active: dev # 기본 프로파일
+    active: prod # info 로그만 보기 위함 (임시)
 
   servlet:
     multipart:
@@ -23,7 +24,7 @@ spring:
   # ddl-auto가 생성한 SQL 코드는 기본적으로 파일 형태로 남지 않고 메모리상에서 실행된후 사라진다.
   sql:
     init:
-      mode: always # always: 사용하는 DB 종류와 상관없이, 서버가 시작될 때마다 항상 스크립트를 실행
+      mode: embedded # 인메모리 내장 DB를 사용할 때만 초기화 실행
       schema-locations: classpath:schema.sql # 실행할 스키마(테이블 구조 등) SQL 파일의 경로를 지정
       # classpath: 프로젝트의 리소스 폴더(src/main/resources)를 의미
 
@@ -39,9 +40,8 @@ springdoc:
 logging:
   level:
     root: info # 전체 기본 로깅 레벨
-    org.hibernate.SQL: debug # Hibernate가 실행하는 SQL 쿼리문 자체를 로그로 출력
-    org.hibernate.orm.jdbc.bind: trace # 쿼리 파라미터에 바인딩되는 값을 확인하기 위한 설정
 
+# === 저장 path 관련 설정 ===
 discodeit:
   storage:
     type: local
