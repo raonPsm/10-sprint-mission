@@ -6,12 +6,14 @@ import com.sprint.mission.discodeit.dto.requestRespose.PageResponse;
 import com.sprint.mission.discodeit.dto.requestRespose.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.requestRespose.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.exception.binarycontent.FileProcessException;
 import com.sprint.mission.discodeit.service.MessageService;
 import jakarta.validation.Valid;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -88,7 +90,12 @@ public class MessageController implements MessageApi {
                     file.getBytes()
                 );
               } catch (IOException e) {
-                throw new RuntimeException("파일 처리 중 오류가 발생했습니다.", e);
+                throw new FileProcessException(
+                    Map.of(
+                        "fileName",
+                        file.getOriginalFilename() != null ? file.getOriginalFilename() : "unknown"
+                    ), e
+                );
               }
             })
             .toList())

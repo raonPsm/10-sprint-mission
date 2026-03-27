@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
 
   // 커스텀 예외 처리
   @ExceptionHandler(DiscodeitException.class)
-  public ResponseEntity<ErrorResponse> handleDigestException(DiscodeitException ex) {
+  public ResponseEntity<ErrorResponse> handleDiscodeitException(DiscodeitException ex) {
     HttpStatus status = ex.getErrorCode().getHttpStatus();
     log.warn("[{}] {}: {}",
         ex.getErrorCode().name(),
