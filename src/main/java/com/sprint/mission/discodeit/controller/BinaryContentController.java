@@ -4,41 +4,44 @@ import com.sprint.mission.discodeit.controller.api.BinaryContentApi;
 import com.sprint.mission.discodeit.dto.Dto.BinaryContentDto;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/binaryContents")
 @RequiredArgsConstructor
 public class BinaryContentController implements BinaryContentApi {
 
-    private final BinaryContentService binaryContentService;
-    private final BinaryContentStorage binaryContentStorage;
+  private final BinaryContentService binaryContentService;
+  private final BinaryContentStorage binaryContentStorage;
 
-    // GET /api/binaryContents - 여러 첨부 파일 조회
-    @GetMapping
-    public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
-            @RequestParam("binaryContentIds") List<UUID> binaryContentIds
-    ) {
-        List<BinaryContentDto> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
-        return ResponseEntity.ok(binaryContents);
-    }
+  // GET /api/binaryContents - 여러 첨부 파일 조회
+  @GetMapping
+  public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
+      @RequestParam("binaryContentIds") List<UUID> binaryContentIds
+  ) {
+    List<BinaryContentDto> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
+    return ResponseEntity.ok(binaryContents);
+  }
 
-    // GET /api/binaryContents/{binaryContentId} - 첨부 파일 조회
-    @GetMapping("/{binaryContentId}")
-    public ResponseEntity<BinaryContentDto> find(@PathVariable UUID binaryContentId) {
-        BinaryContentDto binaryContent = binaryContentService.find(binaryContentId);
-        return ResponseEntity.ok(binaryContent);
-    }
+  // GET /api/binaryContents/{binaryContentId} - 첨부 파일 조회
+  @GetMapping("/{binaryContentId}")
+  public ResponseEntity<BinaryContentDto> find(@PathVariable UUID binaryContentId) {
+    BinaryContentDto binaryContent = binaryContentService.find(binaryContentId);
+    return ResponseEntity.ok(binaryContent);
+  }
 
-    // GET /api/{binaryContentId}/download - 파일 다운로드
-    @GetMapping("{binaryContentId}/download")
-    public ResponseEntity<?> download(@PathVariable UUID binaryContentId) {
-        BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
-        return binaryContentStorage.download(binaryContentDto);
-    }
+  // GET /api/{binaryContentId}/download - 파일 다운로드
+  @GetMapping("{binaryContentId}/download")
+  public ResponseEntity<?> download(@PathVariable UUID binaryContentId) {
+    BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
+    return binaryContentStorage.download(binaryContentDto);
+  }
 }
