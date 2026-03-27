@@ -21,14 +21,31 @@ public record ErrorResponse(
   public static ErrorResponse of(
       Instant timestamp,
       ErrorCode errorCode,
-      HttpStatus httpStatus,
+      Map<String, Object> details,
       String exceptionType,
-      Map<String, Object> details
+      HttpStatus httpStatus
   ) {
     return new ErrorResponse(
         timestamp,
         errorCode.name(),
         errorCode.getMessage(),
+        details,
+        exceptionType,
+        httpStatus.value()
+    );
+  }
+
+  // 유효성 검증 실패 처리 시 사용하는 메서드
+  public static ErrorResponse of(
+      String message,
+      Map<String, Object> details,
+      String exceptionType,
+      HttpStatus httpStatus
+  ) {
+    return new ErrorResponse(
+        Instant.now(),
+        null,
+        message,
         details,
         exceptionType,
         httpStatus.value()
