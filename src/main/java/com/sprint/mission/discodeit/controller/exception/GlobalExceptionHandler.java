@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.controller.exception;
 
 import com.sprint.mission.discodeit.dto.requestRespose.error.ErrorResponse;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
-import java.security.DigestException;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +20,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
   // 커스텀 예외 처리
-  @ExceptionHandler(DigestException.class)
+  @ExceptionHandler(DiscodeitException.class)
   public ResponseEntity<ErrorResponse> handleDigestException(DiscodeitException ex) {
     HttpStatus status = ex.getErrorCode().getHttpStatus();
     log.warn("[{}] {}: {}",
