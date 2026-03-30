@@ -46,36 +46,13 @@ public class BasicUserService implements UserService {
     String email = userCreateRequest.email();
     String password = userCreateRequest.password();
 
-    // email, username 중복 검증
-    if (userRepository.existsByEmail(email)) {
-      log.warn("[USER_CREATE] 이미 사용중인 이메일: email={}", email);
-      throw new EmailAlreadyExistsException(Map.of("email", email));
-    }
-    if (userRepository.existsByUsername(username)) {
-      log.warn("[USER_CREATE] 이미 존재하는 사용자 이름: username={}", username);
-      throw new UsernameAlreadyExistsException(Map.of("username", username));
-    }
+    validateEmailUniqueness(email);
+    validateUsernameUniqueness(username);
 
-    // 프로필 이미지 엔티티 생성
     BinaryContent profileImage = optionalProfileCreateRequest
-        .map(req -> {
-          BinaryContent profile = new BinaryContent(
-              req.fileName(),
-              (long) req.bytes().length,
-              req.contentType()
-          );
-
-          // DB에 메타데이터 저장
-          binaryContentRepository.save(profile);
-
-          // 실제 파일 데이터를 스토리지에 저장
-          binaryContentStorage.put(profile.getId(), req.bytes());
-
-          return profile;
-        })
+        .map(this::saveBinaryContent)
         .orElse(null);
 
-    // User 엔티티 생성
     User user = new User(username, email, password, profileImage);
 
     // UserStatus 엔티티 생성 + 양방향 연관관계(1:1) 설정
@@ -96,8 +73,7 @@ public class BasicUserService implements UserService {
   @Transactional(readOnly = true)
   @Override
   public UserDto find(UUID userId) {
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new UserNotFoundException(Map.of("userId", userId)));
+    User user = getUserOrThrow(userId);
 
     // UserStatus 무결성 검증
     if (user.getUserStatus() == null) {
@@ -122,9 +98,7 @@ public class BasicUserService implements UserService {
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest
   ) {
     // user 존재하는지 조회
-    User user = userRepository.findById(userId)
-        .orElseThrow(
-            () -> new UserNotFoundException(Map.of("userId", userId)));
+    User user = getUserOrThrow(userId);
 
     String newUsername = userUpdateRequest.newUsername();
     String newEmail = userUpdateRequest.newEmail();
@@ -175,5 +149,36 @@ public class BasicUserService implements UserService {
     // cascade = CascadeType.ALL, orphanRemoval = true 적용
     // User만 삭제해도 연관된 UserStatus, BinaryContent에 대한 DELETE 쿼리가 자동으로 발생
     userRepository.delete(user);
+  }
+
+  // === Helper Method ===
+  private User getUserOrThrow(UUID userId) {
+    return userRepository.findById(userId)
+        .orElseThrow(() -> new UserNotFoundException(Map.of("userId", userId)));
+  }
+
+  // 프로필 이미지 엔티티 생성
+  private BinaryContent saveBinaryContent(BinaryContentCreateRequest req) {
+    BinaryContent binaryContent = new BinaryContent(
+        req.fileName(),
+        (long) req.bytes().length,
+        req.contentType()
+    );
+    binaryContentRepository.save(binaryContent); // 메타데이터 저장
+    binaryContentStorage.put(binaryContent.getId(), req.bytes()); // 실제 파일 저장
+    return binaryContent;
+  }
+
+  // email, username 중복 검증
+  private void validateEmailUniqueness(String email) {
+    if (userRepository.existsByEmail(email)) {
+      throw new EmailAlreadyExistsException(Map.of("email", email));
+    }
+  }
+
+  private void validateUsernameUniqueness(String username) {
+    if (userRepository.existsByUsername(username)) {
+      throw new UsernameAlreadyExistsException(Map.of("username", username));
+    }
   }
 }
