@@ -1,44 +1,45 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
+import java.util.List;
+import java.util.UUID;
+
+@Getter
 public class Message extends BaseEntity {
     private String content;
-    private final User sender;
-    private final Channel channel;
 
-    public Message(String content, User sender, Channel channel) {
+    private UUID channelId;
+    private UUID authorId;
+
+    // 첨부파일 id 목록 (Message 1..* BinaryContent)
+    private List<UUID> attachmentIds;
+
+    public Message(String content, UUID channelId, UUID authorId) {
         super();
-        validateMessageContent(content);
-        validateUser(sender);
-        validateChannel(channel);
-
         this.content = content;
-        this.sender = sender;
-        this.channel = channel;
+        this.channelId = channelId;
+        this.authorId = authorId;
     }
 
-    private void validateMessageContent(String content){
-        if (content == null || content.trim().isEmpty()){
-            throw new IllegalArgumentException("메시지의 내용은 null이거나 비어있을 수 없습니다.");
-        }
-    }
-    private void validateChannel(Channel channel){
-        if (channel == null){
-            throw new IllegalArgumentException("메시지를 보내는 채널은 필수로 존재해야 합니다.");
-        }
-    }
-    private void validateUser(User user){
-        if (user == null){
-            throw new IllegalArgumentException("메시지를 보내는 유저는 필수로 존재해야 합니다.");
-        }
-    }
-
-    public String getContent() { return this.content; }
-    public User getSender() { return this.sender; }
-    public Channel getChannel() { return this.channel; }
-
-    public void updateContent(String content){
-        validateMessageContent(content);
+    // 첨부파일이 있는 경우 (생성자 오버로딩)
+    public Message(String content, UUID channelId, UUID authorId, List<UUID> attachmentIds) {
+        super();
         this.content = content;
-        this.updateTimestamp();
+        this.channelId = channelId;
+        this.authorId = authorId;
+        this.attachmentIds = attachmentIds;
+    }
+
+    public void update(String newContent) {
+        boolean isAnyValueUpdated = false;
+        if (newContent != null && !newContent.equals(this.content)) {
+            this.content = newContent;
+            isAnyValueUpdated = true;
+        }
+
+        if (isAnyValueUpdated) {
+            updateInstant();
+        }
     }
 }

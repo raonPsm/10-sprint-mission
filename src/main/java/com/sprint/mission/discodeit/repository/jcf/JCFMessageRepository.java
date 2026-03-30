@@ -2,44 +2,44 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.ConcurrentHashMap;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 public class JCFMessageRepository implements MessageRepository {
-    private final Map<UUID, Message> messageDB = new HashMap<>();
+    private final Map<UUID, Message> data;
 
-    // Create, Update
+    public JCFMessageRepository() {
+        data = new ConcurrentHashMap<>();
+    }
+
     @Override
     public Message save(Message message) {
-        messageDB.put(message.getId(), message);
+        data.put(message.getId(), message);
         return message;
     }
 
-    // Read
     @Override
     public Optional<Message> findById(UUID id) {
-        return Optional.ofNullable(messageDB.get(id));
-    }
-    @Override
-    public List<Message> findAllByChannelId(UUID channelId) {
-        return messageDB.values().stream()
-                .filter(msg -> msg.getChannel().getId().equals(channelId))
-                .sorted(Comparator.comparing(Message::getCreatedAt))
-                .collect(Collectors.toList());
+        return Optional.ofNullable(data.get(id));
     }
 
-    // Delete
     @Override
-    public void delete(UUID id) {
-        messageDB.remove(id);
+    public List<Message> findAll() {
+        return new ArrayList<>(data.values());
     }
+
     @Override
-    public void deleteAllByUserId(UUID userId) {
-        messageDB.values().removeIf(msg -> msg.getSender().getId().equals(userId));
+    public boolean existsById(UUID id) {
+        return data.containsKey(id);
     }
+
     @Override
-    public void deleteAllByChannelId(UUID channelId) {
-        messageDB.values().removeIf(msg -> msg.getChannel().getId().equals(channelId));
+    public void deleteById(UUID id) {
+        data.remove(id);
     }
 }

@@ -1,52 +1,35 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.*;
+import lombok.Getter;
 
+import java.time.Instant;
+
+@Getter
 public class Channel extends BaseEntity {
-    private String channelName;
-    private User owner;
-    private final List<Message> messages = new ArrayList<>();
-    private final List<ChannelUserRole> channelUserRoles = new ArrayList<>();
+    private ChannelType type;
+    private String name;
+    private String description;
 
-    public Channel(String channelName, User owner) {
+    public Channel(ChannelType type, String name, String description) {
         super();
-        validateChannelName(channelName);
-        validateOwnerId(owner.getId());
-
-        this.channelName = channelName;
-        this.owner = owner;
+        this.type = type;
+        this.name = name;
+        this.description = description;
     }
 
-    private void validateChannelName(String channelName) {
-        if (channelName == null || channelName.trim().isEmpty()) {
-            throw new IllegalArgumentException("channelName은 null 이거나 비어있을 수 없습니다.");
+    public void update(String newName, String newDescription) {
+        boolean isAnyValueUpdated = false;
+        if (newName != null && !newName.equals(this.name)) {
+            this.name = newName;
+            isAnyValueUpdated = true;
+        }
+        if (newDescription != null && !newDescription.equals(this.description)) {
+            this.description = newDescription;
+            isAnyValueUpdated = true;
+        }
+
+        if (isAnyValueUpdated) {
+            updateInstant();
         }
     }
-    private void validateOwnerId(UUID ownerId) {
-        if(ownerId==null) {
-            throw new IllegalArgumentException("채널 소유자(OWNER)는 필수로 존재해야 합니다.");
-        }
-    }
-
-    public String getChannelName() { return this.channelName; }
-    public User getOwner() { return this.owner; }
-    public List<Message> getMessages() { return new ArrayList<>(messages); }
-    public List<ChannelUserRole> getChannelUserRoles() { return new ArrayList<>(channelUserRoles); }
-
-    public void updateChannelName(String channelName) {
-        this.channelName = channelName;
-        this.updateTimestamp();
-    }
-    public void updateOwner(User newOwner) {
-        validateOwnerId(newOwner.getId());
-        if(this.owner.getId().equals(newOwner.getId())) {
-            throw new IllegalArgumentException("본인을 제외한 새로운 OWNER을 지정해야 합니다.");
-        }
-        this.owner = newOwner;
-        this.updateTimestamp();
-    }
-    public void addMessage(Message message) { this.messages.add(message); }
-    public void removeMessage(Message message) { this.messages.remove(message); }
-    public void addChannelUserRole(ChannelUserRole channelUserRole) { this.channelUserRoles.add(channelUserRole); }
-    public void removeChannelUserRole(ChannelUserRole channelUserRole) { this.channelUserRoles.remove(channelUserRole); }
 }

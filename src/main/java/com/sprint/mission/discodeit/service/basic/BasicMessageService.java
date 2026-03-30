@@ -1,91 +1,122 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.message.MessageResponse;
+import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.ChannelUserRoleRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+@Service
+@RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
-    private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
-    private final ChannelUserRoleRepository channelUserRoleRepository;
-
-    public BasicMessageService(MessageRepository messageRepository,
-                               UserRepository userRepository,
-                               ChannelRepository channelRepository,
-                               ChannelUserRoleRepository channelUserRoleRepository) {
-        this.messageRepository = messageRepository;
-        this.userRepository = userRepository;
-        this.channelRepository = channelRepository;
-        this.channelUserRoleRepository = channelUserRoleRepository;
-    }
+    private final UserRepository userRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public Message createMessage(String content, UUID userId, UUID channelId) {
-        User sender = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("유저가 존재하지 않습니다."));
-        Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new IllegalArgumentException("채널이 존재하지 않습니다."));
-
-        // 권한 체크: Repository를 통해 직접 조회 (훨씬 효율적)
-        boolean isMember = channelUserRoleRepository.existsByChannelIdAndUserId(channelId, userId);
-        if (!isMember) {
-            throw new IllegalArgumentException("해당 채널에 참여하지 않은 유저는 메시지를 보낼 수 없습니다.");
+    public MessageResponse create(MessageCreateRequest request) {
+        // 채널 및 작성자 존재하는지 확인
+        if (!channelRepository.existsById(request.channelId())) {
+            throw new NoSuchElementException("채널이 존재하지 않습니다. id: " + request.channelId());
+        }
+        if (!userRepository.existsById(request.authorId())) {
+            throw new NoSuchElementException("작성자가 존재하지 않습니다. id: " + request.authorId());
         }
 
-        Message message = new Message(content, sender, channel);
-
-        // 엔티티 간 관계 설정 (선택 사항이지만 객체 그래프 탐색을 위해 유지)
-        channel.addMessage(message);
-        // 주의: JPA와 달리 여기서는 channel 객체 변경이 DB에 자동 반영되지 않음.
-        // Repository 패턴에서는 channelRepository.save(channel)을 안 해도 message만 저장하면 충분하도록 설계하는 것이 보통입니다.
-        // 하지만 인메모리 특성상 양방향 관계 유지를 위해 channel도 업데이트 해주는 것이 좋을 수 있습니다.
-
-        return messageRepository.save(message);
-    }
-
-    @Override
-    public Message findMessageById(UUID messageId) {
-        return messageRepository.findById(messageId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 존재하지 않습니다."));
-    }
-
-    @Override
-    public List<Message> findAllMessagesByChannelId(UUID channelId) {
-        if (channelRepository.findById(channelId).isEmpty()) {
-            throw new IllegalArgumentException("존재하지 않는 채널입니다.");
+        // 첨부파일 처리
+        List<UUID> attachmentIds = new ArrayList<>();
+        if (request.attachments() != null && !request.attachments().isEmpty()) {
+            for (BinaryContentRequest fileRequest : request.attachments()) {
+                BinaryContent binaryContent = new BinaryContent(
+                        fileRequest.fileName(),
+                        fileRequest.contentType(),
+                        fileRequest.bytes()
+                );
+                binaryContentRepository.save(binaryContent);
+                attachmentIds.add(binaryContent.getId());
+            }
         }
-        return messageRepository.findAllByChannelId(channelId);
+
+        // 메시지 생성 및 저장
+        Message message = new Message(
+                request.content(),
+                request.channelId(),
+                request.authorId(),
+                attachmentIds
+        );
+        Message saveMessage = messageRepository.save(message);
+
+        return toResponse(saveMessage);
     }
 
     @Override
-    public Message updateMessage(UUID messageId, String newContent) {
-        Message message = findMessageById(messageId);
-        message.updateContent(newContent);
-        return messageRepository.save(message);
+    public MessageResponse findById(UUID messageId) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("해당 메시지가 존재하지 않습니다. id: " + messageId));
+        return toResponse(message);
     }
 
     @Override
-    public void deleteMessage(UUID messageId) {
-        // 필요하다면 채널에서 메시지 제거 로직 추가 (참조 무결성)
-        messageRepository.delete(messageId);
-        System.out.println("메시지 삭제 완료 (Basic).");
+    public List<MessageResponse> findAllByChannelId(UUID channelId) {
+        if(!channelRepository.existsById(channelId)) {
+            throw new NoSuchElementException("채널이 존재하지 않습니다. id: " + channelId);
+        }
+
+        // 해당 채널의 메시지만 필터링하여 조회
+        return messageRepository.findAll().stream()
+                .filter(message -> message.getChannelId().equals(channelId))
+                .sorted(Comparator.comparing(Message::getCreatedAt)) // 생성 시간 순 정렬
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public void deleteAllMessagesByUserId(UUID userId) {
-        messageRepository.deleteAllByUserId(userId);
+    public MessageResponse update(UUID messageId, MessageUpdateRequest request) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("해당 메시지가 존재하지 않습니다. id: " + messageId));
+
+        message.update(request.content());
+        Message updatedMessage = messageRepository.save(message);
+
+        return toResponse(updatedMessage);
     }
 
     @Override
-    public void deleteAllMessagesByChannelId(UUID channelId) {
-        messageRepository.deleteAllByChannelId(channelId);
+    public void delete(UUID messageId) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("해당 메시지가 존재하지 않습니다. id: " + messageId));
+
+        // 메시지 연관 첨부파일 삭제
+        if (message.getAttachmentIds() != null) {
+            for (UUID attachmentId : message.getAttachmentIds()) {
+                binaryContentRepository.deleteById(attachmentId);
+            }
+        }
+
+        // 메시지 삭제
+        messageRepository.deleteById(messageId);
+    }
+
+    private MessageResponse toResponse(Message message) {
+        return new MessageResponse(
+                message.getId(),
+                message.getContent(),
+                message.getChannelId(),
+                message.getAuthorId(),
+                message.getAttachmentIds(),
+                message.getCreatedAt()
+        );
     }
 }
