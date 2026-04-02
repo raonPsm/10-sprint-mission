@@ -88,6 +88,7 @@ public class BasicChannelService implements ChannelService {
         });
 
     // 유효성 검증 - 유저 존재 여부 검증
+    // FIXME: 1+N 문제 해결 요망
     for (UUID userId : requestedUserIds) {
       if (!userRepository.existsById(userId)) {
         throw new UserNotFoundException(Map.of("userId", userId));

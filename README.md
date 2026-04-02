@@ -48,12 +48,12 @@
     - [x] 로그 파일은 30일간 보관하도록 구성하세요.
 
 - [x] 서비스 레이어와 컨트롤러 레이어의 주요 메소드에 로깅을 추가하세요.
-    - [ ] 로깅 레벨을 적절히 사용하세요: ERROR, WARN, INFO, DEBUG
-    - [ ] 다음과 같은 메소드에 로깅을 추가하세요:
-        - [ ] 사용자 생성/수정/삭제
-        - [ ] 채널 생성/수정/삭제
-        - [ ] 메시지 생성/수정/삭제
-        - [ ] 파일 업로드/다운로드
+    - [x] 로깅 레벨을 적절히 사용하세요: ERROR, WARN, INFO, DEBUG
+    - [x] 다음과 같은 메소드에 로깅을 추가하세요:
+        - [x] 사용자 생성/수정/삭제
+        - [x] 채널 생성/수정/삭제
+        - [x] 메시지 생성/수정/삭제
+        - [x] 파일 업로드/다운로드
 
 ### 예외 처리 고도화
 
@@ -114,11 +114,11 @@
 ### 유효성 검사
 
 - [x] Spring Validation 의존성을 추가하세요.
-- [ ] 주요 Request DTO에 제약 조건 관련 어노테이션을 추가하세요.
+- [x] 주요 Request DTO에 제약 조건 관련 어노테이션을 추가하세요.
     - `@NotNull`,`@NotBlank`,`@Size`,`@Email`등
-- [ ] 컨트롤러에`@Valid`를 사용해 요청 데이터를 검증하세요.
-- [ ] 검증 실패 시 발생하는`MethodArgumentNotValidException`을 전역 예외 핸들러에서 처리하세요.
-- [ ] 유효성 검증 실패 시 상세한 오류 메시지를 포함한 응답을 반환하세요.
+- [x] 컨트롤러에`@Valid`를 사용해 요청 데이터를 검증하세요.
+- [x] 검증 실패 시 발생하는`MethodArgumentNotValidException`을 전역 예외 핸들러에서 처리하세요.
+- [x] 유효성 검증 실패 시 상세한 오류 메시지를 포함한 응답을 반환하세요.
 
 ### Actuator
 
@@ -148,39 +148,32 @@
         - [ ] UserService: create, update, delete 메소드
         - [ ] ChannelService: create(PUBLIC, PRIVATE), update, delete, findByUserId 메소드
         - [ ] MessageService: create, update, delete, findByChannelId 메소드
-            - [ ] `Mockito`를 활용해 Repository 의존성을 모의(mock)하세요.
-            - [ ] `BDDMockito`를 활용해 테스트 가독성을 높이세요.
+            - [x] `Mockito`를 활용해 Repository 의존성을 모의(mock)하세요.
+            - [x] `BDDMockito`를 활용해 테스트 가독성을 높이세요.
 
 ### 슬라이스 테스트
 
 - [ ] 레포지토리 레이어의 슬라이스 테스트를 작성하세요.
-    - [ ] `@DataJpaTest`를 활용해 테스트를 구현하세요.
+    - [x] `@DataJpaTest`를 활용해 테스트를 구현하세요.
         - [ ] 테스트 환경을 구성하는 프로파일을 구성하세요.
             - [ ] `application-test.yaml`을 생성하세요.
                 - [ ] 데이터소스는 H2 인메모리 데이터 베이스를 사용하고, PostgreSQL 호환 모드로 설정하세요.
                 - [ ] H2 데이터베이스를 위해 필요한 의존성을 추가하세요.
                 - [ ] 테스트 시작 시 스키마를 새로 생성하도록 설정하세요.
                 - [ ] 디버깅에 용이하도록 로그 레벨을 적절히 설정하세요.
-        - [ ] 테스트 실행 간`test`프로파일을 활성화 하세요.
-        - [ ] JPA Audit 기능을 활성화 하기 위해 테스트 클래스에`@EnableJpaAuditing`을 추가하세요.
+        - [x] 테스트 실행 간`test`프로파일을 활성화 하세요.
+        - [x] JPA Audit 기능을 활성화 하기 위해 테스트 클래스에`@EnableJpaAuditing`을 추가하세요.
         - [ ] 주요 레포지토리(User, Channel, Message)의 주요 쿼리 메소드에 대해 각각 최소 2개 이상(성공, 실패)의 테스트 케이스를 작성하세요.
             - [ ] 커스텀 쿼리 메소드
             - [ ] 페이징 및 정렬 메소드
 - [ ] 컨트롤러 레이어의 슬라이스 테스트를 작성하세요.
     - [ ] `@WebMvcTest`를 활용해 테스트를 구현하세요.
-
     - [ ] `WebMvcTest`에서 자동으로 등록되지 않는 유형의 Bean이 필요하다면 `@Import`를 활용해 추가하세요.
-
         - 예시
-
           `@Import({ErrorCodeStatusMapper.class})`
-
     - [ ] 주요 컨트롤러(User, Channel, Message)에 대해 최소 2개 이상(성공, 실패)의 테스트 케이스를 작성하세요.
-
     - [ ] MockMvc를 활용해 컨트롤러를 테스트하세요.
-
     - [ ] 서비스 레이어를 모의(mock)하여 컨트롤러 로직만 테스트하세요.
-
     - [ ] JSON 응답을 검증하는 테스트를 포함하세요.
 
 ### 통합 테스트
