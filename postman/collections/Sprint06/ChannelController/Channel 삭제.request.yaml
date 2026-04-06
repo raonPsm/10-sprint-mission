@@ -1,7 +1,0 @@
-$kind: http-request
-url: "{{baseURL}}/api/channels/{{channelId}}"
-method: DELETE
-body:
-  type: text
-  content: ""
-order: 3000

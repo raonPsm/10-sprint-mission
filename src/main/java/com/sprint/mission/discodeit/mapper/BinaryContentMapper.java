@@ -1,14 +1,11 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.Dto.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import org.mapstruct.Mapper;
 
-import java.util.List;
-
 @Mapper(componentModel = "spring")
 public interface BinaryContentMapper {
-    BinaryContentDto toDto(BinaryContent entity);
 
-    List<BinaryContentDto> toDtoList(List<BinaryContent> entities);
+  BinaryContentDto toDto(BinaryContent binaryContent);
 }

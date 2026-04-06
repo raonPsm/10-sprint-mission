@@ -1,18 +1,25 @@
 server:
-  port: 8080 # FIXME: ${SERVER_PORT} 로 변경 -> 실제 연결되는 포트 번호로
+  port: 80
 
 spring:
-  # 애플리케이션이 사용할 DB 연결 정보
   datasource:
-    url: ${DB_URL} # PostgreSQL DB에 접속하기 위한 JDBC URL
-    # jdbc:postgresql: -> PostgreSQL JDBC 드라이버 사용
-    # localhost -> DB 서버 주소
-    # 5432 -> PostgreSQL의 기본 포트 번호
-    # discodeit -> 접속할 데이터베이스 이름
-    username: ${DB_USERNAME} # DB 접속 계정명
-    password: ${DB_PASSWORD} # 비밀번호
-    driver-class-name: org.postgresql.Driver # PostgreSQL JDBC 드라이버 클래스 명시
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+  jpa:
+    properties:
+      hibernate:
+        format_sql: false
 
 logging:
-  level: # TRACE > DEBUG > INFO > WARN > ERROR
-    root: info
+  level:
+    com.sprint.mission.discodeit: info
+    org.hibernate.SQL: info
+
+management:
+  endpoint:
+    health:
+      show-details: never
+  info:
+    env:
+      enabled: false

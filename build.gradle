@@ -1,17 +1,17 @@
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.0'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'io.spring.dependency-management' version '1.1.6'
     id 'jacoco'
 }
 
 group = 'com.sprint.mission'
-version = '0.0.1-SNAPSHOT'
-description = 'Demo project - discodeit'
+version = '1.2-M8'
 
 java {
-    // Railway.app 배포 중 생긴 문제로 toolchain에서 sourceCompatibility로 변경
-    sourceCompatibility = '17'
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 configurations {
@@ -25,46 +25,28 @@ repositories {
 }
 
 dependencies {
-    // Spring Boot Starters
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-
-    // Documentation
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.4'
-    // FIXME: 보안 취약점 관련 내용 확인 후 수정 요망 CVE-2025-48924
-
-    // Lombok
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
-
-    // Testing
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-    // H2 DB (테스트 환경)
-    testImplementation 'com.h2database:h2'
-
-    // JPA 및 트랜잭션 관리를 위한 라이브러리
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-
-    // Validation - Spring Validation 의존성
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-
-    // PostgreSQL Driver
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     runtimeOnly 'org.postgresql:postgresql'
 
-    // MapStruct
-    implementation 'org.mapstruct:mapstruct:1.6.0'
-    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.0'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 
-    // Lombok과 MapStruct 연동을 위한 바인딩
-    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'com.h2database:h2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+test {
     finalizedBy jacocoTestReport
 }
 

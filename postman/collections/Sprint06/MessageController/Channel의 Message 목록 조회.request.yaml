@@ -1,6 +1,0 @@
-$kind: http-request
-url: "{{baseURL}}/api/messages?channelId={{channelId}}"
-method: GET
-queryParams:
-  channelId: "{{channelId}}"
-order: 1000
