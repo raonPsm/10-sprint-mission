@@ -321,7 +321,7 @@ spring:
 
 ### 테스트 커버리지 관리
 
-- [ ] JaCoCo 플러그인을 추가하세요.
+- [x] JaCoCo 플러그인을 추가하세요.
 
 ```Gradle
 plugins {
@@ -341,9 +341,10 @@ jacocoTestReport {
 }
 ```
 
-- [ ] 테스트 실행 후 생성된 리포트를 분석해보세요.
+- [x] 테스트 실행 후 생성된 리포트를 분석해보세요. (`./gradlew test jacocoTestReport`)
     - 리포트는`build/reports/jacoco`경로에서 확인할 수 있습니다.
 - [ ] `com.sprint.mission.discodeit.service.basic` 패키지에 대해서 **60%** 이상의 코드 커버리지를 달성하세요.
+    - (`./gradlew test jacocoTestCoverageVerification`)
 
 ## 🔄 주요 변경사항
 

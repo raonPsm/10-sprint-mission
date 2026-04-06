@@ -131,7 +131,7 @@ public class UserRepositoryTest {
       // then
       assertThat(result).isPresent();
       assertThat(result.get().getUsername()).isEqualTo("kim");
-      assertThat(result.get().getEmail()).isEqualTo("kim@gmail.com");
+      assertThat(result.get().getEmail()).isEqualTo("kim@example.com");
     }
 
     @Test

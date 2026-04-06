@@ -2,9 +2,11 @@ package com.sprint.mission.discodeit;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 // @SpringBootTest: 스프링 컨테이너를 실제로 띄워서, 애플리케이션 정상적으로 시작되는지 확인
 @SpringBootTest
+@ActiveProfiles("test")
 class DiscodeitApplicationTests {
 
   @Test
