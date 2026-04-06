@@ -26,28 +26,58 @@
 
 ### Dockerfile 작성
 
-- [ ][Amazon Corretto 17 이미지](https://hub.docker.com/layers/library/amazoncorretto/17/images/sha256-8929bdc3e2be20250ae46b3bc1dc361fcd637cd189ec02174251b0e499a22fad)
-를 베이스 이미지로 사용하세요.
-
-- [ ] 작업 디렉토리를 설정하세요. (`/app`)
-- [ ] 프로젝트 파일을 컨테이너로 복사하세요. 단, 불필요한 파일은`.dockerignore`를 활용해 제외하세요.
-- [ ] Gradle Wrapper를 사용하여 애플리케이션을 빌드하세요.
-  - [ ]`80`포트를 노출하도록 설정하세요.
-- [ ] 프로젝트 정보를 환경 변수로 설정하세요.
+- [x] [Amazon Corretto 17 이미지](https://hub.docker.com/layers/library/amazoncorretto/17/images/sha256-8929bdc3e2be20250ae46b3bc1dc361fcd637cd189ec02174251b0e499a22fad)
+  를 베이스 이미지로 사용하세요.
+- [x] 작업 디렉토리를 설정하세요. (`/app`)
+- [x] 프로젝트 파일을 컨테이너로 복사하세요. 단, 불필요한 파일은`.dockerignore`를 활용해 제외하세요.
+- [x] Gradle Wrapper를 사용하여 애플리케이션을 빌드하세요.
+    - [x] `80`포트를 노출하도록 설정하세요.
+- [x] 프로젝트 정보를 환경 변수로 설정하세요.
     - 실행할 jar 파일의 이름을 추론하는데 활용됩니다.
     - `PROJECT_NAME`: discodeit
     - `PROJECT_VERSION`: 1.2-M8
-- [ ] JVM 옵션을 환경 변수로 설정하세요.
+- [x] JVM 옵션을 환경 변수로 설정하세요.
     - `JVM_OPTS`: 기본값은 빈 문자열로 정의
-- [ ] 애플리케이션 실행 명령어를 설정하세요. 이때 환경변수로 정의한 프로젝트 정보를 활용하세요.
+- [x] 애플리케이션 실행 명령어를 설정하세요. 이때 환경변수로 정의한 프로젝트 정보를 활용하세요.
 
 ### 이미지 빌드 및 실행 테스트
 
 - [ ] Docker 이미지를 빌드하고 태그(`local`)를 지정하세요.
-- [ ] 빌드된 이미지를 활용해서 컨테이너를 실행하고 애플리케이션을 테스트하세요.
-  - [ ]`prod`프로필로 실행하세요.
-    - [ ] 데이터베이스는 로컬 환경에서 구동 중인 PostgreSQL 서버를 활용하세요.
-      - [ ]`http://localhost:8081`로 접속 가능하도록 포트를 매핑하세요.
+  <details>
+    <summary>사용된 명령어</summary> 
+
+  `docker build -t discodeit:local .`
+    - `docker build` : Docker 이미지를 빌드하는 명령어
+    - `-t discodeit:local` : 빌드할 이미지에 discodeit이라는 이름과 local이라는 태그를 붙임
+    - `.` : 현재 디렉터리를 빌드 컨텍스트로 사용하며, 이 안의 Dockerfile을 읽어 이미지를
+
+  </details>
+
+    - [x] 빌드된 이미지를 활용해서 컨테이너를 실행하고 애플리케이션을 테스트하세요.
+        - [x] `prod`프로필로 실행하세요.
+            - [x] 데이터베이스는 로컬 환경에서 구동 중인 PostgreSQL 서버를 활용하세요.
+                - [x] `http://localhost:8081`로 접속 가능하도록 포트를 매핑하세요.
+
+        <details>
+          <summary>사용된 명령어</summary>
+
+            docker run -d \
+              --name discodeit \
+              -p 8081:80 \
+              -e JVM_OPTS="-Dspring.profiles.active=prod" \
+              -e SPRING_DATASOURCE_URL="jdbc:postgresql://host.docker.internal:5432/discodeit" \
+              -e SPRING_DATASOURCE_USERNAME="***" \
+              -e SPRING_DATASOURCE_PASSWORD="***" \ 
+              discodeit:local
+
+        - docker run : 이미지로부터 새 컨테이너를 만들고 실행
+        - -d : detached 모드 - 컨테이너를 백그라운드에서 실행
+        - --name discodeit : 컨테이너에 discodeit이라는 이름 부여. 없으면 랜덤 이름 생성됨
+        - -p 8081:80 : 호스트 8081 -> 컨테이너 80 포트 매핑
+        - -Dspring.profiles.active=prod : prod 프로필 활성화
+        - host.docker.internal : 컨테이너 안에서 호스트의 localhost를 가리키는 특수 DNS
+          로컬 PostgreSQL에 접근하기 위해 localhost 대신 이걸 사용해야 한다.
+        </details>
 
 ### Docker Compose 구성
 
@@ -130,7 +160,7 @@
 - [ ] AWS RDS PostgreSQL 인스턴스를 생성하세요.
 
   |항목|값|비고|
-      |---|---|---|
+                                                        |---|---|---|
   |데이터베이스 생성 방식|표준 생성||
   |엔진 옵션 > 엔진 유형|PostgreSQL||
   |엔진 옵션 > 엔진 버전|17.2-R2|기본값|
@@ -159,7 +189,7 @@
     - [ ] EC2 인스턴스를 생성하세요.
 
       |항목|값|비고|
-              |---|---|---|
+                                                                                                                                                                    |---|---|---|
       |이름 및 태그|rds-ssh||
       |인스턴스 유형|t2.micro|기본값, 과금 주의|
       |키 페어|새 키 페어 생성|.pem 파일 저장 위치를 기억하세요.|
@@ -225,7 +255,7 @@
 - [ ] AWS ECS 콘솔에서 클러스터를 생성하세요.
 
   |항목|값|비고|
-      |---|---|---|
+                                                        |---|---|---|
   |클러스터 구성 > 클러스터 이름|discodeit-cluster||
   |인프라 > AWS Fargate(서버리스)|체크해제|과금 주의|
   |인프라 > Amazon EC2 인스턴스|체크||
@@ -237,7 +267,7 @@
 - [ ] 태스크를 정의하세요.
 
   |항목|값|비고|
-      |---|---|---|
+                                                        |---|---|---|
   |태스크 정의 구성 > 태스크 정의 패밀리|discodeit-task||
   |인프라 요구 사항 > 시작 유형|AWS Fargate: 체크 해제, Amazon EC2 인스턴스: 체크||
   |인프라 요구 사항 > 네트워크 모드|bridge||
@@ -253,7 +283,7 @@
 - [ ] `discodeit` 클러스터 상세 화면에서 서비스를 생성하세요.
 
   |항목|값|비고|
-      |---|---|---|
+                                                        |---|---|---|
   |배포 구성 > 태스크 정의 패밀리|discodeit-task||
   |배포 구성 > 서비스 이름|discodeit-service||
   |배포 구성 > 원하는 태스크|1|기본값|
