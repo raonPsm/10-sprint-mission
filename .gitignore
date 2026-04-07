@@ -43,6 +43,8 @@ bin/
 
 ### 숨김 파일 ###
 !.gitignore
+!.dockerignore
+.*
 
 ### Security & Config ###
 .env

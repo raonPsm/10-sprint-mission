@@ -76,15 +76,24 @@ RUN ./gradlew clean build --no-daemon --no-parallel -x test
 
 # ============ (2) Runtime ============
 # 실행 스테이지: 빌드 결과 실행에 필요한 최소한의 경량 이미지 사용
+FROM ${IMAGE}
+# 앱 실행 디렉토리 지정
+WORKDIR /app
+
+# TODO: Github Actions로 실행 시 setting.gradle, build.gradle에서 값 받아오기?
+ARG PROJECT_NAME=discodeit
+ARG PROJECT_VERSION=1.2-M8
+# 빌드 스테이지에서 생성한 JAR 파일만 복사
+COPY --from=builder /app/build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar ./
 
 ## 80 포트를 노출하도록 설정
 EXPOSE 80
 
 ## 프로젝트 정보를 환경 변수로 설정 - 실행할 jar 파일의 이름을 추론하는데 활용
 ## PROJECT_NAME: discodeit
-ENV PROJECT_NAME=discodeit
+ENV PROJECT_NAME=${PROJECT_NAME}
 ## PROJECT_VERSION: 1.2-M8
-ENV PROJECT_VERSION=1.2-M8
+ENV PROJECT_VERSION=${PROJECT_VERSION}
 ## JVM 옵션을 환경 변수로 설정 - JVM_OPTS: 기본값은 빈 문자열로 정의
 #  - JVM_OPTS: JVM(Java Virtual Machine) 실행 옵션을 환경 변수로 설정
 #    - 실행 시 오버라이드 할 수 있음
@@ -94,13 +103,16 @@ ENV PROJECT_VERSION=1.2-M8
 #      ->  컨테이너 환경에서 메모리 제한에 맞게 JVM 옵션 조정
 ENV JVM_OPTS=""
 
+# Spring Boot 프로필을 운영(prod)으로 설정
+ENV SPRING_PROFILES_ACTIVE=prod
+
 ## 애플리케이션 실행 명령어를 설정 - 이때 환경변수로 정의한 프로젝트 정보를 활용
 # ENTRYPOINT: 컨테이너가 시작될 때 실행할 명령어를 지정
 #  - sh -c -> shell을 열어서 뒤의 문자열을 명령어로 실행
 #  - $JVM_OPTS -> 환경 변수가 있으면 치환 (없으면 빈 문자열)
 #  - java -jar app.jar -> JVM이 app.jar 안의 main() 메서드를 찾아서 실행
 #    - exec -> SIGTERM 관련 문제 때문에 사용 (설명 생략)
-ENTRYPOINT ["sh", "-c", "exec java $JVM_OPTS -jar build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar"]
+ENTRYPOINT ["sh", "-c", "exec java $JVM_OPTS -jar ${PROJECT_NAME}-${PROJECT_VERSION}.jar"]
 
 # === 설명 ===
 
@@ -121,3 +133,6 @@ ENTRYPOINT ["sh", "-c", "exec java $JVM_OPTS -jar build/libs/${PROJECT_NAME}-${P
 #   - 따라서 자주 변경되지 않는 것(의존성)을 먼저 복사하고,
 #   - 자주 변경되는 것(소스 코드)을 나중에 복사하는 것이 전략
 # - 소스 코드만 변경된 경우, 의존성 다운로드 레이어는 캐시에서 재사용함
+
+# https://docker-docs.uclv.cu/engine/reference/builder/
+#  - Understand how ARG and FROM interact
