@@ -11,11 +11,13 @@
 
 ### 미션 진행 중 유의사항
 
-이 미션은 AWS 프리티어 할당량 내에서 충분히 수행 가능하도록 설계되었습니다. 불필요한 비용이 발생하지 않도록 미션 요구사항을 사전에 꼼꼼히 확인해 주시기 바랍니다.
+이 미션은 AWS 프리티어 할당량 내에서 충분히 수행 가능하도록 설계되었습니다.
+불필요한 비용이 발생하지 않도록 미션 요구사항을 사전에 꼼꼼히 확인해 주시기 바랍니다.
 
 ### 미션 종료 후 안내사항
 
-멘토님들의 리뷰가 완료된 후에는 추후에 진행할 실습(미션, 중급 프로젝트 등)을 위해, 이번 미션에서 생성했던 모든 AWS 리소스(EC2, RDS, S3)를 반드시 삭제해 주세요.
+멘토님들의 리뷰가 완료된 후에는 추후에 진행할 실습(미션, 중급 프로젝트 등)을 위해,
+이번 미션에서 생성했던 모든 AWS 리소스(EC2, RDS, S3)를 반드시 삭제해 주세요.
 리소스를 '중지'하는 것이 아닌 '삭제'해야 추가 비용이 발생하지 않습니다.
 
 ## 📝 요구사항
@@ -42,7 +44,7 @@
 
 ### 이미지 빌드 및 실행 테스트
 
-- [ ] Docker 이미지를 빌드하고 태그(`local`)를 지정하세요.
+- [x] Docker 이미지를 빌드하고 태그(`local`)를 지정하세요.
   <details>
     <summary>사용된 명령어</summary> 
 
@@ -70,12 +72,12 @@
               -e SPRING_DATASOURCE_PASSWORD="***" \ 
               discodeit:local
 
-        - docker run : 이미지로부터 새 컨테이너를 만들고 실행
-        - -d : detached 모드 - 컨테이너를 백그라운드에서 실행
-        - --name discodeit : 컨테이너에 discodeit이라는 이름 부여. 없으면 랜덤 이름 생성됨
-        - -p 8081:80 : 호스트 8081 -> 컨테이너 80 포트 매핑
-        - -Dspring.profiles.active=prod : prod 프로필 활성화
-        - host.docker.internal : 컨테이너 안에서 호스트의 localhost를 가리키는 특수 DNS
+        - `docker run` : 이미지로부터 새 컨테이너를 만들고 실행
+        - `-d` : detached 모드 - 컨테이너를 백그라운드에서 실행
+        - `--name discodeit` : 컨테이너에 discodeit이라는 이름 부여. 없으면 랜덤 이름 생성됨
+        - `-p 8081:80` : 호스트 8081 -> 컨테이너 80 포트 매핑
+        - `-Dspring.profiles.active=prod` : prod 프로필 활성화
+        - `host.docker.internal` : 컨테이너 안에서 호스트의 localhost를 가리키는 특수 DNS
           로컬 PostgreSQL에 접근하기 위해 localhost 대신 이걸 사용해야 한다.
         </details>
 
@@ -93,62 +95,61 @@
 - [x] 필요한 포트 매핑을 구성하세요.
 - [x] Docker Compose를 사용하여 서비스를 시작하고 테스트하세요.
     - `--build`플래그를 사용하여 서비스 시작 전에 이미지를 빌드하도록 합니다.
+    <details>
+    <summary>사용된 명령어</summary> 
+
+  `docker build -t discodeit:local .`
+    - `docker build` : Docker 이미지를 빌드
+    - `-t discodeit:local` : 이미지 이름을 discodeit, 태그를 local로 지정
+    - `.` : 현재 디렉터리의 Dockerfile을 사용
+    </details>
 
 ## BinaryContentStorage 고도화 (AWS S3)
 
 ### AWS S3 버킷 구성
 
-- [ ] AWS S3 버킷을 생성하세요.
-    - [ ] 버킷 이름을`discodeit-binary-content-storage-(사용자 이니셜)`형식으로 지정하세요.
-    - [ ] 퍼블릭 액세스 차단 설정을 활성화하세요(모든 퍼블릭 액세스 차단).
-    - [ ] 버전 관리는 비활성화 상태로 두세요.
+- [x] AWS S3 버킷을 생성하세요.
+    - [x] 버킷 이름을`discodeit-binary-content-storage-(사용자 이니셜)`형식으로 지정하세요.
+    - [x] 퍼블릭 액세스 차단 설정을 활성화하세요(모든 퍼블릭 액세스 차단).
+    - [x] 버전 관리는 비활성화 상태로 두세요.
 
 ### AWS S3 접근을 위한 IAM 구성
 
-- [ ] S3 버킷에 접근하기 위한 IAM 사용자(`discodeit`)를 생성하세요.
-
-- [ ] `AmazonS3FullAccess` 권한을 할당하고, 사용자 생성을 완료하세요.
-
-- [ ] 생성된 사용자에 엑세스 키를 생성하세요.
-
-- [ ] 발급받은 키를 포함해서 AWS 관련 정보는 `.env` 파일에 추가합니다.
-
-  `... # AWS AWS_S3_ACCESS_KEY=**엑세스_키** AWS_S3_SECRET_KEY=**시크릿_키** AWS_S3_REGION=**ap-northeast-2** AWS_S3_BUCKET=**버킷_이름**`
-
+- [x] S3 버킷에 접근하기 위한 IAM 사용자(`discodeit`)를 생성하세요.
+- [x] `AmazonS3FullAccess` 권한을 할당하고, 사용자 생성을 완료하세요.
+- [x] 생성된 사용자에 엑세스 키를 생성하세요.
+- [x] 발급받은 키를 포함해서 AWS 관련 정보는 `.env` 파일에 추가합니다.
+  ```
+  ...
+  # AWS AWS_S3_ACCESS_KEY=**엑세스_키**
+  AWS_S3_SECRET_KEY=**시크릿_키**
+  AWS_S3_REGION=**ap-northeast-2**
+  AWS_S3_BUCKET=**버킷_이름**
+  ```
     - 작성한`.env`파일은 리뷰를 위해 PR에 별도로 첨부해주세요. 단, 엑세스 키와 시크릿 키는 제외하세요.
 
 ### AWS S3 테스트
 
-- [ ] AWS S3 SDK 의존성을 추가하세요.
-
+- [x] AWS S3 SDK 의존성을 추가하세요.  
   `implementation 'software.amazon.awssdk:s3:2.31.7'`
-
-- [ ] S3 API를 간단하게 테스트하세요.
-
+- [x] S3 API를 간단하게 테스트하세요.
     - 패키지명:`com.sprint.mission.discodeit.stoarge.s3`
     - 클래스명:`AWSS3Test`
-      - [ ]`Properties`클래스를 활용해서`.env`에 정의한 AWS 정보를 로드하세요.
-    - [ ] 작업 별 테스트 메소드를 작성하세요.
+        - [x] `Properties`클래스를 활용해서`.env`에 정의한 AWS 정보를 로드하세요.
+    - [x] 작업 별 테스트 메소드를 작성하세요.
         - 업로드
         - 다운로드
         - PresignedUrl 생성
 
-### AWS S3를 활용한 `BinaryContentStroage` 고도화
+### AWS S3를 활용한`BinaryContentStroage`고도화
 
 - [ ] 앞서 작성한 테스트 메소드를 참고해 `S3BinaryContentStorage`를 구현하세요.
-
     - 클래스 다이어그램
-
       ![fxlj0hb8j-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=13951&version=1&directory=/fxlj0hb8j-image.png&name=fxlj0hb8j-image.png)
-
 - [ ] `discodeit.storage.type` 값이 `s3`인 경우에만 Bean으로 등록되어야 합니다.
-
 - [ ] `S3BinaryContentStorageTest`를 함께 작성하면서 구현하세요.
-
 - [ ] `BinaryContentStorage` 설정을 유연하게 제어할 수 있도록 `application.yaml`을 수정하세요.
-
   ![[Pasted image 20260406141924.png]]
-
     - [ ] AWS 관련 정보는 형상관리하면 안되므로`.env`파일에 작성된 값을 임포트하는 방식으로 설정하세요.
     - [ ] Docker Compose에서도 위 설정을 주입할 수 있도록 수정하세요.
 - [ ] `download` 메소드는 `PresignedUrl`을 활용해 리다이렉트하는 방식으로 구현하세요.
@@ -160,7 +161,7 @@
 - [ ] AWS RDS PostgreSQL 인스턴스를 생성하세요.
 
   |항목|값|비고|
-                                                          |---|---|---|
+                                                                        |---|---|---|
   |데이터베이스 생성 방식|표준 생성||
   |엔진 옵션 > 엔진 유형|PostgreSQL||
   |엔진 옵션 > 엔진 버전|17.2-R2|기본값|
@@ -189,7 +190,7 @@
     - [ ] EC2 인스턴스를 생성하세요.
 
       |항목|값|비고|
-                                                                                                                                                                          |---|---|---|
+                                                                                                                                                                                                                    |---|---|---|
       |이름 및 태그|rds-ssh||
       |인스턴스 유형|t2.micro|기본값, 과금 주의|
       |키 페어|새 키 페어 생성|.pem 파일 저장 위치를 기억하세요.|
@@ -255,7 +256,7 @@
 - [ ] AWS ECS 콘솔에서 클러스터를 생성하세요.
 
   |항목|값|비고|
-                                                          |---|---|---|
+                                                                        |---|---|---|
   |클러스터 구성 > 클러스터 이름|discodeit-cluster||
   |인프라 > AWS Fargate(서버리스)|체크해제|과금 주의|
   |인프라 > Amazon EC2 인스턴스|체크||
@@ -267,7 +268,7 @@
 - [ ] 태스크를 정의하세요.
 
   |항목|값|비고|
-                                                          |---|---|---|
+                                                                        |---|---|---|
   |태스크 정의 구성 > 태스크 정의 패밀리|discodeit-task||
   |인프라 요구 사항 > 시작 유형|AWS Fargate: 체크 해제, Amazon EC2 인스턴스: 체크||
   |인프라 요구 사항 > 네트워크 모드|bridge||
@@ -283,7 +284,7 @@
 - [ ] `discodeit` 클러스터 상세 화면에서 서비스를 생성하세요.
 
   |항목|값|비고|
-                                                          |---|---|---|
+                                                                        |---|---|---|
   |배포 구성 > 태스크 정의 패밀리|discodeit-task||
   |배포 구성 > 서비스 이름|discodeit-service||
   |배포 구성 > 원하는 태스크|1|기본값|
