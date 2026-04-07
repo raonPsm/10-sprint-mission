@@ -103,8 +103,8 @@ ENV PROJECT_VERSION=${PROJECT_VERSION}
 #      ->  컨테이너 환경에서 메모리 제한에 맞게 JVM 옵션 조정
 ENV JVM_OPTS=""
 
-# Spring Boot 프로필을 운영(prod)으로 설정
-ENV SPRING_PROFILES_ACTIVE=prod
+# Spring Boot 프로필을 dev로 설정 - SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE}에서 prod 주입
+ENV SPRING_PROFILES_ACTIVE=dev
 
 ## 애플리케이션 실행 명령어를 설정 - 이때 환경변수로 정의한 프로젝트 정보를 활용
 # ENTRYPOINT: 컨테이너가 시작될 때 실행할 명령어를 지정
