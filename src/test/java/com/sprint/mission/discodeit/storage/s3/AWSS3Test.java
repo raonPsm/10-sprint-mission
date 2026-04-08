@@ -177,6 +177,16 @@ public class AWSS3Test {
   // PresignedUrl 생성
   // GeneratePresignedGetUrlAndRetrieve.java 공식 문서
   // https://github.com/awsdocs/aws-doc-sdk-examples/blob/d73001daea05266eaa9e074ccb71b9383832369a/javav2/example_code/s3/src/main/java/com/example/s3/GeneratePresignedGetUrlAndRetrieve.java
+  //   예시: https://bucket-name.s3.ap-northeast-2.amazonaws.com/object-key
+  //         ?X-Amz-Algorithm=AWS4-HMAC-SHA256
+  //         &X-Amz-Credential=AKIA.../20260407/ap-northeast-2/s3/aws4_request
+  //         &X-Amz-Date=20260407T120000Z
+  //         &X-Amz-Expires=600
+  //         &X-Amz-SignedHeaders=host
+  //         &X-Amz-Signature=abc123...
+  //  - URL 자체에 서명 정보가 쿼리 파라미터로 포함되어 있다
+  //  - 내부적 원리는 -> Digital Signature
+  //  - URL이 만료되거나, 서명이 유효하지 않으면 403 Forbidden이 반환됨
   @Test
   void generatePresignedUrl() {
     // given

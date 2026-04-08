@@ -14,6 +14,11 @@ spring:
   profiles:
     active:
       - dev
+  config:
+    # optional: - 파일이 없어도 에러 없이 무시 (로컬 환경 아닐 때를 위함)
+    # file:.env - classpath가 아닌 파일시스템 경로 .env를 가리킴
+    # [.properties] - 해당 파일을 KEY=VALUE 형식으로 파싱하라
+    import: optional:file:.env[.properties]
 
 management:
   endpoints:
@@ -46,9 +51,18 @@ info:
 
 discodeit:
   storage:
-    type: local
+    type: ${STORAGE_TYPE:local}  # local | s3 (기본값: local)
     local:
-      root-path: .discodeit/storage
+      root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage}
+    s3:
+      access-key: ${AWS_S3_ACCESS_KEY}
+      secret-key: ${AWS_S3_SECRET_KEY}
+      region: ${AWS_S3_REGION}
+      bucket: ${AWS_S3_BUCKET}
+      # Default is 3600 seconds. Maximum is 604800 seconds. (AWS CLI 기준)
+      # Java SDK(S3Presigner)는 기본값 X. Maximum - 7일.
+      # .env 설정값 - 600 (10분)
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:300} # (기본값: 300s = 5분)
 
 logging:
   level:
