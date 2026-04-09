@@ -122,7 +122,7 @@
 <details>
   <summary>AWS S3 설정</summary>
 
-  ![s3_bucket_1](https://github.com/user-attachments/assets/03fee4a5-b55c-4902-9f00-e6eec24a1c5a)
+  ![s3_bucket_1](https://github.com/user-attachments/assets/03fee4a5-b55c-4902-9f00-e6eec24a1c5a)  
   ### 일반 구성
   ### AWS 리전
   `ap-northeast-2`
@@ -136,7 +136,7 @@
   	- **접미사**: AWS가 자동으로 붙이는 부분 (`-xxx-ap-northeast-2-an`), 계정 ID와 리전 정보가 포함된다.
   ### 기존 커빗에서 설정 복사 - 선택 사항
   이미 있는 버킷의 설정(권한, 버전 관리, 암호화 등)을 그대로 복사해서 적용할 수 있는 선택 옵션
-  <img width="1013" height="915" alt="s3_bucket_2" src="https://github.com/user-attachments/assets/f9a73968-3135-4b9b-95ad-7f46500af48f" />
+  <img width="1013" height="915" alt="s3_bucket_2" src="https://github.com/user-attachments/assets/f9a73968-3135-4b9b-95ad-7f46500af48f" />  
   ### 객체 소유권
   버킷에 올라간 객체(파일)를 누가 소유하고, 접근 권한을 어떻게 관리할지 결정
   - **ACL 비활성화(권장)** — 현재 선택된 옵션. 모든 객체를 버킷 소유자(내 계정)가 소유하며, 접근 제어는 오직 **정책(Policy)**으로만 관리한다.
@@ -152,7 +152,8 @@
   같은 파일을 덮어쓸 때 이전 버전을 보존할지 여부.
   - **비활성화** — 덮어쓰면 이전 파일이 사라진다.
   - **활성화** — 모든 버전이 보관되어 실수로 삭제/덮어써도 복원 가능하다. 단, 버전마다 저장 비용이 발생.
-  <img width="1016" height="932" alt="s3_bucket_3" src="https://github.com/user-attachments/assets/f8ed455a-b7ce-4045-9118-7bd842c1c1e2" />
+  <img width="1016" height="932" alt="s3_bucket_3" src="https://github.com/user-attachments/assets/f8ed455a-b7ce-4045-9118-7bd842c1c1e2" />  
+  
   ### 태그 - 선택사항
   버킷에 키-값 쌍의 라벨을 붙이는 기능. 최대 50개까지 추가할 수 있다.
   
@@ -191,6 +192,58 @@
   AWS_S3_BUCKET=**버킷_이름**
   ```
     - 작성한`.env`파일은 리뷰를 위해 PR에 별도로 첨부해주세요. 단, 엑세스 키와 시크릿 키는 제외하세요.
+<details>
+<summary>IAM 구성 및 엑세스 키 생성</summary>
+  
+<img width="1042" height="473" alt="IAM_1" src="https://github.com/user-attachments/assets/487067eb-7aa3-44c2-9fe5-c961ad579406" />
+
+### 사용자 세부 정보 지정
+**AWS Management Console 액세스 권한 제공**: 
+	이 옵션을 켜면 이 IAM 사용자가 웹 콘솔(브라우저)에 로그인할 수 있게 된다.
+<img width="1032" height="756" alt="IAM_2" src="https://github.com/user-attachments/assets/c6f94635-2d39-4480-800c-793fba934995" />
+
+### 권한 설정
+
+**권한 옵션** (3가지 중 택 1):
+- **그룹에 사용자 추가** — 미리 만들어둔 그룹에 넣어서 그룹의 권한을 상속받는 방식. 여러 사용자를 직무별로 관리할 때 가장 권장된다.
+- **권한 복사** — 기존 사용자의 권한을 그대로 복제한다.
+- **직접 정책 연결(현재 선택)** — 사용자에게 정책을 바로 붙이는 방식. 간편하지만 사용자가 많아지면 관리가 어려워진다.
+
+`AmazonS3FullAccess` : 
+	**모든 S3 버킷에 대한 모든 작업**(읽기, 쓰기, 삭제, 설정 변경 등)을 허용. 편리하지만 범위가 넓으므로, 운영 환경에서는 특정 버킷만 접근 가능한 커스텀 정책을 만드는 것이 더 안전하다. 
+
+**권한 경계 — 선택 사항**:
+	이 사용자가 가질 수 있는 **최대 권한의 상한선**을 설정하는 기능. 예를 들어 S3FullAccess를 부여하더라도 권한 경계에서 특정 버킷만 허용하면 그 범위로 제한된다. 
+<img width="1032" height="600" alt="IAM_AmazonS3FullAccess" src="https://github.com/user-attachments/assets/327f1088-c535-4115-bc68-e20200b767b2" />
+
+**사용자 세부 정보**:
+- 사용자 이름: `discodeit`
+- 콘솔 암호 유형: `None` — 웹 콘솔 로그인 불가 (프로그래밍 전용)
+- 암호 재설정 필요: `아니요`
+
+**권한 요약**:
+- `AmazonS3FullAccess` (AWS 관리형 정책) — 모든 S3 작업 허용
+
+**태그**:
+- 현재 없음. 필요시 추가 가능 (예: `project: discodeit`)
+
+<img width="859" height="855" alt="access_key_1" src="https://github.com/user-attachments/assets/3a899e50-85c4-4fae-a458-dbac592655d2" />
+<img width="868" height="319" alt="access_key_2" src="https://github.com/user-attachments/assets/7e198566-d066-474f-8d81-e4132b1164cd" />
+
+**사용 사례** (택 1):
+- **Command Line Interface(CLI)** — 터미널에서 `aws` 명령어로 사용
+- **로컬 코드** — 내 PC에서 실행하는 애플리케이션(Java, Python 등)에서 SDK로 사용
+- **AWS 컴퓨팅 서비스에서 실행되는 애플리케이션** — EC2, Lambda, ECS 등에서 사용. 단, 이 경우 액세스 키 대신 **IAM 역할(Role)**을 사용하는 것이 권장된다.
+- **서드 파티 서비스** — 외부 모니터링/관리 도구에 키를 제공
+- **AWS 외부에서 실행되는 애플리케이션(현재 선택)** — AWS 밖의 서버나 데이터센터에서 실행되는 앱에서 사용
+- **기타** — 위에 해당하지 않는 경우
+
+**권장되는 대안**:
+	AWS는 장기 액세스 키 대신 **IAM Roles Anywhere**를 권장한다. 이는 외부 워크로드에 임시 보안 인증을 발급하는 방식으로, 키가 유출되어도 자동 만료되어 더 안전하다.
+
+<img width="864" height="570" alt="access_key_3" src="https://github.com/user-attachments/assets/0dcb1959-913c-455c-8148-ce50fcb335ea" />
+
+</details>
 
 ### AWS S3 테스트
 
@@ -225,7 +278,7 @@
 - [ ] AWS RDS PostgreSQL 인스턴스를 생성하세요.
 
   |항목|값|비고|
-                                                                                |---|---|---|
+  |---|---|---|
   |데이터베이스 생성 방식|표준 생성||
   |엔진 옵션 > 엔진 유형|PostgreSQL||
   |엔진 옵션 > 엔진 버전|17.2-R2|기본값|
@@ -254,7 +307,7 @@
     - [ ] EC2 인스턴스를 생성하세요.
 
       |항목|값|비고|
-                                                                                                                                                                                                                                            |---|---|---|
+      |---|---|---|
       |이름 및 태그|rds-ssh||
       |인스턴스 유형|t2.micro|기본값, 과금 주의|
       |키 페어|새 키 페어 생성|.pem 파일 저장 위치를 기억하세요.|
