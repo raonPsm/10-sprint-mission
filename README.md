@@ -47,11 +47,13 @@
 - [x] Docker 이미지를 빌드하고 태그(`local`)를 지정하세요.
   <details>
     <summary>사용된 명령어</summary> 
+  <img width="1168" height="716" alt="docker_image_build" src="https://github.com/user-attachments/assets/46366841-7350-4aa9-b437-cf4082202821" />  
+  <img width="1165" height="166" alt="docker_images_build_check" src="https://github.com/user-attachments/assets/cacc69ea-8f94-45a0-a6f8-5b9b821dc78d" />
 
   `docker build -t discodeit:local .`
     - `docker build` : Docker 이미지를 빌드하는 명령어
     - `-t discodeit:local` : 빌드할 이미지에 discodeit이라는 이름과 local이라는 태그를 붙임
-    - `.` : 현재 디렉터리를 빌드 컨텍스트로 사용하며, 이 안의 Dockerfile을 읽어 이미지를
+    - `.` : 현재 디렉터리를 빌드 컨텍스트로 사용하며, 이 안의 Dockerfile을 읽어 이미지를 빌드
 
   </details>
 
@@ -63,21 +65,24 @@
         <details>
           <summary>사용된 명령어</summary>
 
-            docker run -d \
-              --name discodeit \
-              -p 8081:80 \
-              -e JVM_OPTS="-Dspring.profiles.active=prod" \
-              -e SPRING_DATASOURCE_URL="jdbc:postgresql://host.docker.internal:5432/discodeit" \
-              -e SPRING_DATASOURCE_USERNAME="***" \
-              -e SPRING_DATASOURCE_PASSWORD="***" \ 
-              discodeit:local
+        ![docker_run_command](https://github.com/user-attachments/assets/14c1166d-619f-4219-bc42-aa202263c43d)
+        <img width="1448" height="86" alt="docker_container_check" src="https://github.com/user-attachments/assets/2ba6d659-4e86-4efe-b68c-249bb25bc997" />
 
+          docker run -d \
+          --name discodeit \
+          -p 8081:80 \
+          -e JVM_OPTS="-Dspring.profiles.active=prod" \
+          -e SPRING_DATASOURCE_URL="jdbc:postgresql://host.docker.internal:5432/discodeit" \
+          -e SPRING_DATASOURCE_USERNAME="***" \
+          -e SPRING_DATASOURCE_PASSWORD="***" \ 
+          discodeit:local
+          
         - `docker run` : 이미지로부터 새 컨테이너를 만들고 실행
         - `-d` : detached 모드 - 컨테이너를 백그라운드에서 실행
         - `--name discodeit` : 컨테이너에 discodeit이라는 이름 부여. 없으면 랜덤 이름 생성됨
         - `-p 8081:80` : 호스트 8081 -> 컨테이너 80 포트 매핑
         - `-Dspring.profiles.active=prod` : prod 프로필 활성화
-        - `host.docker.internal` : 컨테이너 안에서 호스트의 localhost를 가리키는 특수 DNS
+        - `host.docker.internal` : 컨테이너 안에서 호스트의 localhost를 가리키는 특수 DNS.
           로컬 PostgreSQL에 접근하기 위해 localhost 대신 이걸 사용해야 한다.
         </details>
 
@@ -97,11 +102,11 @@
     - `--build`플래그를 사용하여 서비스 시작 전에 이미지를 빌드하도록 합니다.
     <details>
     <summary>사용된 명령어</summary> 
+    
+   <img width="971" height="731" alt="docker_compose_up_build" src="https://github.com/user-attachments/assets/0c8c3e71-7d66-444d-ab19-50c1048e6d64" />
+   <img width="966" height="887" alt="docker_compose_up_build_log" src="https://github.com/user-attachments/assets/a4cbaff2-20d3-40ee-9792-2fcd6711eb42" />
 
-  `docker build -t discodeit:local .`
-    - `docker build` : Docker 이미지를 빌드
-    - `-t discodeit:local` : 이미지 이름을 discodeit, 태그를 local로 지정
-    - `.` : 현재 디렉터리의 Dockerfile을 사용
+    `docker compose up --build` 명령으로 이미지 빌드 + 컨테이너 실행을 한번에 수행
     </details>
 
 ## BinaryContentStorage 고도화 (AWS S3)
