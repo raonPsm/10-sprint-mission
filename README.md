@@ -327,10 +327,10 @@ AWS는 장기 액세스 키 대신 **IAM Roles Anywhere**를 권장한다. 이�
 
 ### AWS RDS 구성
 
-- [ ] AWS RDS PostgreSQL 인스턴스를 생성하세요.
+- [x] AWS RDS PostgreSQL 인스턴스를 생성하세요.
 
   |항목|값|비고|
-                            |---|---|---|
+                          |---|---|---|
   |데이터베이스 생성 방식|표준 생성||
   |엔진 옵션 > 엔진 유형|PostgreSQL||
   |엔진 옵션 > 엔진 버전|17.2-R2|기본값|
@@ -345,99 +345,108 @@ AWS는 장기 액세스 키 대신 **IAM Roles Anywhere**를 권장한다. 이�
   |모니터링 > 보존기간|7일 (프리티어)|과금 주의|
   |모니터링 > 추가 모니터링 설정|모두 체크 해제|기본값, 과금 주의|
   |추가 구성 > 백업|체크 해제|과금 주의|
-
     - 이외 설정은 기본값을 유지하세요.
-- [ ] 과금이 발생할 수 있으니 다음 항목은 한번 더 확인해주세요.
-
-    - [ ] 템플릿:`프리티어`
-    - [ ] 퍼블릭 액세스:`아니오`
-    - [ ] 모니터링 > 보존기간:`7일`
-    - [ ] 모니터링 > 추가 모니터링 설정:`모두 체크 해제`
-    - [ ] 추가 구성 > 백업:`비활성화`
-- [ ] SSH 터널링을 통해 개발 환경에서 접근할 수 있도록 EC2를 구성하세요.
-
-    - [ ] EC2 인스턴스를 생성하세요.
+- [x] 과금이 발생할 수 있으니 다음 항목은 한번 더 확인해주세요.
+    - [x] 템플릿:`프리티어`
+    - [x] 퍼블릭 액세스:`아니오`
+    - [x] 모니터링 > 보존기간:`7일`
+    - [x] 모니터링 > 추가 모니터링 설정:`모두 체크 해제`
+    - [x] 추가 구성 > 백업:`비활성화`
+- [x] SSH 터널링을 통해 개발 환경에서 접근할 수 있도록 EC2를 구성하세요.
+    - [x] EC2 인스턴스를 생성하세요.
 
       |항목|값|비고|
-                                                                                    |---|---|---|
+                                                                  |---|---|---|
       |이름 및 태그|rds-ssh||
       |인스턴스 유형|t2.micro|기본값, 과금 주의|
       |키 페어|새 키 페어 생성|.pem 파일 저장 위치를 기억하세요.|
       |네트워크 설정 > 방화벽(보안그룹)|기존 보안 그룹 선택||
-
         - 이외 설정은 기본값을 유지하세요.
-    - [ ] 보안 그룹에서 인바운드 규칙을 편집하세요.
-
+    - [x] 보안 그룹에서 인바운드 규칙을 편집하세요.
         - 유형:`SSH`
         - 소스:`내 IP`
             - 작업 환경의 네트워크(와이파이 등)가 달라지면 계속 수정해주어야 할 수 있습니다.
-- [ ] DataGrip을 통해 연결 후 데이터베이스와 사용자, 테이블을 초기화하세요.
+    - [x] DataGrip을 통해 연결 후 데이터베이스와 사용자, 테이블을 초기화하세요.
+        - [x] 데이터 소스 추가 시 `SSH/SSL > Use SSH tunnel` 설정을 활성화하세요. 이때 이전에 다운로드한 `.pem` 파일을 활용하세요.
+        - [x] 연결이 성공하면 데이터베이스와 사용자, 테이블을 초기화하세요.
 
-    - [ ] 데이터 소스 추가 시 `SSH/SSL > Use SSH tunnel` 설정을 활성화하세요. 이때 이전에 다운로드한 `.pem` 파일을 활용하세요.
-
-    - [ ] 연결이 성공하면 데이터베이스와 사용자, 테이블을 초기화하세요.
-
-      `-- 1. 새 유저 'discodeit_user' 생성 (비밀번호는 원하는 값으로 설정) CREATE USER discodeit_user WITH PASSWORD 'discodeit1234';  -- 2. postgres 계정은 AWS RDS 환경 특성상 완전한 super user가 아니므로, discodeit_user에 대한 권한을 추가로 부여해야함.   GRANT discodeit_user TO postgres;  -- 3. 'discodeit' 데이터베이스 생성 (소유자는 'discodeit_user') CREATE DATABASE discodeit OWNER discodeit_user;  -- 4. schema.sql 실행하여 테이블 생성`
-
-    - [ ] 구성이 완료되면 `rds-ssh` 인스턴스는 완전히 삭제하여 과금에 유의하세요.
+          ```SQL
+          -- 1. 새 유저 'discodeit_user' 생성 (비밀번호는 원하는 값으로 설정)
+          CREATE USER discodeit_user WITH PASSWORD 'discodeit1234';
+          -- 2. postgres 계정은 AWS RDS 환경 특성상 완전한 super user가 아니므로, discodeit_user에 대한 권한을 추가로 부여해야함.
+          GRANT discodeit_user TO postgres;
+          -- 3. 'discodeit' 데이터베이스 생성 (소유자는 'discodeit_user')
+          CREATE DATABASE discodeit OWNER discodeit_user;
+          -- 4. schema.sql 실행하여 테이블 생성`
+        - [x] 구성이 완료되면 `rds-ssh` 인스턴스는 완전히 삭제하여 과금에 유의하세요.
 
 ### AWS ECR 구성
 
-- [ ] 이미지를 배포할 퍼블릭 레포지토리(`discodeit`)를 생성하세요.
-
+- [x] 이미지를 배포할 퍼블릭 레포지토리(`discodeit`)를 생성하세요.
     - 프라이빗 레포지토리는 용량 제한이 있으므로 퍼블릭 레포지토리로 생성합니다.
-- [ ] [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html#getting-started-install-instructions)
+- [x] [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html#getting-started-install-instructions)
   를 설치하세요.
-
-- [ ] `aws configure` 실행 후 앞서 생성한 `discodeit` IAM 사용자 정보를 입력하세요.
-
+- [x] `aws configure` 실행 후 앞서 생성한 `discodeit` IAM 사용자 정보를 입력하세요.
     - 엑세스 키
     - 시크릿 키
     - region:`ap-northeast-2`
     - output format:`json`
-- [ ] `discodeit` IAM 사용자가 ECR에 접근할 수 있도록 다음 권한을 부여하세요.
-
+- [x] `discodeit` IAM 사용자가 ECR에 접근할 수 있도록 다음 권한을 부여하세요.
     - `AmazonElasticContainerRegistryPublicFullAccess`
-- [ ] Docker 클라이언트를 배포할 레지스트리에 대해 인증합니다.
-
+- [x] Docker 클라이언트를 배포할 레지스트리에 대해 인증합니다.
     - AWS 콘솔을 통해 생성한 레포지토리 페이지로 이동 후 우측 상단 `푸시 명령 보기`를 클릭하면 관련 명령어를 확인할 수 있습니다.
-
-      `# 예시 aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/...`
-
-- [ ] 멀티플랫폼을 지원하도록 애플리케이션 이미지를 빌드하고, `discodeit` 레포지토리에 **push** 하세요.
-
+      ```Bash
+      # 예시 
+      aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/...`
+      ```
+- [x] 멀티플랫폼을 지원하도록 애플리케이션 이미지를 빌드하고, `discodeit` 레포지토리에 **push** 하세요.
     - 태그명:`latest`,`1.2-M8`
     - 멀티플랫폼:`linux/amd64`,`linux/arm64`
-- [ ] AWS 콘솔에서 푸시된 이미지를 확인하세요.
+- [x] AWS 콘솔에서 푸시된 이미지를 확인하세요.
 
 ### AWS ECS 구성
 
-- [ ] 배포 환경에서 컨테이너 실행 간 사용할 환경 변수를 정의하고, S3에 업로드하세요.
+- [x] 배포 환경에서 컨테이너 실행 간 사용할 환경 변수를 정의하고, S3에 업로드하세요.
+    - [x] `discodeit.env` 파일을 만들어 다음의 내용을 작성하세요.
 
-    - [ ] `discodeit.env` 파일을 만들어 다음의 내용을 작성하세요.
-
-      `# Spring Configuration SPRING_PROFILES_ACTIVE=prod  # Application Configuration STORAGE_TYPE=s3 AWS_S3_ACCESS_KEY=엑세스_키 AWS_S3_SECRET_KEY=시크릿_키 AWS_S3_REGION=ap-northeast-2 AWS_S3_BUCKET=버킷_이름 AWS_S3_PRESIGNED_URL_EXPIRATION=600  # DataSource Configuration RDS_ENDPOINT=RDS_엔드포인트(포트 포함) SPRING_DATASOURCE_URL=jdbc:postgresql://${RDS_ENDPOINT}/discodeit SPRING_DATASOURCE_USERNAME=RDS_유저네임(DataGrip을 통해 생성했던 유저) SPRING_DATASOURCE_PASSWORD=RDS_비밀번호  # JVM Configuration (프리티어 고려) JVM_OPTS="-Xmx384m -Xms256m -XX:MaxMetaspaceSize=64m -XX:+UseSerialGC"`
-
-    - [ ] 이 파일을 S3에 업로드하세요.
-
-    - [ ] 이 파일은 형상관리되지 않도록 주의하세요.
-
-- [ ] AWS ECS 콘솔에서 클러스터를 생성하세요.
+      ```
+      # Spring Configuration
+      SPRING_PROFILES_ACTIVE=prod
+      
+      # Application Configuration
+      STORAGE_TYPE=s3
+      AWS_S3_ACCESS_KEY=엑세스_키
+      AWS_S3_SECRET_KEY=시크릿_키
+      AWS_S3_REGION=ap-northeast-2
+      AWS_S3_BUCKET=버킷_이름
+      AWS_S3_PRESIGNED_URL_EXPIRATION=600
+      
+      # DataSource Configuration
+      RDS_ENDPOINT=RDS_엔드포인트(포트 포함)
+      SPRING_DATASOURCE_URL=jdbc:postgresql://${RDS_ENDPOINT}/discodeit
+      SPRING_DATASOURCE_USERNAME=RDS_유저네임(DataGrip을 통해 생성했던 유저)
+      SPRING_DATASOURCE_PASSWORD=RDS_비밀번호
+      
+      # JVM Configuration (프리티어 고려)
+      JVM_OPTS="-Xmx384m -Xms256m -XX:MaxMetaspaceSize=64m -XX:+UseSerialGC"`
+      ```
+    - [x] 이 파일을 S3에 업로드하세요.
+    - [x] 이 파일은 형상관리되지 않도록 주의하세요.
+- [x] AWS ECS 콘솔에서 클러스터를 생성하세요.
 
   |항목|값|비고|
-                                                                                                          |---|---|---|
+            |---|---|---|
   |클러스터 구성 > 클러스터 이름|discodeit-cluster||
   |인프라 > AWS Fargate(서버리스)|체크해제|과금 주의|
   |인프라 > Amazon EC2 인스턴스|체크||
   |인프라 > EC2 인스턴스 유형|t2.micro|과금 주의|
   |인프라 > 원하는 용량|최소 0, 최대 1|과금 주의|
   |인프라 > SSH 키 페어|새 키 페어 생성 후 지정||
-
     - 이외 설정은 기본값을 유지하세요.
-- [ ] 태스크를 정의하세요.
+- [x] 태스크를 정의하세요.
 
   |항목|값|비고|
-                                                                                                          |---|---|---|
+            |---|---|---|
   |태스크 정의 구성 > 태스크 정의 패밀리|discodeit-task||
   |인프라 요구 사항 > 시작 유형|AWS Fargate: 체크 해제, Amazon EC2 인스턴스: 체크||
   |인프라 요구 사항 > 네트워크 모드|bridge||
@@ -446,26 +455,23 @@ AWS는 장기 액세스 키 대신 **IAM Roles Anywhere**를 권장한다. 이�
   |컨테이너-1 > 포트 매핑|호스트 포트: 80, 컨테이너 포트: 80||
   |컨테이너-1 > 리소스 할당 제한 - 조건부|CPU: 0.25 vCPU, 메모리 하드 제한: 0.5 GB, 메모리 소프트 제한: 0.25 GB||
   |컨테이너-1 > 환경 변수 - 선택 사항 > 파일에서 추가|이전에 S3에 업로드한 discodeit.env 파일 지정||
-
     - 이외 설정은 기본값을 유지하세요.
-    - [ ] 태스크 생성 후`태스크 실행 역할`에 S3 관련 권한을 추가하세요.
+    - [x] 태스크 생성 후`태스크 실행 역할`에 S3 관련 권한을 추가하세요.
         - 환경 변수 파일을 읽기위해 필요합니다.
-- [ ] `discodeit` 클러스터 상세 화면에서 서비스를 생성하세요.
+- [x] `discodeit` 클러스터 상세 화면에서 서비스를 생성하세요.
 
   |항목|값|비고|
-                                                                                                          |---|---|---|
+      |---|---|---|
   |배포 구성 > 태스크 정의 패밀리|discodeit-task||
   |배포 구성 > 서비스 이름|discodeit-service||
   |배포 구성 > 원하는 태스크|1|기본값|
   |배포 구성 > 상태 검사 유예 기간|30초||
-
     - 이외 설정은 기본값을 유지하세요.
-- [ ] 태스크의 EC2 보안 그룹의 인바운드 규칙을 설정하여 어디서든 접근할 수 있도록 하세요.
-
-    - [ ] EC2 보안 그룹에서 인바운드 규칙을 편집하세요.
-    - [ ] 규칙 유형으로`HTTP`를 선택하세요.
-    - [ ] 소스로`Anywhere-IPv4`를 선택하여 모든 IP를 허용하세요.
-- [ ] 태스크 실행이 완료되면 해당 EC2의 퍼블릭 IP에 접속해보세요.
+- [x] 태스크의 EC2 보안 그룹의 인바운드 규칙을 설정하여 어디서든 접근할 수 있도록 하세요.
+    - [x] EC2 보안 그룹에서 인바운드 규칙을 편집하세요.
+    - [x] 규칙 유형으로`HTTP`를 선택하세요.
+    - [x] 소스로`Anywhere-IPv4`를 선택하여 모든 IP를 허용하세요.
+- [x] 태스크 실행이 완료되면 해당 EC2의 퍼블릭 IP에 접속해보세요.
 
 ### ✏️ 심화 요구사항
 
@@ -478,52 +484,46 @@ AWS는 장기 액세스 키 대신 **IAM Roles Anywhere**를 권장한다. 이�
 
 ### GitHub Actions를 활용한 CI/CD 파이프라인 구축
 
-- [ ] **CI**(지속적 통합)를 위한 워크플로우를 설정하세요.
-
-    - [ ] `.github/workflows/test.yml` 파일을 생성하세요.
-
-    - [ ] `main` 브랜치에 PR이 생성되면 실행되도록 설정하세요.
-
-    - [ ] 테스트가 실행하는 Job을 정의하세요.
-
-    - [ ] [CodeCov](https://app.codecov.io/)를 통해 테스트 커버리지 뱃지를 README에 추가해보세요.
-
+- [x] **CI**(지속적 통합)를 위한 워크플로우를 설정하세요.
+    - [x] `.github/workflows/test.yml` 파일을 생성하세요.
+    - [x] `main` 브랜치에 PR이 생성되면 실행되도록 설정하세요.
+    - [x] 테스트가 실행하는 Job을 정의하세요.
+    - [x] [CodeCov](https://app.codecov.io/)를 통해 테스트 커버리지 뱃지를 README에 추가해보세요.  
       ![tb4cb7hos-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=13953&version=1&directory=/tb4cb7hos-image.png&name=tb4cb7hos-image.png)
 
 - [ ] **CD**(지속적 배포)를 위한 워크플로우를 설정하세요.
-
-  - [ ]`.github/workflows/deploy.yml`파일을 생성하세요.
-  - [ ]`release`브랜치에 코드가 푸시되면 실행되도록 설정하세요.
-    - [ ] AWS 정보 설정
-        - [ ] GitHub 레포지토리 설정을 통해 시크릿을 추가하세요.
-            - `AWS_ACCESS_KEY`: IAM 사용자의 액세스 키
-            - `AWS_SECRET_KEY`: IAM 사용자의 시크릿 키
-        - [ ] GitHub 레포지토리 설정을 통해 변수를 추가하세요.
-            - `AWS_REGION`: AWS 리전(`ap-northeast-2`)
-            - `ECR_REPOSITORY_URI`: ECR 레포지토리 URI
-            - `ECS_CLUSTER`: ECS 클러스터 이름(`discodeit-cluster`)
-            - `ECS_SERVICE`: ECS 서비스 이름(`discodeit-service`)
-            - `ECS_TASK_DEFINITION`: ECS 태스크 정의 이름(`discodeit-task`)
-    - [ ] Docker 이미지 빌드 및 푸시
-        - [ ] Docker 이미지를 빌드하고 푸시하는 Job을 정의하세요.
-        - [ ] AWS CLI를 설정하는 Step을 추가하세요.
-            - Pubilc ECR에 배포해야하므로 리전은`us-east-1`으로 설정해야합니다.
-        - [ ] ECR 로그인 Step을 추가하세요.
-            - Public ECR에 로그인해야합니다.
-        - [ ] Docker 이미지 빌드 및 푸시하는 과정을 Step으로 추가하세요.
-            - 단, 빌드 시간 단축을 위해 멀티 플랫폼 옵션은 제외합니다.
-            - GitHub Actions의 런타임 OS와 우리가 배포할 ECS는 모두`x86_64`입니다.
-        - [ ] 이미지 태그는`latest`와 GitHub 커밋 해시를 사용하도록 설정하세요.
-    - [ ] ECS 서비스 업데이트
-        - [ ] ECS 서비스를 업데이트하는 Job을 정의하세요.
-        - [ ] AWS CLI를 설정하는 Step을 추가하세요.
-            - 우리의 ECS 클러스터에 접근해야하므로 리전은`AWS_REGION`으로 설정해야합니다.
-        - [ ] 태스크 정의를 업데이트하는 Step을 추가하세요.
-            - 기존의 태스크 정의를 기반으로 새 이미지를 사용하도록 업데이트하세요.
-        - [ ] 프리티어 리소스를 고려해 AWS CLI를 사용해 기존에 구동 중인 서비스를 중단하는 Step을 추가하세요.
-            - `aws ecs update-service --desired-count`옵션을 활용하세요.
-        - [ ] 새로 등록한 태스크 정의를 사용하도록 ECS 서비스를 업데이트하는 Step을 추가하세요.
-    - [ ] AWS 콘솔을 통해 새로 등록된 태스크 정의로 배포되었는지 확인하세요.
+    - [x] `.github/workflows/deploy.yml`파일을 생성하세요.
+    - [x] `release`브랜치에 코드가 푸시되면 실행되도록 설정하세요.
+        - [x] AWS 정보 설정
+            - [x] GitHub 레포지토리 설정을 통해 시크릿을 추가하세요.
+                - `AWS_ACCESS_KEY`: IAM 사용자의 액세스 키
+                - `AWS_SECRET_KEY`: IAM 사용자의 시크릿 키
+            - [x] GitHub 레포지토리 설정을 통해 변수를 추가하세요.
+                - `AWS_REGION`: AWS 리전(`ap-northeast-2`)
+                - `ECR_REPOSITORY_URI`: ECR 레포지토리 URI
+                - `ECS_CLUSTER`: ECS 클러스터 이름(`discodeit-cluster`)
+                - `ECS_SERVICE`: ECS 서비스 이름(`discodeit-service`)
+                - `ECS_TASK_DEFINITION`: ECS 태스크 정의 이름(`discodeit-task`)
+        - [ ] Docker 이미지 빌드 및 푸시
+            - [ ] Docker 이미지를 빌드하고 푸시하는 Job을 정의하세요.
+            - [ ] AWS CLI를 설정하는 Step을 추가하세요.
+                - Pubilc ECR에 배포해야하므로 리전은`us-east-1`으로 설정해야합니다.
+            - [ ] ECR 로그인 Step을 추가하세요.
+                - Public ECR에 로그인해야합니다.
+            - [ ] Docker 이미지 빌드 및 푸시하는 과정을 Step으로 추가하세요.
+                - 단, 빌드 시간 단축을 위해 멀티 플랫폼 옵션은 제외합니다.
+                - GitHub Actions의 런타임 OS와 우리가 배포할 ECS는 모두`x86_64`입니다.
+            - [ ] 이미지 태그는`latest`와 GitHub 커밋 해시를 사용하도록 설정하세요.
+        - [ ] ECS 서비스 업데이트
+            - [ ] ECS 서비스를 업데이트하는 Job을 정의하세요.
+            - [ ] AWS CLI를 설정하는 Step을 추가하세요.
+                - 우리의 ECS 클러스터에 접근해야하므로 리전은`AWS_REGION`으로 설정해야합니다.
+            - [ ] 태스크 정의를 업데이트하는 Step을 추가하세요.
+                - 기존의 태스크 정의를 기반으로 새 이미지를 사용하도록 업데이트하세요.
+            - [ ] 프리티어 리소스를 고려해 AWS CLI를 사용해 기존에 구동 중인 서비스를 중단하는 Step을 추가하세요.
+                - `aws ecs update-service --desired-count`옵션을 활용하세요.
+            - [ ] 새로 등록한 태스크 정의를 사용하도록 ECS 서비스를 업데이트하는 Step을 추가하세요.
+        - [ ] AWS 콘솔을 통해 새로 등록된 태스크 정의로 배포되었는지 확인하세요.
 
 ## 리뷰를 위해 PR에 포함해야할 정보
 

@@ -11,9 +11,10 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
-  profiles:
-    active:
-      - test
+  # 각 환경에서 명시적으로 주입하도록 수정
+  #  profiles:
+  #    active:
+  #      - prod
   config:
     # optional: - 파일이 없어도 에러 없이 무시 (로컬 환경 아닐 때를 위함)
     # file:.env - classpath가 아닌 파일시스템 경로 .env를 가리킴
