@@ -12,6 +12,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.ResponseInputStream;
@@ -38,7 +39,7 @@ upload -> download -> generatePresignedUrl 순서로 실행
  */
 
 // TODO: 로깅 추가 고려
-//@Disabled // @Disabled를 달아서 평소에는 실행 X, S3 연동을 확인할 때만 해당 어노테이션을 지우고 수동으로 실행
+@EnabledIfEnvironmentVariable(named = "AWS_ACCESS_KEY_ID", matches = ".+")
 public class AWSS3Test {
 
   // S3 업로드/다운로드용 클라이언트

@@ -15,14 +15,16 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 
 // S3BinaryContentStorage는 Spring 의존성(JPA, DB 등) 없이 독립적으로 동작하므로 -> Spring Context 사용 X
-// @Disabled를 달아서 평소에는 실행 X, S3 연동을 확인할 때만 해당 어노테이션을 지우고 수동으로 실행, CI/CD에서의 실행 막음
-//@Disabled
+
+// 환경변수가 존재하고 빈 값이 아니면 테스트 실행
+@EnabledIfEnvironmentVariable(named = "AWS_ACCESS_KEY_ID", matches = ".+")
 @DisplayName("S3BinaryContentStorage 테스트")
 class S3BinaryContentStorageTest {
 

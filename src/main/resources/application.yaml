@@ -13,7 +13,7 @@ spring:
     open-in-view: false
   profiles:
     active:
-      - dev
+      - test
   config:
     # optional: - 파일이 없어도 에러 없이 무시 (로컬 환경 아닐 때를 위함)
     # file:.env - classpath가 아닌 파일시스템 경로 .env를 가리킴
