@@ -1,8 +1,8 @@
 Codecov badge  
-[![codecov](https://codecov.io/github/raonPsm/10-sprint-mission/graph/badge.svg?token=DR8JUG1UJZ)](https://codecov.io/github/raonPsm/10-sprint-mission)
+[![codecov](https://codecov.io/github/raonPsm/10-sprint-mission/branch/sprint8/graph/badge.svg?token=DR8JUG1UJZ)](https://codecov.io/github/raonPsm/10-sprint-mission)
 
 Sunburst  
-https://codecov.io/github/raonPsm/10-sprint-mission/graphs/sunburst.svg?token=DR8JUG1UJZ  
+https://codecov.io/github/raonPsm/10-sprint-mission/graphs/sunburst.svg?token=DR8JUG1UJZ    
 Grid  
 https://codecov.io/github/raonPsm/10-sprint-mission/graphs/tree.svg?token=DR8JUG1UJZ  
 Icicle  
@@ -330,7 +330,7 @@ AWS는 장기 액세스 키 대신 **IAM Roles Anywhere**를 권장한다. 이�
 - [ ] AWS RDS PostgreSQL 인스턴스를 생성하세요.
 
   |항목|값|비고|
-                      |---|---|---|
+                          |---|---|---|
   |데이터베이스 생성 방식|표준 생성||
   |엔진 옵션 > 엔진 유형|PostgreSQL||
   |엔진 옵션 > 엔진 버전|17.2-R2|기본값|
@@ -359,7 +359,7 @@ AWS는 장기 액세스 키 대신 **IAM Roles Anywhere**를 권장한다. 이�
     - [ ] EC2 인스턴스를 생성하세요.
 
       |항목|값|비고|
-                                                                  |---|---|---|
+                                                                              |---|---|---|
       |이름 및 태그|rds-ssh||
       |인스턴스 유형|t2.micro|기본값, 과금 주의|
       |키 페어|새 키 페어 생성|.pem 파일 저장 위치를 기억하세요.|
@@ -425,7 +425,7 @@ AWS는 장기 액세스 키 대신 **IAM Roles Anywhere**를 권장한다. 이�
 - [ ] AWS ECS 콘솔에서 클러스터를 생성하세요.
 
   |항목|값|비고|
-                                                                                                    |---|---|---|
+                                                                                                        |---|---|---|
   |클러스터 구성 > 클러스터 이름|discodeit-cluster||
   |인프라 > AWS Fargate(서버리스)|체크해제|과금 주의|
   |인프라 > Amazon EC2 인스턴스|체크||
@@ -437,7 +437,7 @@ AWS는 장기 액세스 키 대신 **IAM Roles Anywhere**를 권장한다. 이�
 - [ ] 태스크를 정의하세요.
 
   |항목|값|비고|
-                                                                                                    |---|---|---|
+                                                                                                        |---|---|---|
   |태스크 정의 구성 > 태스크 정의 패밀리|discodeit-task||
   |인프라 요구 사항 > 시작 유형|AWS Fargate: 체크 해제, Amazon EC2 인스턴스: 체크||
   |인프라 요구 사항 > 네트워크 모드|bridge||
@@ -453,7 +453,7 @@ AWS는 장기 액세스 키 대신 **IAM Roles Anywhere**를 권장한다. 이�
 - [ ] `discodeit` 클러스터 상세 화면에서 서비스를 생성하세요.
 
   |항목|값|비고|
-                                                                                                    |---|---|---|
+                                                                                                        |---|---|---|
   |배포 구성 > 태스크 정의 패밀리|discodeit-task||
   |배포 구성 > 서비스 이름|discodeit-service||
   |배포 구성 > 원하는 태스크|1|기본값|
