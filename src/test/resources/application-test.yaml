@@ -15,6 +15,12 @@ spring:
     init:
       mode: never # schema.sql 무시. H2 호환 스키마 자동 생성
 
+discodeit:
+  storage:
+    type: local
+    local:
+      root-path: .discodeit/storage-test
+
 logging:
   level:
     com.sprint.mission.discodeit: debug

@@ -15,13 +15,12 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -46,13 +45,17 @@ public class BasicReadStatusService implements ReadStatusService {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
 
-    ReadStatus readStatus = readStatusRepository.findByUserIdAndChannelId(user.getId(), channel.getId())
-        .orElseGet(() -> {
-          Instant lastReadAt = request.lastReadAt();
-          return readStatusRepository.save(new ReadStatus(user, channel, lastReadAt));
+    // FIX: 동일 (user, channel) 조합의 ReadStatus가 이미 존재하면 중복 생성 예외
+    readStatusRepository.findByUserIdAndChannelId(user.getId(), channel.getId())
+        .ifPresent(existing -> {
+          throw DuplicateReadStatusException.withUserIdAndChannelId(userId, channelId);
         });
 
-    log.info("읽음 상태 생성 완료: id={}, userId={}, channelId={}", 
+    ReadStatus readStatus = readStatusRepository.save(
+        new ReadStatus(user, channel, request.lastReadAt())
+    );
+
+    log.info("읽음 상태 생성 완료: id={}, userId={}, channelId={}",
         readStatus.getId(), userId, channelId);
     return readStatusMapper.toDto(readStatus);
   }
@@ -81,11 +84,11 @@ public class BasicReadStatusService implements ReadStatusService {
   @Override
   public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest request) {
     log.debug("읽음 상태 수정 시작: id={}, newLastReadAt={}", readStatusId, request.newLastReadAt());
-    
+
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
         .orElseThrow(() -> ReadStatusNotFoundException.withId(readStatusId));
     readStatus.update(request.newLastReadAt());
-    
+
     log.info("읽음 상태 수정 완료: id={}", readStatusId);
     return readStatusMapper.toDto(readStatus);
   }

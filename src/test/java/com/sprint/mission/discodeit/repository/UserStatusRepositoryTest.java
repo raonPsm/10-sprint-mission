@@ -44,11 +44,26 @@ class UserStatusRepositoryTest {
     return userRepository.save(user);
   }
 
+  // FIX: Instant.now()는 OS/JVM에 따라 정밀도가 다름
   @Test
   @DisplayName("사용자 ID로 상태 정보를 찾을 수 있다")
   void findByUserId_ExistingUserId_ReturnsUserStatus() {
     // given
-    Instant now = Instant.now();
+    // DB 컬럼(timestamp with time zone)의 정밀도(microsecond)에 맞춰 절삭
+    // - JVM의 Instant.now()는 OS에 따라 nanosecond 정밀도일 수 있으나
+    //   DB round-trip 후에는 6자리(microsecond)까지만 보존되어 isEqualTo 비교가 실패함
+
+    // 1. 보내기 (write 경로)
+    // Instant.now() (.505785484Z, 9자리)
+    //  -> JDBC가 DB에 INSERT
+    //  -> DB 컬럼이 6자리만 받음 → .505785Z로 잘림
+    // 2. 받아오기 (read 경로)
+    //  -> SELECT 실행
+    //  -> DB에서 .505785Z 반환
+    //  -> JDBC가 Instant로 변환 → 그대로 .505785Z
+    // 3. 비교
+    //  원본 메모리 객체(.505785484Z) vs round-trip 후 객체(.505785Z) → 불일치
+    Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
     User user = createTestUserWithStatus("testUser", "test@example.com", now);
     UUID userId = user.getId();
 
