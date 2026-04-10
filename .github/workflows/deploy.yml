@@ -100,7 +100,7 @@ jobs:
 
       # 3) 새 이미지 URI를 태스크 정의에 주입
       # amazon-ecs-render-task-definition
-      #  - task-definition.json 안에서 container-name이 "discodeit"인
+      #  - task-definition.json 안에서 container-name이 "discodeit-app"인
       #    컨테이너 정의를 찾아서 image 필드를 새 URI로 교체
       #    수정된 JSON 파일의 경로를 outputs.task-definition으로 출력
       - name: Render new image into task definition
@@ -108,7 +108,7 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
-          container-name: discodeit
+          container-name: discodeit-app
           image: ${{ needs.build-and-push.outputs.image-uri }}
 
       # 4) 새 태스크 정의를 AWS에 등록
