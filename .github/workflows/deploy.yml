@@ -52,6 +52,7 @@ jobs:
           SHA: ${{ github.sha }} # 커밋 해시
         run: |
           docker build \
+            -f Dockerfile.slim \
             -t "$ECR_URI:latest" \
             -t "$ECR_URI:$SHA" \
             .

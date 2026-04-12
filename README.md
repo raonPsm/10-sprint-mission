@@ -330,7 +330,7 @@ AWS는 장기 액세스 키 대신 **IAM Roles Anywhere**를 권장한다. 이�
 - [x] AWS RDS PostgreSQL 인스턴스를 생성하세요.
 
   |항목|값|비고|
-                          |---|---|---|
+                                |---|---|---|
   |데이터베이스 생성 방식|표준 생성||
   |엔진 옵션 > 엔진 유형|PostgreSQL||
   |엔진 옵션 > 엔진 버전|17.2-R2|기본값|
@@ -356,7 +356,7 @@ AWS는 장기 액세스 키 대신 **IAM Roles Anywhere**를 권장한다. 이�
     - [x] EC2 인스턴스를 생성하세요.
 
       |항목|값|비고|
-                                                                  |---|---|---|
+                                                                                    |---|---|---|
       |이름 및 태그|rds-ssh||
       |인스턴스 유형|t2.micro|기본값, 과금 주의|
       |키 페어|새 키 페어 생성|.pem 파일 저장 위치를 기억하세요.|
@@ -397,7 +397,7 @@ AWS는 장기 액세스 키 대신 **IAM Roles Anywhere**를 권장한다. 이�
     - AWS 콘솔을 통해 생성한 레포지토리 페이지로 이동 후 우측 상단 `푸시 명령 보기`를 클릭하면 관련 명령어를 확인할 수 있습니다.
       ```Bash
       # 예시 
-      aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/...`
+      aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/...
       ```
 - [x] 멀티플랫폼을 지원하도록 애플리케이션 이미지를 빌드하고, `discodeit` 레포지토리에 **push** 하세요.
     - 태그명:`latest`,`1.2-M8`
@@ -435,7 +435,7 @@ AWS는 장기 액세스 키 대신 **IAM Roles Anywhere**를 권장한다. 이�
 - [x] AWS ECS 콘솔에서 클러스터를 생성하세요.
 
   |항목|값|비고|
-            |---|---|---|
+                  |---|---|---|
   |클러스터 구성 > 클러스터 이름|discodeit-cluster||
   |인프라 > AWS Fargate(서버리스)|체크해제|과금 주의|
   |인프라 > Amazon EC2 인스턴스|체크||
@@ -446,7 +446,7 @@ AWS는 장기 액세스 키 대신 **IAM Roles Anywhere**를 권장한다. 이�
 - [x] 태스크를 정의하세요.
 
   |항목|값|비고|
-            |---|---|---|
+                  |---|---|---|
   |태스크 정의 구성 > 태스크 정의 패밀리|discodeit-task||
   |인프라 요구 사항 > 시작 유형|AWS Fargate: 체크 해제, Amazon EC2 인스턴스: 체크||
   |인프라 요구 사항 > 네트워크 모드|bridge||
@@ -461,7 +461,7 @@ AWS는 장기 액세스 키 대신 **IAM Roles Anywhere**를 권장한다. 이�
 - [x] `discodeit` 클러스터 상세 화면에서 서비스를 생성하세요.
 
   |항목|값|비고|
-      |---|---|---|
+        |---|---|---|
   |배포 구성 > 태스크 정의 패밀리|discodeit-task||
   |배포 구성 > 서비스 이름|discodeit-service||
   |배포 구성 > 원하는 태스크|1|기본값|
@@ -477,10 +477,10 @@ AWS는 장기 액세스 키 대신 **IAM Roles Anywhere**를 권장한다. 이�
 
 ### 이미지 최적화하기
 
-- [ ] 멀티 스테이지(`빌드`,`런타임`) 빌드를 활용해 이미지의 크기를 줄여보세요.
+- [x] 멀티 스테이지(`빌드`,`런타임`) 빌드를 활용해 이미지의 크기를 줄여보세요.
     - 태그명:`local-slim`
     - 이전에 빌드한 이미지(`1.2-M8`또는`local`)와 크기를 비교해보세요.
-- [ ] 이미지 레이어 캐시를 고려해 Dockerfile을 수정해보세요.
+- [x] 이미지 레이어 캐시를 고려해 Dockerfile을 수정해보세요.
 
 ### GitHub Actions를 활용한 CI/CD 파이프라인 구축
 
@@ -491,7 +491,7 @@ AWS는 장기 액세스 키 대신 **IAM Roles Anywhere**를 권장한다. 이�
     - [x] [CodeCov](https://app.codecov.io/)를 통해 테스트 커버리지 뱃지를 README에 추가해보세요.  
       ![tb4cb7hos-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=13953&version=1&directory=/tb4cb7hos-image.png&name=tb4cb7hos-image.png)
 
-- [ ] **CD**(지속적 배포)를 위한 워크플로우를 설정하세요.
+- [x] **CD**(지속적 배포)를 위한 워크플로우를 설정하세요.
     - [x] `.github/workflows/deploy.yml`파일을 생성하세요.
     - [x] `release`브랜치에 코드가 푸시되면 실행되도록 설정하세요.
         - [x] AWS 정보 설정
@@ -504,45 +504,44 @@ AWS는 장기 액세스 키 대신 **IAM Roles Anywhere**를 권장한다. 이�
                 - `ECS_CLUSTER`: ECS 클러스터 이름(`discodeit-cluster`)
                 - `ECS_SERVICE`: ECS 서비스 이름(`discodeit-service`)
                 - `ECS_TASK_DEFINITION`: ECS 태스크 정의 이름(`discodeit-task`)
-        - [ ] Docker 이미지 빌드 및 푸시
-            - [ ] Docker 이미지를 빌드하고 푸시하는 Job을 정의하세요.
-            - [ ] AWS CLI를 설정하는 Step을 추가하세요.
+        - [x] Docker 이미지 빌드 및 푸시
+            - [x] Docker 이미지를 빌드하고 푸시하는 Job을 정의하세요.
+            - [x] AWS CLI를 설정하는 Step을 추가하세요.
                 - Pubilc ECR에 배포해야하므로 리전은`us-east-1`으로 설정해야합니다.
-            - [ ] ECR 로그인 Step을 추가하세요.
+            - [x] ECR 로그인 Step을 추가하세요.
                 - Public ECR에 로그인해야합니다.
-            - [ ] Docker 이미지 빌드 및 푸시하는 과정을 Step으로 추가하세요.
+            - [x] Docker 이미지 빌드 및 푸시하는 과정을 Step으로 추가하세요.
                 - 단, 빌드 시간 단축을 위해 멀티 플랫폼 옵션은 제외합니다.
                 - GitHub Actions의 런타임 OS와 우리가 배포할 ECS는 모두`x86_64`입니다.
-            - [ ] 이미지 태그는`latest`와 GitHub 커밋 해시를 사용하도록 설정하세요.
-        - [ ] ECS 서비스 업데이트
-            - [ ] ECS 서비스를 업데이트하는 Job을 정의하세요.
-            - [ ] AWS CLI를 설정하는 Step을 추가하세요.
+            - [x] 이미지 태그는`latest`와 GitHub 커밋 해시를 사용하도록 설정하세요.
+        - [x] ECS 서비스 업데이트
+            - [x] ECS 서비스를 업데이트하는 Job을 정의하세요.
+            - [x] AWS CLI를 설정하는 Step을 추가하세요.
                 - 우리의 ECS 클러스터에 접근해야하므로 리전은`AWS_REGION`으로 설정해야합니다.
-            - [ ] 태스크 정의를 업데이트하는 Step을 추가하세요.
+            - [x] 태스크 정의를 업데이트하는 Step을 추가하세요.
                 - 기존의 태스크 정의를 기반으로 새 이미지를 사용하도록 업데이트하세요.
-            - [ ] 프리티어 리소스를 고려해 AWS CLI를 사용해 기존에 구동 중인 서비스를 중단하는 Step을 추가하세요.
+            - [x] 프리티어 리소스를 고려해 AWS CLI를 사용해 기존에 구동 중인 서비스를 중단하는 Step을 추가하세요.
                 - `aws ecs update-service --desired-count`옵션을 활용하세요.
-            - [ ] 새로 등록한 태스크 정의를 사용하도록 ECS 서비스를 업데이트하는 Step을 추가하세요.
-        - [ ] AWS 콘솔을 통해 새로 등록된 태스크 정의로 배포되었는지 확인하세요.
+            - [x] 새로 등록한 태스크 정의를 사용하도록 ECS 서비스를 업데이트하는 Step을 추가하세요.
+        - [x] AWS 콘솔을 통해 새로 등록된 태스크 정의로 배포되었는지 확인하세요.
 
 ## 리뷰를 위해 PR에 포함해야할 정보
 
 원활한 리뷰를 위해 PR에 다음과 같은 정보를 포함해주세요.
 
-- [ ]`.env`파일 (AWS 키는 제외)
-
-- [ ] RDS
+- [x] `.env`파일 (AWS 키는 제외)
+- [x] RDS
     - AWS 콘솔 인스턴스 상세 페이지 스크린샷 이미지
     - SSH 터널링을 통해 연결한 DataGrip 스크린샷 이미지
         - 생성한 테이블 목록이 보이도록 캡처해주세요.
-- [ ] ECR
+- [x] ECR
     - 푸시된 이미지가 보이는 AWS 콘솔 페이지 스크린샷 이미지
-- [ ] ECS
+- [x] ECS
     - 실행 중인 태스크 구성정보가 표시된 AWS 콘솔 페이지 스크린샷 이미지
     - 배포된 EC2 엔드포인트
-- [ ] VPC
+- [x] VPC
     - 보안 그룹의 인바운드 규칙을 확인할 수 있는 AWS 콘솔 페이지 스크린샷 이미지
-- [ ] IAM
+- [x] IAM
     - 사용자의 권한 정책이 표시된 AWS 콘솔 페이지 스크린샷 이미지
 
 ## 🔄 주요 변경사항
