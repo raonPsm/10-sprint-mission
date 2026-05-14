@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,10 +25,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(ReadStatusController.class)
+@WithMockUser
 class ReadStatusControllerTest {
 
   @Autowired
@@ -66,6 +69,7 @@ class ReadStatusControllerTest {
 
     // When & Then
     mockMvc.perform(post("/api/readStatuses")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(createRequest)))
         .andExpect(status().isCreated())
@@ -87,6 +91,7 @@ class ReadStatusControllerTest {
 
     // When & Then
     mockMvc.perform(post("/api/readStatuses")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(invalidRequest)))
         .andExpect(status().isBadRequest());
@@ -115,6 +120,7 @@ class ReadStatusControllerTest {
 
     // When & Then
     mockMvc.perform(patch("/api/readStatuses/{readStatusId}", readStatusId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(updateRequest)))
         .andExpect(status().isOk())
@@ -138,6 +144,7 @@ class ReadStatusControllerTest {
 
     // When & Then
     mockMvc.perform(patch("/api/readStatuses/{readStatusId}", nonExistentId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(updateRequest)))
         .andExpect(status().isNotFound());

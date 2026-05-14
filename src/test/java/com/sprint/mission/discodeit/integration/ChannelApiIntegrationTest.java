@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -64,6 +65,7 @@ class ChannelApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(post("/api/channels/public")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isCreated())
@@ -86,6 +88,7 @@ class ChannelApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(post("/api/channels/public")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isBadRequest());
@@ -118,6 +121,7 @@ class ChannelApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(post("/api/channels/private")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isCreated())
@@ -195,6 +199,7 @@ class ChannelApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(patch("/api/channels/{channelId}", channelId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isOk())
@@ -218,6 +223,7 @@ class ChannelApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(patch("/api/channels/{channelId}", nonExistentChannelId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isNotFound());
@@ -237,7 +243,8 @@ class ChannelApiIntegrationTest {
     UUID channelId = createdChannel.id();
 
     // When & Then
-    mockMvc.perform(delete("/api/channels/{channelId}", channelId))
+    mockMvc.perform(delete("/api/channels/{channelId}", channelId)
+            .with(csrf()))
         .andExpect(status().isNoContent());
 
     // 삭제 확인 - 사용자로 채널 조회 시 삭제된 채널은 조회되지 않아야 함
@@ -263,7 +270,8 @@ class ChannelApiIntegrationTest {
     UUID nonExistentChannelId = UUID.randomUUID();
 
     // When & Then
-    mockMvc.perform(delete("/api/channels/{channelId}", nonExistentChannelId))
+    mockMvc.perform(delete("/api/channels/{channelId}", nonExistentChannelId)
+            .with(csrf()))
         .andExpect(status().isNotFound());
   }
 } 

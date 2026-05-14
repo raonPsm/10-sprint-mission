@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -33,10 +34,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(UserController.class)
+@WithMockUser // Spring Security 테스트 시 가짜 인증 사용자를 생성하는 애너테이션
 class UserControllerTest {
 
   @Autowired
@@ -98,6 +101,7 @@ class UserControllerTest {
     mockMvc.perform(multipart("/api/users")
             .file(userCreateRequestPart)
             .file(profilePart)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").value(userId.toString()))
@@ -127,6 +131,7 @@ class UserControllerTest {
     // When & Then
     mockMvc.perform(multipart("/api/users")
             .file(userCreateRequestPart)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
         .andExpect(status().isBadRequest());
   }
@@ -217,6 +222,7 @@ class UserControllerTest {
     mockMvc.perform(multipart("/api/users/{userId}", userId)
             .file(userUpdateRequestPart)
             .file(profilePart)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
             .with(request -> {
               request.setMethod("PATCH");
@@ -263,6 +269,7 @@ class UserControllerTest {
     mockMvc.perform(multipart("/api/users/{userId}", nonExistentUserId)
             .file(userUpdateRequestPart)
             .file(profilePart)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
             .with(request -> {
               request.setMethod("PATCH");
@@ -280,6 +287,7 @@ class UserControllerTest {
 
     // When & Then
     mockMvc.perform(delete("/api/users/{userId}", userId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
   }
@@ -294,6 +302,7 @@ class UserControllerTest {
 
     // When & Then
     mockMvc.perform(delete("/api/users/{userId}", nonExistentUserId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
   }
@@ -314,6 +323,7 @@ class UserControllerTest {
 
     // When & Then
     mockMvc.perform(patch("/api/users/{userId}/userStatus", userId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(updateRequest)))
         .andExpect(status().isOk())
@@ -336,6 +346,7 @@ class UserControllerTest {
 
     // When & Then
     mockMvc.perform(patch("/api/users/{userId}/userStatus", userId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(updateRequest)))
         .andExpect(status().isNotFound());

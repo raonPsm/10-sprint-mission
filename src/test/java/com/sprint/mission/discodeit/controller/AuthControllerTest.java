@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -19,10 +19,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(AuthController.class)
+@WithMockUser
 class AuthControllerTest {
 
   @Autowired
@@ -56,6 +58,7 @@ class AuthControllerTest {
 
     // When & Then
     mockMvc.perform(post("/api/auth/login")
+            .with(csrf()) // CSRF 토큰을 자동으로 생성해서 요청에 포함시킴
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(loginRequest)))
         .andExpect(status().isOk())
@@ -79,6 +82,7 @@ class AuthControllerTest {
 
     // When & Then
     mockMvc.perform(post("/api/auth/login")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(loginRequest)))
         .andExpect(status().isNotFound());
@@ -98,6 +102,7 @@ class AuthControllerTest {
 
     // When & Then
     mockMvc.perform(post("/api/auth/login")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(loginRequest)))
         .andExpect(status().isUnauthorized());
@@ -114,6 +119,7 @@ class AuthControllerTest {
 
     // When & Then
     mockMvc.perform(post("/api/auth/login")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(invalidRequest)))
         .andExpect(status().isBadRequest());

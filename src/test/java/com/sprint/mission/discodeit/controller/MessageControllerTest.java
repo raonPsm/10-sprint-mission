@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,10 +36,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(MessageController.class)
+@WithMockUser
 class MessageControllerTest {
 
   @Autowired
@@ -111,6 +114,7 @@ class MessageControllerTest {
     mockMvc.perform(multipart("/api/messages")
             .file(messageCreateRequestPart)
             .file(attachment)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").value(messageId.toString()))
@@ -140,6 +144,7 @@ class MessageControllerTest {
     // When & Then
     mockMvc.perform(multipart("/api/messages")
             .file(messageCreateRequestPart)
+            .with(csrf())
             .contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
         .andExpect(status().isBadRequest());
   }
@@ -181,6 +186,7 @@ class MessageControllerTest {
 
     // When & Then
     mockMvc.perform(patch("/api/messages/{messageId}", messageId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(updateRequest)))
         .andExpect(status().isOk())
@@ -205,6 +211,7 @@ class MessageControllerTest {
 
     // When & Then
     mockMvc.perform(patch("/api/messages/{messageId}", nonExistentMessageId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(updateRequest)))
         .andExpect(status().isNotFound());
@@ -219,6 +226,7 @@ class MessageControllerTest {
 
     // When & Then
     mockMvc.perform(delete("/api/messages/{messageId}", messageId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNoContent());
   }
@@ -233,6 +241,7 @@ class MessageControllerTest {
 
     // When & Then
     mockMvc.perform(delete("/api/messages/{messageId}", nonExistentMessageId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
   }

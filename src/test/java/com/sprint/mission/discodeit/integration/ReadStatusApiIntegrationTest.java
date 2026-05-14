@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -86,6 +87,7 @@ class ReadStatusApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(post("/api/readStatuses")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isCreated())
@@ -124,6 +126,7 @@ class ReadStatusApiIntegrationTest {
 
     String firstRequestBody = objectMapper.writeValueAsString(firstCreateRequest);
     mockMvc.perform(post("/api/readStatuses")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(firstRequestBody))
         .andExpect(status().isCreated());
@@ -139,6 +142,7 @@ class ReadStatusApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(post("/api/readStatuses")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(duplicateRequestBody))
         .andExpect(status().isConflict());
@@ -184,6 +188,7 @@ class ReadStatusApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(patch("/api/readStatuses/{readStatusId}", readStatusId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isOk())
@@ -207,6 +212,7 @@ class ReadStatusApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(patch("/api/readStatuses/{readStatusId}", nonExistentReadStatusId)
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isNotFound());

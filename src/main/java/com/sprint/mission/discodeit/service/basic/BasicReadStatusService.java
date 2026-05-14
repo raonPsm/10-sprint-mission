@@ -15,13 +15,12 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -46,11 +45,12 @@ public class BasicReadStatusService implements ReadStatusService {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
 
-    ReadStatus readStatus = readStatusRepository.findByUserIdAndChannelId(user.getId(), channel.getId())
-        .orElseGet(() -> {
-          Instant lastReadAt = request.lastReadAt();
-          return readStatusRepository.save(new ReadStatus(user, channel, lastReadAt));
-        });
+    if (readStatusRepository.findByUserIdAndChannelId(user.getId(), channel.getId()).isPresent()) {
+      throw DuplicateReadStatusException.withUserIdAndChannelId(userId, channelId); // 예외 던지도록 수정함
+    }
+
+    ReadStatus readStatus = readStatusRepository.save(
+        new ReadStatus(user, channel, request.lastReadAt()));
 
     log.info("읽음 상태 생성 완료: id={}, userId={}, channelId={}",
         readStatus.getId(), userId, channelId);
