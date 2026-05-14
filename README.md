@@ -54,19 +54,49 @@
 
 ### 01. Spring Security 환경설정
 
-- [ ] 프로젝트에 Spring Security 의존성을 추가하세요.
-- [ ] Security 설정 클래스를 생성하세요.
+- [x] 프로젝트에 Spring Security 의존성을 추가하세요.
+- [x] Security 설정 클래스를 생성하세요.
     - 패키지명:`com.sprint.mission.discodeit.config`
     - 클래스명:`SecurityConfig`
-- [ ] `SecurityFilterChain` Bean을 선언하세요.
-    - [ ] 가장 기본적인 `SecurityFilterChain`을 등록하고, 이때 등록되는 필터 목록을 디버깅해보세요. 필터 목록은 PR에 첨부하세요.
+- [x] `SecurityFilterChain` Bean을 선언하세요.
+    - [x] 가장 기본적인 `SecurityFilterChain`을 등록하고, 이때 등록되는 필터 목록을 디버깅해보세요. 필터 목록은 PR에 첨부하세요.
     ```java
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
        return http.build();
     }
     ```
-- [ ] 개발 환경에서 Spring Security 모듈의 로깅 레벨을 `trace`로 설정하세요.
+
+https://docs.spring.io/spring-security/reference/servlet/architecture.html
+
+```Markdown
+Invoking DisableEncodeUrlFilter (1/10)
+Invoking WebAsyncManagerIntegrationFilter (2/10)
+Invoking SecurityContextHolderFilter (3/10)
+Invoking HeaderWriterFilter (4/10)
+Invoking CsrfFilter (5/10)
+Invoking LogoutFilter (6/10)
+Invoking RequestCacheAwareFilter (7/10)
+Invoking SecurityContextHolderAwareRequestFilter (8/10)
+Invoking AnonymousAuthenticationFilter (9/10)
+Invoking ExceptionTranslationFilter (10/10)
+
+...
+
+26-05-14 11:41:57.033 [http-nio-8080-exec-7] DEBUG o.s.security.web.FilterChainProxy    [ | | ] - Securing POST /api/users
+26-05-14 11:41:57.033 [http-nio-8080-exec-7] TRACE o.s.security.web.FilterChainProxy    [ | | ] - Invoking DisableEncodeUrlFilter (1/10)
+26-05-14 11:41:57.033 [http-nio-8080-exec-7] TRACE o.s.security.web.FilterChainProxy    [ | | ] - Invoking WebAsyncManagerIntegrationFilter (2/10)
+26-05-14 11:41:57.033 [http-nio-8080-exec-7] TRACE o.s.security.web.FilterChainProxy    [ | | ] - Invoking SecurityContextHolderFilter (3/10)
+26-05-14 11:41:57.033 [http-nio-8080-exec-7] TRACE o.s.security.web.FilterChainProxy    [ | | ] - Invoking HeaderWriterFilter (4/10)
+26-05-14 11:41:57.033 [http-nio-8080-exec-7] TRACE o.s.security.web.FilterChainProxy    [ | | ] - Invoking CsrfFilter (5/10)
+26-05-14 11:41:57.069 [http-nio-8080-exec-7] DEBUG o.s.security.web.csrf.CsrfFilter     [ | | ] - Invalid CSRF token found for http://localhost:8080/api/users
+26-05-14 11:41:57.069 [http-nio-8080-exec-7] DEBUG o.s.s.w.a.AccessDeniedHandlerImpl    [ | | ] - Responding with 403 status code
+26-05-14 11:41:57.069 [http-nio-8080-exec-7] TRACE o.s.s.w.h.writers.HstsHeaderWriter   [ | | ] - Not injecting HSTS header since it did not match request to [Is Secure]
+```  
+
+-> CSRF 토큰이 누락되어 요청이 거부되는 것을 확인할 수 있다.
+
+- [x] 개발 환경에서 Spring Security 모듈의 로깅 레벨을 `trace`로 설정하세요.
     - 각 요청마다 통과하는 필터 목록을 확인할 수 있습니다.
 
 ### 02. CSRF 보호 설정하기
