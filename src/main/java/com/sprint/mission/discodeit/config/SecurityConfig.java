@@ -1,15 +1,26 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
 public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    return http.build(); // SecurityFilterChain 객체 생성 - Spring Security의 기본값이 적용됨
+    http
+        .csrf(csrf -> csrf
+            // CookieCsrfTokenRepository -> 클라이언트 쿠기에 저장 (<-> HttpSessionCsrfTokenRepository - SSR 환경)
+            // withHttpOnlyFalse() -> JS에서 document.cookie로 읽을 수 있게 허용
+            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+            // 들어오는 요청에서 CSRF 토큰을 어떻게 추출하고 검증할지 설정
+            .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+        );
+
+    return http.build();
   }
 }
