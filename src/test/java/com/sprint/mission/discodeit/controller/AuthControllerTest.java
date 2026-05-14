@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.LoginRequest;
 import com.sprint.mission.discodeit.exception.user.InvalidCredentialsException;
-import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.service.AuthService;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -69,36 +68,16 @@ class AuthControllerTest {
   }
 
   @Test
-  @DisplayName("로그인 실패 테스트 - 존재하지 않는 사용자")
-  void login_Failure_UserNotFound() throws Exception {
-    // Given
-    LoginRequest loginRequest = new LoginRequest(
-        "nonexistentuser",
-        "Password1!"
-    );
-
-    given(authService.login(any(LoginRequest.class)))
-        .willThrow(UserNotFoundException.withUsername("nonexistentuser"));
-
-    // When & Then
-    mockMvc.perform(post("/api/auth/login")
-            .with(csrf())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(loginRequest)))
-        .andExpect(status().isNotFound());
-  }
-
-  @Test
-  @DisplayName("로그인 실패 테스트 - 잘못된 비밀번호")
+  @DisplayName("로그인 실패 테스트 - 존재하지 않는 사용자 or 잘못된 비밀번호")
   void login_Failure_InvalidCredentials() throws Exception {
     // Given
     LoginRequest loginRequest = new LoginRequest(
-        "testuser",
-        "WrongPassword1!"
+        "Wrong-testuser",
+        "Wrong-Password1!"
     );
 
     given(authService.login(any(LoginRequest.class)))
-        .willThrow(InvalidCredentialsException.wrongPassword());
+        .willThrow(InvalidCredentialsException.wrongCredentials());
 
     // When & Then
     mockMvc.perform(post("/api/auth/login")
