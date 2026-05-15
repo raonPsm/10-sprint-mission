@@ -2,10 +2,7 @@ package com.sprint.mission.discodeit.security;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserRole;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -23,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class AdminInitializer implements ApplicationRunner {
 
   private final UserRepository userRepository;
-  private final UserStatusRepository userStatusRepository;
   private final PasswordEncoder passwordEncoder;
   private final AdminProperties adminProperties;
 
@@ -44,9 +40,6 @@ public class AdminInitializer implements ApplicationRunner {
         UserRole.ADMIN
     );
     userRepository.save(admin); // 초기화 로직이므로 repo 계층 직접 접근
-
-    UserStatus status = new UserStatus(admin, Instant.now());
-    userStatusRepository.save(status);
 
     log.info("Admin 계정 생성 완료: username={}", adminProperties.username());
   }
