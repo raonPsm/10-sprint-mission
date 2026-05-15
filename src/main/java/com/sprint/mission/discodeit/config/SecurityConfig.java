@@ -3,13 +3,20 @@ package com.sprint.mission.discodeit.config;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
 @Configuration
 public class SecurityConfig {
@@ -32,6 +39,44 @@ public class SecurityConfig {
             // CSR 방식에서는 JSON 응답을 해야 하므로 리다이렉트를 사용하지 않는다
             .successHandler(loginSuccessHandler) // 인증 성공 시 호출되는 핸들러
             .failureHandler(loginFailureHandler) // 인증 실패 시 호출되는 핸들러
+        )
+        // 어떤 요청을 허용하고 막을지 인가(Authorization) 규칙을 정의하는 설정
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers(
+                // GET /api/auth/csrf-token 허용
+                AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/auth/csrf-token"),
+                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/users"), // 회원가입
+                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/login"), // 로그인
+                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/logout"), // 로그아웃
+                // /api/** 가 아닌 모든 요청 허용 (정적 리소스 등)
+                new NegatedRequestMatcher(AntPathRequestMatcher.antMatcher("/api/**"))
+            ).permitAll() // <- 위 조건들은 인증 없이 허용
+            .anyRequest().authenticated() // <- 나머지는 모두 인증 필요
+        )
+        // 인증되지 않은 사용자가 보호된 리소스에 접근했을 때 어떻게 응답할지 결정하는 컴포넌트
+        .exceptionHandling(ex -> ex
+            // CSR 환경: 비인증 요청에 HTML redirect 대신 401 JSON 반환
+            .authenticationEntryPoint((request, response, authException) -> {
+              response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+              response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+              response.setCharacterEncoding("UTF-8");
+              response.getWriter().write("{\"message\":\"인증이 필요합니다.\"}");
+            })
+        )
+        .logout(logout -> logout
+                // POST 요청을 이 URL로 받으면 Spring Security LogoutFilter가 처리
+                .logoutUrl("/api/auth/logout")
+                .logoutSuccessHandler( // 기본값(200)을 204로 교체
+                    new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)
+                )
+            // 세션 무효화, SecurityContext 초기화 등 나머지 로그아웃 동작은 Spring Security 기본값 그대로 유지
+            // <Spring Security 로그아웃 기본값>
+            //  1. logoutUrl                -> POST /logout
+            //  2. invalidateHttpSession    -> true  (세션 무효화)
+            //  3. deleteCookies            -> (기본 없음, 명시해야 삭제)
+            //  4. clearAuthentication      -> true  (SecurityContext에서 인증 제거)
+            //  5. logoutSuccessUrl         -> /login?logout  (리다이렉트)
+            //  6. logoutSuccessHandler     -> SimpleUrlLogoutSuccessHandler
         );
 
     return http.build();
