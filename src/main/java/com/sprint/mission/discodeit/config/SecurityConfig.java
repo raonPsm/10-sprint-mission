@@ -15,11 +15,14 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
@@ -29,7 +32,7 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http, LoginSuccessHandler loginSuccessHandler,
-      LoginFailureHandler loginFailureHandler) throws Exception {
+      LoginFailureHandler loginFailureHandler, SessionRegistry sessionRegistry) throws Exception {
     http
         .csrf(csrf -> csrf
             // CookieCsrfTokenRepository -> 클라이언트 쿠기에 저장 (<-> HttpSessionCsrfTokenRepository - SSR 환경)
@@ -90,6 +93,15 @@ public class SecurityConfig {
             //  4. clearAuthentication      -> true  (SecurityContext에서 인증 제거)
             //  5. logoutSuccessUrl         -> /login?logout  (리다이렉트)
             //  6. logoutSuccessHandler     -> SimpleUrlLogoutSuccessHandler
+        )
+        // .sessionManagement(...) 사용자의 인증 세션 생성 정책, 동시성 제어, 세션 고정 보호 등을 설정하는 메서드
+        .sessionManagement(management -> management
+            // .sessionConcurrency(...) 동일한 사용자 계정으로 허용되는 최대 동시 세션 수를 제어하는 설정
+            .sessionConcurrency(concurrency -> concurrency
+                .maximumSessions(1) // 동시 세션 1개 제한 (한 번에 한 곳에서만 로그인 가능)
+                .maxSessionsPreventsLogin(true) // 이미 로그인 중이면 새 로그인 자체를 차단 (기존 세션 유지)
+                .sessionRegistry(sessionRegistry) // SessionRegistry 빈을 주입
+            )
         );
 
     return http.build();
@@ -128,5 +140,21 @@ public class SecurityConfig {
     handler.setRoleHierarchy(roleHierarchy);
     // Bean으로 반환 -> Spring Security가 자동으로 감지해서 사용
     return handler;
+  }
+
+  // SessionRegistry
+  // - 현재 애플리케이션의 모든 활성 세션을 추적하는 저장소
+  // @Bean으로 등록해야 하나의 인스턴스를 SecurityConfig와 AuthService가 공유할 수 있다
+  @Bean
+  public SessionRegistry sessionRegistry() {
+    return new SessionRegistryImpl(); // SessionRegistry의 기본 구현체 - 내부적으로 두 개의 Map으로 세션 관리
+  }
+
+  // HttpSessionEventPublisher
+  // - HttpSession의 생명주기 이벤트를 감지해서 Spring ApplicationEvent로 변환해 발행하는 리스너
+  // - HttpSessionDestroyedEvent 발행을 위해서 필요하다
+  @Bean
+  public HttpSessionEventPublisher httpSessionEventPublisher() {
+    return new HttpSessionEventPublisher();
   }
 }

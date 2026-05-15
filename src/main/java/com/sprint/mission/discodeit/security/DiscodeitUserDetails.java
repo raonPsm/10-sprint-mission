@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.security;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -58,5 +59,29 @@ public class DiscodeitUserDetails implements UserDetails {
   @Override
   public boolean isEnabled() {
     return true;
+  }
+
+  /*
+  - SessionRegistry는 내부적으로 Map을 사용하여 UserDetails 객체를 관리하기 때문에,
+    equals와 hashCode를 UserDto의 id로 구현 (Map의 key 비교는 equals()와 hashCode()를 사용하기 때문)
+  - 기본 equals()는 메모리 주소를 비교하기 때문에, 같은 사용자를 DB에서 두 번 조회하면 다른 객체로 판단
+    -> userId로 오버라이딩 해서 id가 같으면 같은 사용자로 인식하도록 설정
+  - 권한 변경 후 해당 사용자의 세션을 강제 만료시켜야 함 -> SessionRegistry에서 해당 사용자 세션을 찾아야 함
+    -> SessionRegistry 내부 Map의 key(UserDetails)와 비교
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof DiscodeitUserDetails other)) {
+      return false;
+    }
+    return Objects.equals(userDto.id(), other.userDto.id()); // userId로 동일성 판단
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(userDto.id());
   }
 }

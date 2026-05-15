@@ -7,22 +7,22 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserRole;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,11 +33,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
-  private final UserStatusRepository userStatusRepository;
   private final UserMapper userMapper;
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
   private final PasswordEncoder passwordEncoder;
+  private final SessionRegistry sessionRegistry;
 
   @Transactional
   @Override
@@ -70,8 +70,6 @@ public class BasicUserService implements UserService {
     String password = passwordEncoder.encode(userCreateRequest.password());
 
     User user = new User(username, email, password, nullableProfile, UserRole.USER);
-    Instant now = Instant.now();
-    UserStatus userStatus = new UserStatus(user, now);
 
     userRepository.save(user);
     log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
@@ -93,7 +91,7 @@ public class BasicUserService implements UserService {
   @Override
   public List<UserDto> findAll() {
     log.debug("모든 사용자 조회 시작");
-    List<UserDto> userDtos = userRepository.findAllWithProfileAndStatus()
+    List<UserDto> userDtos = userRepository.findAllWithProfile()
         .stream()
         .map(userMapper::toDto)
         .toList();
@@ -160,6 +158,16 @@ public class BasicUserService implements UserService {
         });
 
     user.updateRole(newRole);
+
+    sessionRegistry.getAllPrincipals().stream() // 현재 로그인된 모든 사용자 가져와서
+        .filter(p -> p instanceof DiscodeitUserDetails) // DiscodeitUserDetails 타입만 필터링
+        .map(p -> (DiscodeitUserDetails) p) // Object -> DiscodeitUserDetails로 캐스팅
+        .filter(ud -> ud.getUserDto().id().equals(userId)) // 찾으려는 userId와 일치하는 사용자 필터링
+        // 그 사용자의 모든 활성 세션을 꺼내
+        .flatMap(ud -> sessionRegistry.getAllSessions(ud, false).stream())
+        // 각 세션을 만료 처리
+        .forEach(SessionInformation::expireNow);
+
     log.info("사용자 권한 수정 완료: id={}, newRole={}", userId, newRole);
     return userMapper.toDto(user);
   }
