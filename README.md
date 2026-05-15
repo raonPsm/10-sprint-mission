@@ -202,6 +202,20 @@ Invoking ExceptionTranslationFilter (10/10)
       .formLogin(Customizer.withDefaults())
   ```
 
+```markdown
+[main] DEBUG o.s.s.web.DefaultSecurityFilterChain [ | | ] - Will secure any request with filters:
+DisableEncodeUrlFilter, WebAsyncManagerIntegrationFilter, SecurityContextHolderFilter,
+HeaderWriterFilter, CsrfFilter, LogoutFilter, UsernamePasswordAuthenticationFilter,
+DefaultResourcesFilter, DefaultLoginPageGeneratingFilter, DefaultLogoutPageGeneratingFilter,
+RequestCacheAwareFilter, SecurityContextHolderAwareRequestFilter, AnonymousAuthenticationFilter,
+ExceptionTranslationFilter
+```
+
+- `GET  /login`   -> **DefaultLoginPageGeneratingFilter** - 로그인 페이지 보여줌
+- `POST /login`   -> **UsernamePasswordAuthenticationFilter** - 실제 인증 처리
+- `GET  /logout`  -> **DefaultLogoutPageGeneratingFilter** - 로그아웃 페이지 보여줌
+
+
 - Spring Security의 formLogin 인증 흐름은 그대로 유지하면서 필요한 부분만 대체합니다.
 
   ![c9g464dhi-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=14405&version=1&directory=/c9g464dhi-image.png&name=c9g464dhi-image.png)
