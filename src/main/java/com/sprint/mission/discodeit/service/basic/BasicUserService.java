@@ -138,7 +138,9 @@ public class BasicUserService implements UserService {
         })
         .orElse(null);
 
-    String newPassword = passwordEncoder.encode(userUpdateRequest.newPassword());
+    String newPassword = userUpdateRequest.newPassword() != null
+        ? passwordEncoder.encode(userUpdateRequest.newPassword())
+        : user.getPassword();
     user.update(newUsername, newEmail, newPassword, nullableProfile);
 
     log.info("사용자 수정 완료: id={}", userId);
