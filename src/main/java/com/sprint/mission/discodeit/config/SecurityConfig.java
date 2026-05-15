@@ -9,6 +9,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -55,14 +59,21 @@ public class SecurityConfig {
             ).permitAll() // <- 위 조건들은 인증 없이 허용
             .anyRequest().authenticated() // <- 나머지는 모두 인증 필요
         )
-        // 인증되지 않은 사용자가 보호된 리소스에 접근했을 때 어떻게 응답할지 결정하는 컴포넌트
         .exceptionHandling(ex -> ex
             // CSR 환경: 비인증 요청에 HTML redirect 대신 401 JSON 반환
+            // authenticationEntryPoint - 인증되지 않은 사용자가 보호된 리소스에 접근할 때 발생하는 예외를 처리하는 인터페이스
             .authenticationEntryPoint((request, response, authException) -> {
               response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
               response.setContentType(MediaType.APPLICATION_JSON_VALUE);
               response.setCharacterEncoding("UTF-8");
               response.getWriter().write("{\"message\":\"인증이 필요합니다.\"}");
+            })
+            // 인증은 완료되었으나 특정 리소스에 접근할 권한이 없는 사용자가 요청을 보냈을 때 발생하는 인가(Authorization) 예외를 처리하는 인터페이스
+            .accessDeniedHandler((request, response, accessDeniedException) -> {
+              response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+              response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+              response.setCharacterEncoding("UTF-8");
+              response.getWriter().write("{\"message\":\"접근 권한이 없습니다.\"}");
             })
         )
         .logout(logout -> logout
@@ -87,5 +98,35 @@ public class SecurityConfig {
   @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
+  }
+
+  // 역할 계층 구조를 정의하는 RoleHierarchy 빈을 등록
+  @Bean
+  public RoleHierarchy roleHierarchy() {
+    return RoleHierarchyImpl.withDefaultRolePrefix() // 'ROLE_' 접두사를 자동으로 붙여주는 빌더를 시작
+        // ADMIN은 CHANNEL_MANAGER의 모든 권한을 자동으로 포함
+        .role("ADMIN").implies("CHANNEL_MANAGER")
+        // CHANNEL_MANAGER는 USER의 모든 권한을 자동으로 포함
+        .role("CHANNEL_MANAGER").implies("USER")
+        .build();
+  }
+
+  /*
+  - RoleHierarchy를 Bean으로 등록해도 Method Security에는 자동으로 적용되지 않는다 -> 명시적 주입 필요
+  - @EnableMethodSecurity가 동작할 때 필요하므로 static 메서드로 선언하여 SecurityConfig 인스턴스 생성 전에 실행 되도록 한다
+  - Spring 컨텍스트 초기화 순서
+    - @EnableMethodSecurity 처리 시작 <- 이때 MethodSecurityExpressionHandler가 필요함
+    - SecurityConfig 인스턴스 생성
+    - 일반 @Bean 메서드 실행
+   */
+  @Bean
+  static MethodSecurityExpressionHandler methodSecurityExpressionHandler(
+      RoleHierarchy roleHierarchy) { // Spring이 자동으로 주입해줌
+    // Method Security용 표현식 핸들러 생성
+    DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
+    // RoleHierarchy 주입 - @PreAuthorize에서 계층 구조 인식을 위해 필요함
+    handler.setRoleHierarchy(roleHierarchy);
+    // Bean으로 반환 -> Spring Security가 자동으로 감지해서 사용
+    return handler;
   }
 }
