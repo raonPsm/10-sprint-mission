@@ -5,12 +5,12 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,6 +20,7 @@ import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.UserRole;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -111,7 +112,7 @@ class ChannelControllerTest {
     List<UserDto> participants = new ArrayList<>();
     for (UUID userId : participantIds) {
       participants.add(new UserDto(userId, "user-" + userId.toString().substring(0, 5),
-          "user" + userId.toString().substring(0, 5) + "@example.com", null, false));
+          "user" + userId.toString().substring(0, 5) + "@example.com", null, false, UserRole.USER));
     }
 
     ChannelDto createdChannel = new ChannelDto(
@@ -264,7 +265,7 @@ class ChannelControllerTest {
             ChannelType.PRIVATE,
             null,
             null,
-            List.of(new UserDto(userId, "user1", "user1@example.com", null, true)),
+            List.of(new UserDto(userId, "user1", "user1@example.com", null, true, UserRole.USER)),
             Instant.now().minusSeconds(3600)
         )
     );
