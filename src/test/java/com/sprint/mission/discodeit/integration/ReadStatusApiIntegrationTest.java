@@ -19,6 +19,8 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.entity.UserRole;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -31,9 +33,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -56,7 +64,16 @@ class ReadStatusApiIntegrationTest {
   @Autowired
   private ChannelService channelService;
 
+  private RequestPostProcessor asUser(UUID userId, UserRole role) {
+    UserDto userDto = new UserDto(userId, "testuser", "test@example.com", null, false, role);
+    DiscodeitUserDetails userDetails = new DiscodeitUserDetails(userDto, "password");
+    Authentication auth = new UsernamePasswordAuthenticationToken(
+        userDetails, null, userDetails.getAuthorities());
+    return authentication(auth);
+  }
+
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("읽음 상태 생성 API 통합 테스트")
   void createReadStatus_Success() throws Exception {
     // Given
@@ -88,6 +105,7 @@ class ReadStatusApiIntegrationTest {
     // When & Then
     mockMvc.perform(post("/api/readStatuses")
             .with(csrf())
+            .with(asUser(UUID.randomUUID(), UserRole.USER))
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isCreated())
@@ -98,6 +116,7 @@ class ReadStatusApiIntegrationTest {
   }
 
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("읽음 상태 생성 실패 API 통합 테스트 - 중복 생성")
   void createReadStatus_Failure_Duplicate() throws Exception {
     // Given
@@ -127,6 +146,7 @@ class ReadStatusApiIntegrationTest {
     String firstRequestBody = objectMapper.writeValueAsString(firstCreateRequest);
     mockMvc.perform(post("/api/readStatuses")
             .with(csrf())
+            .with(asUser(UUID.randomUUID(), UserRole.USER))
             .contentType(MediaType.APPLICATION_JSON)
             .content(firstRequestBody))
         .andExpect(status().isCreated());
@@ -143,12 +163,14 @@ class ReadStatusApiIntegrationTest {
     // When & Then
     mockMvc.perform(post("/api/readStatuses")
             .with(csrf())
+            .with(asUser(UUID.randomUUID(), UserRole.USER))
             .contentType(MediaType.APPLICATION_JSON)
             .content(duplicateRequestBody))
         .andExpect(status().isConflict());
   }
 
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("읽음 상태 업데이트 API 통합 테스트")
   void updateReadStatus_Success() throws Exception {
     // Given
@@ -189,6 +211,7 @@ class ReadStatusApiIntegrationTest {
     // When & Then
     mockMvc.perform(patch("/api/readStatuses/{readStatusId}", readStatusId)
             .with(csrf())
+            .with(asUser(UUID.randomUUID(), UserRole.USER))
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isOk())
@@ -213,12 +236,14 @@ class ReadStatusApiIntegrationTest {
     // When & Then
     mockMvc.perform(patch("/api/readStatuses/{readStatusId}", nonExistentReadStatusId)
             .with(csrf())
+            .with(asUser(UUID.randomUUID(), UserRole.USER))
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isNotFound());
   }
 
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("사용자별 읽음 상태 목록 조회 API 통합 테스트")
   void findAllReadStatusesByUserId_Success() throws Exception {
     // Given
@@ -263,7 +288,8 @@ class ReadStatusApiIntegrationTest {
     // When & Then
     mockMvc.perform(get("/api/readStatuses")
             .param("userId", user.id().toString())
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(2)))
         .andExpect(jsonPath("$[*].channelId",

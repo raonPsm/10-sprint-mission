@@ -3,12 +3,13 @@ package com.sprint.mission.discodeit.integration;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,6 +20,8 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.UserRole;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 import java.util.List;
@@ -30,8 +33,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -52,7 +59,17 @@ class ChannelApiIntegrationTest {
   @Autowired
   private UserService userService;
 
+  private RequestPostProcessor asUser(UUID userId, UserRole role) {
+    UserDto userDto = new UserDto(userId, "testuser", "test@example.com", null, false, role);
+    DiscodeitUserDetails userDetails = new DiscodeitUserDetails(userDto, "password");
+    Authentication auth = new UsernamePasswordAuthenticationToken(
+        userDetails, null, userDetails.getAuthorities());
+    return authentication(auth);
+  }
+
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER") // 가짜 인증된 사용자를 등록하여 테스트 실행
+  // Spring이 자동으로 userdetails.User 타입의 principal을 만들어 SecurityContext에 넣어줌
   @DisplayName("공개 채널 생성 API 통합 테스트")
   void createPublicChannel_Success() throws Exception {
     // Given
@@ -66,6 +83,7 @@ class ChannelApiIntegrationTest {
     // When & Then
     mockMvc.perform(post("/api/channels/public")
             .with(csrf())
+            .with(asUser(UUID.randomUUID(), UserRole.CHANNEL_MANAGER))
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isCreated())
@@ -76,6 +94,7 @@ class ChannelApiIntegrationTest {
   }
 
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("공개 채널 생성 실패 API 통합 테스트 - 유효하지 않은 요청")
   void createPublicChannel_Failure_InvalidRequest() throws Exception {
     // Given
@@ -89,6 +108,7 @@ class ChannelApiIntegrationTest {
     // When & Then
     mockMvc.perform(post("/api/channels/public")
             .with(csrf())
+            .with(asUser(UUID.randomUUID(), UserRole.CHANNEL_MANAGER))
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isBadRequest());
@@ -122,6 +142,7 @@ class ChannelApiIntegrationTest {
     // When & Then
     mockMvc.perform(post("/api/channels/private")
             .with(csrf())
+            .with(asUser(UUID.randomUUID(), UserRole.USER))
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isCreated())
@@ -131,6 +152,7 @@ class ChannelApiIntegrationTest {
   }
 
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("사용자별 채널 목록 조회 API 통합 테스트")
   void findAllChannelsByUserId_Success() throws Exception {
     // Given
@@ -170,7 +192,8 @@ class ChannelApiIntegrationTest {
     // When & Then
     mockMvc.perform(get("/api/channels")
             .param("userId", userId.toString())
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(2)))
         .andExpect(jsonPath("$[0].type", is(ChannelType.PUBLIC.name())))
@@ -178,6 +201,7 @@ class ChannelApiIntegrationTest {
   }
 
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("채널 업데이트 API 통합 테스트")
   void updateChannel_Success() throws Exception {
     // Given
@@ -200,6 +224,7 @@ class ChannelApiIntegrationTest {
     // When & Then
     mockMvc.perform(patch("/api/channels/{channelId}", channelId)
             .with(csrf())
+            .with(asUser(UUID.randomUUID(), UserRole.CHANNEL_MANAGER))
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isOk())
@@ -209,6 +234,7 @@ class ChannelApiIntegrationTest {
   }
 
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("채널 업데이트 실패 API 통합 테스트 - 존재하지 않는 채널")
   void updateChannel_Failure_ChannelNotFound() throws Exception {
     // Given
@@ -224,12 +250,14 @@ class ChannelApiIntegrationTest {
     // When & Then
     mockMvc.perform(patch("/api/channels/{channelId}", nonExistentChannelId)
             .with(csrf())
+            .with(asUser(UUID.randomUUID(), UserRole.CHANNEL_MANAGER))
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isNotFound());
   }
 
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("채널 삭제 API 통합 테스트")
   void deleteChannel_Success() throws Exception {
     // Given
@@ -244,7 +272,8 @@ class ChannelApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(delete("/api/channels/{channelId}", channelId)
-            .with(csrf()))
+            .with(csrf())
+            .with(asUser(UUID.randomUUID(), UserRole.CHANNEL_MANAGER)))
         .andExpect(status().isNoContent());
 
     // 삭제 확인 - 사용자로 채널 조회 시 삭제된 채널은 조회되지 않아야 함
@@ -258,12 +287,14 @@ class ChannelApiIntegrationTest {
 
     mockMvc.perform(get("/api/channels")
             .param("userId", user.id().toString())
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.id == '" + channelId + "')]").doesNotExist());
   }
 
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("채널 삭제 실패 API 통합 테스트 - 존재하지 않는 채널")
   void deleteChannel_Failure_ChannelNotFound() throws Exception {
     // Given
@@ -271,7 +302,8 @@ class ChannelApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(delete("/api/channels/{channelId}", nonExistentChannelId)
-            .with(csrf()))
+            .with(csrf())
+            .with(asUser(UUID.randomUUID(), UserRole.CHANNEL_MANAGER)))
         .andExpect(status().isNotFound());
   }
 } 

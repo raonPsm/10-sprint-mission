@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.integration;
 
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -14,6 +15,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.UserRole;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.UserService;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,9 +27,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -43,6 +51,13 @@ class UserApiIntegrationTest {
   @Autowired
   private UserService userService;
 
+  private RequestPostProcessor asUser(UUID userId, UserRole role) {
+    UserDto userDto = new UserDto(userId, "testuser", "test@example.com", null, false, role);
+    DiscodeitUserDetails userDetails = new DiscodeitUserDetails(userDto, "password");
+    Authentication auth = new UsernamePasswordAuthenticationToken(
+        userDetails, null, userDetails.getAuthorities());
+    return authentication(auth);
+  }
 
   @Test
   @DisplayName("사용자 생성 API 통합 테스트")
@@ -129,14 +144,13 @@ class UserApiIntegrationTest {
     userService.create(userRequest2, Optional.empty());
 
     // When & Then
+    // AdminInitializer가 앱 시작 시 admin 계정을 생성하므로 hasSize 대신 hasItems로 검증
     mockMvc.perform(get("/api/users")
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(2)))
-        .andExpect(jsonPath("$[0].username", is("user1")))
-        .andExpect(jsonPath("$[0].email", is("user1@example.com")))
-        .andExpect(jsonPath("$[1].username", is("user2")))
-        .andExpect(jsonPath("$[1].email", is("user2@example.com")));
+        .andExpect(jsonPath("$[*].username", hasItems("user1", "user2")))
+        .andExpect(jsonPath("$[*].email", hasItems("user1@example.com", "user2@example.com")));
   }
 
   @Test
@@ -178,6 +192,7 @@ class UserApiIntegrationTest {
             .file(userUpdateRequestPart)
             .file(profilePart)
             .with(csrf())
+            .with(asUser(userId, UserRole.USER))
             .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
             .with(request -> {
               request.setMethod("PATCH");
@@ -212,6 +227,7 @@ class UserApiIntegrationTest {
     mockMvc.perform(multipart("/api/users/{userId}", nonExistentUserId)
             .file(userUpdateRequestPart)
             .with(csrf())
+            .with(asUser(nonExistentUserId, UserRole.USER))
             .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
             .with(request -> {
               request.setMethod("PATCH");
@@ -236,11 +252,13 @@ class UserApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(delete("/api/users/{userId}", userId)
-            .with(csrf()))
+            .with(csrf())
+            .with(asUser(userId, UserRole.USER)))
         .andExpect(status().isNoContent());
 
     // 삭제 확인
-    mockMvc.perform(get("/api/users"))
+    mockMvc.perform(get("/api/users")
+            .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.id == '" + userId + "')]").doesNotExist());
   }
@@ -253,7 +271,8 @@ class UserApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(delete("/api/users/{userId}", nonExistentUserId)
-            .with(csrf()))
+            .with(csrf())
+            .with(asUser(nonExistentUserId, UserRole.USER)))
         .andExpect(status().isNotFound());
   }
 } 

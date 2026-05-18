@@ -19,6 +19,8 @@ import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.entity.UserRole;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -32,9 +34,15 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -57,7 +65,16 @@ class MessageApiIntegrationTest {
   @Autowired
   private UserService userService;
 
+  private RequestPostProcessor asUser(UUID userId, UserRole role) {
+    UserDto userDto = new UserDto(userId, "testuser", "test@example.com", null, false, role);
+    DiscodeitUserDetails userDetails = new DiscodeitUserDetails(userDto, "password");
+    Authentication auth = new UsernamePasswordAuthenticationToken(
+        userDetails, null, userDetails.getAuthorities());
+    return authentication(auth);
+  }
+
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("메시지 생성 API 통합 테스트")
   void createMessage_Success() throws Exception {
     // Given
@@ -103,7 +120,8 @@ class MessageApiIntegrationTest {
     mockMvc.perform(multipart("/api/messages")
             .file(messageCreateRequestPart)
             .file(attachmentPart)
-            .with(csrf()))
+            .with(csrf())
+            .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id", notNullValue()))
         .andExpect(jsonPath("$.content", is("테스트 메시지 내용입니다.")))
@@ -133,11 +151,13 @@ class MessageApiIntegrationTest {
     // When & Then
     mockMvc.perform(multipart("/api/messages")
             .file(messageCreateRequestPart)
-            .with(csrf()))
+            .with(csrf())
+            .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isBadRequest());
   }
 
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("채널별 메시지 목록 조회 API 통합 테스트")
   void findAllMessagesByChannelId_Success() throws Exception {
     // Given
@@ -177,7 +197,8 @@ class MessageApiIntegrationTest {
     // When & Then
     mockMvc.perform(get("/api/messages")
             .param("channelId", channel.id().toString())
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content", hasSize(2)))
         .andExpect(jsonPath("$.content[0].content", is("두 번째 메시지 내용입니다.")))
@@ -188,6 +209,7 @@ class MessageApiIntegrationTest {
   }
 
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("메시지 업데이트 API 통합 테스트")
   void updateMessage_Success() throws Exception {
     // Given
@@ -228,6 +250,7 @@ class MessageApiIntegrationTest {
     // When & Then
     mockMvc.perform(patch("/api/messages/{messageId}", messageId)
             .with(csrf())
+            .with(asUser(user.id(), UserRole.USER))
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isOk())
@@ -251,12 +274,14 @@ class MessageApiIntegrationTest {
     // When & Then
     mockMvc.perform(patch("/api/messages/{messageId}", nonExistentMessageId)
             .with(csrf())
+            .with(asUser(UUID.randomUUID(), UserRole.USER))
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestBody))
         .andExpect(status().isNotFound());
   }
 
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("메시지 삭제 API 통합 테스트")
   void deleteMessage_Success() throws Exception {
     // Given
@@ -289,13 +314,15 @@ class MessageApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(delete("/api/messages/{messageId}", messageId)
-            .with(csrf()))
+            .with(csrf())
+            .with(asUser(user.id(), UserRole.USER)))
         .andExpect(status().isNoContent());
 
     // 삭제 확인 - 채널의 메시지 목록 조회 시 삭제된 메시지는 조회되지 않아야 함
     mockMvc.perform(get("/api/messages")
             .param("channelId", channel.id().toString())
-            .contentType(MediaType.APPLICATION_JSON))
+            .contentType(MediaType.APPLICATION_JSON)
+            .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content", hasSize(0)));
   }
@@ -308,7 +335,8 @@ class MessageApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(delete("/api/messages/{messageId}", nonExistentMessageId)
-            .with(csrf()))
+            .with(csrf())
+            .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isNotFound());
   }
 } 

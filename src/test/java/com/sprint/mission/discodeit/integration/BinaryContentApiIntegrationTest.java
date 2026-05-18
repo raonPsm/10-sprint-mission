@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.integration;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -17,6 +18,8 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.entity.UserRole;
+import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -30,8 +33,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -58,7 +65,18 @@ class BinaryContentApiIntegrationTest {
   @Autowired
   private MessageService messageService;
 
+  // 로그인한 상태로 요청을 보낼 수 있도록 하는 헬퍼 메서드
+  private RequestPostProcessor asUser(UUID userId, UserRole role) {
+    UserDto userDto = new UserDto(userId, "testuser", "test@example.com", null, false, role);
+    DiscodeitUserDetails userDetails = new DiscodeitUserDetails(userDto, "password");
+    Authentication auth = new UsernamePasswordAuthenticationToken(
+        userDetails, null, userDetails.getAuthorities()); // Spring Security Authentication 객체 생성
+    // 인증 된 상태를 만드는 것으로 credentials : null
+    return authentication(auth); // SecurityMockMvcRequestPostProcessors.authentication(...)
+  }
+
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("바이너리 컨텐츠 조회 API 통합 테스트")
   void findBinaryContent_Success() throws Exception {
     // Given
@@ -96,7 +114,8 @@ class BinaryContentApiIntegrationTest {
     UUID binaryContentId = message.attachments().get(0).id();
 
     // When & Then
-    mockMvc.perform(get("/api/binaryContents/{binaryContentId}", binaryContentId))
+    mockMvc.perform(get("/api/binaryContents/{binaryContentId}", binaryContentId)
+            .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id", is(binaryContentId.toString())))
         .andExpect(jsonPath("$.fileName", is("test.txt")))
@@ -111,11 +130,13 @@ class BinaryContentApiIntegrationTest {
     UUID nonExistentBinaryContentId = UUID.randomUUID();
 
     // When & Then
-    mockMvc.perform(get("/api/binaryContents/{binaryContentId}", nonExistentBinaryContentId))
+    mockMvc.perform(get("/api/binaryContents/{binaryContentId}", nonExistentBinaryContentId)
+            .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isNotFound());
   }
 
   @Test
+  @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("여러 바이너리 컨텐츠 조회 API 통합 테스트")
   void findAllBinaryContentsByIds_Success() throws Exception {
     // Given
@@ -166,7 +187,8 @@ class BinaryContentApiIntegrationTest {
     // When & Then
     mockMvc.perform(get("/api/binaryContents")
             .param("binaryContentIds", binaryContentIds.get(0).toString())
-            .param("binaryContentIds", binaryContentIds.get(1).toString()))
+            .param("binaryContentIds", binaryContentIds.get(1).toString())
+            .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(2)))
         .andExpect(jsonPath("$[*].fileName", hasItems("test1.txt", "test2.txt")));
@@ -187,7 +209,8 @@ class BinaryContentApiIntegrationTest {
     UUID binaryContentId = binaryContent.id();
 
     // When & Then
-    mockMvc.perform(get("/api/binaryContents/{binaryContentId}/download", binaryContentId))
+    mockMvc.perform(get("/api/binaryContents/{binaryContentId}/download", binaryContentId)
+            .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isOk())
         .andExpect(header().string("Content-Disposition",
             "attachment; filename=\"download-test.txt\""))
@@ -203,7 +226,8 @@ class BinaryContentApiIntegrationTest {
 
     // When & Then
     mockMvc.perform(
-            get("/api/binaryContents/{binaryContentId}/download", nonExistentBinaryContentId))
+            get("/api/binaryContents/{binaryContentId}/download", nonExistentBinaryContentId)
+                .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isNotFound());
   }
 } 
