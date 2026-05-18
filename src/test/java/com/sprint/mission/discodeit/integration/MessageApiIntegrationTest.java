@@ -36,6 +36,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -71,6 +72,13 @@ class MessageApiIntegrationTest {
     Authentication auth = new UsernamePasswordAuthenticationToken(
         userDetails, null, userDetails.getAuthorities());
     return authentication(auth);
+  }
+
+  private void setCurrentUser(UUID userId, UserRole role) {
+    UserDto userDto = new UserDto(userId, "testuser", "test@example.com", null, false, role);
+    DiscodeitUserDetails userDetails = new DiscodeitUserDetails(userDto, "password");
+    SecurityContextHolder.getContext().setAuthentication(
+        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
   }
 
   @Test
@@ -121,7 +129,7 @@ class MessageApiIntegrationTest {
             .file(messageCreateRequestPart)
             .file(attachmentPart)
             .with(csrf())
-            .with(asUser(UUID.randomUUID(), UserRole.USER)))
+            .with(asUser(user.id(), UserRole.USER)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id", notNullValue()))
         .andExpect(jsonPath("$.content", is("테스트 메시지 내용입니다.")))
@@ -191,6 +199,7 @@ class MessageApiIntegrationTest {
         user.id()
     );
 
+    setCurrentUser(user.id(), UserRole.USER);
     messageService.create(messageRequest1, new ArrayList<>());
     messageService.create(messageRequest2, new ArrayList<>());
 
@@ -237,6 +246,7 @@ class MessageApiIntegrationTest {
         user.id()
     );
 
+    setCurrentUser(user.id(), UserRole.USER);
     MessageDto createdMessage = messageService.create(createRequest, new ArrayList<>());
     UUID messageId = createdMessage.id();
 
@@ -309,6 +319,7 @@ class MessageApiIntegrationTest {
         user.id()
     );
 
+    setCurrentUser(user.id(), UserRole.USER);
     MessageDto createdMessage = messageService.create(createRequest, new ArrayList<>());
     UUID messageId = createdMessage.id();
 

@@ -35,6 +35,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -75,6 +76,15 @@ class BinaryContentApiIntegrationTest {
     return authentication(auth); // SecurityMockMvcRequestPostProcessors.authentication(...)
   }
 
+  // 테스트 데이터 생성 시 @PreAuthorize 통과를 위해 추가
+  private void setCurrentUser(UUID userId, UserRole role) {
+    UserDto userDto = new UserDto(userId, "testuser", "test@example.com", null, false, role);
+    DiscodeitUserDetails userDetails = new DiscodeitUserDetails(userDto, "password");
+    SecurityContextHolder.getContext().setAuthentication(
+        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
+    // 현재 스레드의 SecurityContext에 Authentication 객체 저장
+  }
+
   @Test
   @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("바이너리 컨텐츠 조회 API 통합 테스트")
@@ -110,6 +120,7 @@ class BinaryContentApiIntegrationTest {
         fileContent
     );
 
+    setCurrentUser(user.id(), UserRole.USER);
     MessageDto message = messageService.create(messageRequest, List.of(attachmentRequest));
     UUID binaryContentId = message.attachments().get(0).id();
 
@@ -175,6 +186,7 @@ class BinaryContentApiIntegrationTest {
     );
 
     // 첨부파일 두 개를 가진 메시지 생성
+    setCurrentUser(user.id(), UserRole.USER);
     MessageDto message = messageService.create(
         messageRequest,
         List.of(attachmentRequest1, attachmentRequest2)

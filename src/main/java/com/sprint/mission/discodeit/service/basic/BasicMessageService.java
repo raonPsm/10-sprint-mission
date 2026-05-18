@@ -45,6 +45,7 @@ public class BasicMessageService implements MessageService {
   private final BinaryContentRepository binaryContentRepository;
   private final PageResponseMapper pageResponseMapper;
 
+  @PreAuthorize("principal.userDto.id == #messageCreateRequest.authorId()")
   @Transactional
   @Override
   public MessageDto create(MessageCreateRequest messageCreateRequest,
