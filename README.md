@@ -109,7 +109,7 @@ Invoking ExceptionTranslationFilter (10/10)
 > 3. 클라이언트에서 매 요청마다 쿠키에 저장된 CSRF 토큰을 헤더(`X-XSRF-TOKEN`)에 포함
 > 4. 서버는 요청 헤더에 포함된 두 토큰 값(`X-XSRF-TOKEN`,`Cookie`)을 비교해 유효성 검증
 
-- [ ] `CsrfTokenRepository` 구현체를 `CookieCsrfTokenRepository`로 설정하세요.
+- [x] `CsrfTokenRepository` 구현체를 `CookieCsrfTokenRepository`로 설정하세요.
     - 디폴트 구현체는`HttpSessionCsrfTokenRepository`입니다.
   ```java
   http
@@ -118,7 +118,7 @@ Invoking ExceptionTranslationFilter (10/10)
   )
   ```
     - 이때 클라이언트에서 쿠키에 저장된 CSRF 토큰에 접근해야 하므로**Http Only**는`false`로 설정합니다.
-- [ ] `CsrfTokenRequestHandler` 컴포넌트를 대체하세요.
+- [x] `CsrfTokenRequestHandler` 컴포넌트를 대체하세요.
     - 디폴트 구현체는 `XorCsrfTokenRequestAttributeHandler`입니다.
     - [Spring 공식문서](https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html#csrf-integration-javascript-spa)
       에서 권장하는 CSR+SPA(Single Page Application) 환경에 적합한 구현체를 정의하세요.
@@ -166,7 +166,7 @@ Invoking ExceptionTranslationFilter (10/10)
         .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
         )
     ```
-- [ ] CSRF 토큰을 발급하는 API를 구현하세요.
+- [x] CSRF 토큰을 발급하는 API를 구현하세요.
     - API 스펙
         - 엔드포인트:`GET /api/auth/csrf-token`
         - 요청: 없음
@@ -185,17 +185,17 @@ Invoking ExceptionTranslationFilter (10/10)
 
 ### 03. 회원가입
 
-- [ ] 회원가입 API 스펙은 유지합니다.
+- [x] 회원가입 API 스펙은 유지합니다.
     - API 스펙
         - 엔드포인트: `POST /api/users`
         - 요청: `Body UserCreateRequest, MultipartFile`
         - 응답: `200 UserDto`
-- [ ] 회원가입 시 비밀번호는 `PasswordEncoder`를 통해 해시로 저장하세요.
+- [x] 회원가입 시 비밀번호는 `PasswordEncoder`를 통해 해시로 저장하세요.
     - `PasswordEncoder`의 구현체는 `BCryptPasswordEncoder`를 활용하세요.
 
 ### 04. 인증 - 로그인
 
-- [ ] `formLogin` 을 기본값으로 활성화하고, 추가된 필터를 확인해보세요.
+- [x] `formLogin` 을 기본값으로 활성화하고, 추가된 필터를 확인해보세요.
 
   ```java
   http
@@ -227,7 +227,7 @@ ExceptionTranslationFilter
         4. `AuthenticationSuccessHandler`
         5. `AuthenticationFailureHandler`
     - 각 컴포넌트의 기본 구현체가 무엇인지 디버깅해보세요.
-- [ ] 로그인을 처리할 url을 `/api/auth/login`로 설정하세요.
+- [x] 로그인을 처리할 url을 `/api/auth/login`로 설정하세요.
 
   ```java
   http
@@ -236,7 +236,7 @@ ExceptionTranslationFilter
       )
   ```
 
-- [ ] `UserDetailsService` 컴포넌트를 대체하세요.
+- [x] `UserDetailsService` 컴포넌트를 대체하세요.
 
     - 디폴트 구현체는 `InMemoryUserDetailsManager`입니다.
 
@@ -255,7 +255,7 @@ ExceptionTranslationFilter
 
         - 디스코드잇 DB에서 자체 관리하는 사용자 정보로`UserDetails`객체를 생성합니다.
         - 구현체를 Bean으로 등록하면 자동으로 대체됩니다.
-- [ ] `UserDetails` 컴포넌트를 대체하세요.
+- [x] `UserDetails` 컴포넌트를 대체하세요.
 
     - 디폴트 구현체는 `org.springframework.security.core.userdetails.User`입니다.
 
@@ -276,7 +276,7 @@ ExceptionTranslationFilter
         - `UserDto`와 비밀번호 정보를 저장하세요.
     - 앞서 정의한 `DiscodeitUserDetailsService`에서 `DiscodeitUserDetails`를 생성 후 반환하세요.
 
-- [ ] `AuthenticationSuccessHandler` 컴포넌트를 대체하세요.
+- [x] `AuthenticationSuccessHandler` 컴포넌트를 대체하세요.
 
     - 디폴트 구현체는 `SavedRequestAwareAuthenticationSuccessHandler`입니다.
 
@@ -305,7 +305,7 @@ ExceptionTranslationFilter
           )
       ```
 
-- [ ] `AuthenticiationFailureHandler` 컴포넌트를 대체하세요.
+- [x] `AuthenticiationFailureHandler` 컴포넌트를 대체하세요.
 
     - 디폴트 구현체는 `SimpleUrlAuthenticationFailureHandler`입니다.
 
@@ -334,7 +334,7 @@ ExceptionTranslationFilter
           )
       ```
 
-- [ ] 이제 로그인 처리는 SecurityFilterChain에서 모두 처리되기 때문에 기존에 구현했던 로그인 관련 코드는 제거하세요.
+- [x] 이제 로그인 처리는 SecurityFilterChain에서 모두 처리되기 때문에 기존에 구현했던 로그인 관련 코드는 제거하세요.
 
     - `AuthApi.login`,`AuthController.login`
     - `AuthService.login`
@@ -348,7 +348,7 @@ ExceptionTranslationFilter
 > 하지만, 메모리에 저장된 정보는 브라우저 새로고침 시 모두 삭제됩니다.   
 > 따라서 새로고침 시 쿠키에 저장된 세션 ID를 통해 현재 사용자 정보를 조회합니다.
 
-- [ ] 세션ID를 통해 사용자의 기본 정보(`UserDto`)를 가져올 수 있도록 API를 정의하세요.
+- [x] 세션ID를 통해 사용자의 기본 정보(`UserDto`)를 가져올 수 있도록 API를 정의하세요.
     - API 스펙
         - 엔드포인트:`GET /api/auth/me`
         - 요청:`Header(자동 포함) Cookie: JSESSIONID=…`
@@ -364,7 +364,7 @@ ExceptionTranslationFilter
 
     - Logout 처리 URL
     - `LogoutSuccessHandler`
-- [ ] 로그아웃을 처리할 url을 `/api/auth/logout`로 설정하세요.
+- [x] 로그아웃을 처리할 url을 `/api/auth/logout`로 설정하세요.
 
   ```java
   http
@@ -373,7 +373,7 @@ ExceptionTranslationFilter
       )
   ```
 
-- [ ] `LogoutSuccessHandler` 컴포넌트를 대체하세요.
+- [x] `LogoutSuccessHandler` 컴포넌트를 대체하세요.
 
     - 디폴트 구현체는 `SimpleUrlLogoutSuccessHandler`입니다.
 
@@ -391,14 +391,14 @@ ExceptionTranslationFilter
 
 ### 07. 인가 - 권한 정의
 
-- [ ] 다음과 같이 권한을 정의하세요.
+- [x] 다음과 같이 권한을 정의하세요.
 
   ![faef2l3uk-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=14408&version=1&directory=/faef2l3uk-image.png&name=faef2l3uk-image.png)
 
     - 관리자:`ADMIN`
     - 채널 매니저:`CHANNEL_MANAGER`
     - 일반 사용자:`USER`
-- [ ] 데이터베이스 스키마를 변경하세요.
+- [x] 데이터베이스 스키마를 변경하세요.
 
   ```sql
   CREATE TABLE users (
@@ -410,9 +410,9 @@ ExceptionTranslationFilter
       ADD role varchar(20) NOT NULL;
   ```
 
-- [ ] 회원 가입 시 모든 사용자는 `USER` 권한을 기본 권한으로 설정하세요.
+- [x] 회원 가입 시 모든 사용자는 `USER` 권한을 기본 권한으로 설정하세요.
 
-- [ ] 사용자 권한을 수정하는 API를 구현하세요.
+- [x] 사용자 권한을 수정하는 API를 구현하세요.
 
     - API 스펙
         - 엔드포인트:`PUT /api/auth/role`
@@ -421,14 +421,14 @@ ExceptionTranslationFilter
 
   ![qu8jij3u4-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=14408&version=1&directory=/qu8jij3u4-image.png&name=qu8jij3u4-image.png)
 
-- [ ] 애플리케이션 실행 시 `ADMIN` 권한을 가진 어드민 계정이 초기화되도록 구현하세요.
+- [x] 애플리케이션 실행 시 `ADMIN` 권한을 가진 어드민 계정이 초기화되도록 구현하세요.
 
     - 어드민 계정이 없는 경우에만 초기화하세요.
-- [ ] `DiscodietUserDetails.getAuthorities`를 수정하세요.
+- [x] `DiscodietUserDetails.getAuthorities`를 수정하세요.
 
 ### 08. 인가 - 권한 적용
 
-- [ ] `authorizeHttpRequests`를 활성화하고, 모든 요청을 인증하도록 설정하세요.
+- [x] `authorizeHttpRequests`를 활성화하고, 모든 요청을 인증하도록 설정하세요.
 
   ```java
   http
@@ -437,7 +437,7 @@ ExceptionTranslationFilter
       )
   ```
 
-- [ ] 다음의 요청은 인증하지 않도록 설정하세요.
+- [x] 다음의 요청은 인증하지 않도록 설정하세요.
 
   ```java
   http
@@ -452,7 +452,7 @@ ExceptionTranslationFilter
     - 로그인
     - 로그아웃
     - API가 아닌 요청(Swagger, Actuator 등)
-- [ ] Method Security를 활성화하세요.
+- [x] Method Security를 활성화하세요.
 
   ```java
   ...
@@ -460,11 +460,11 @@ ExceptionTranslationFilter
   public class SecurityConfig {...}
   ```
 
-- [ ] Service의 메소드 별로 아래의 조건에 맞게 권한을 수정하세요.
+- [x] Service의 메소드 별로 아래의 조건에 맞게 권한을 수정하세요.
 
     - 퍼블릭 채널 생성, 수정, 삭제는`CHANNEL_MANAGER`권한을 가져야합니다.
     - 사용자 권한 수정은`ADMIN`권한을 가져야합니다.
-- [ ] 적절한 권한이 없는 경우 403 응답을 반환하세요.
+- [x] 적절한 권한이 없는 경우 403 응답을 반환하세요.
 
     - `SecurityFilterChain`
 
@@ -483,7 +483,7 @@ ExceptionTranslationFilter
       public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {...}
       ```
 
-- [ ] `RoleHierarchy`를 활용해 권한의 계층 구조를 정의하세요.
+- [x] `RoleHierarchy`를 활용해 권한의 계층 구조를 정의하세요.
 
     - 관리자 > 채널 매니저 > 일반 사용자
         - 관리자 권한은 채널 매니저, 일반 사용자 권한을 포함합니다.
@@ -506,7 +506,7 @@ ExceptionTranslationFilter
 
 ### 01. 세션 관리 고도화
 
-- [ ] 동일한 계정으로 동시 로그인할 수 없도록 설정하세요.
+- [x] 동일한 계정으로 동시 로그인할 수 없도록 설정하세요.
 
     - `sessionConcurrency` 설정을 활용하세요.
 
@@ -529,7 +529,7 @@ ExceptionTranslationFilter
       user sessions. Failing to override them may lead to issues where session tracking and user
       comparison behave unexpectedly.
 
-- [ ] 권한이 변경된 사용자가 로그인 상태라면 세션을 무효화하세요.
+- [x] 권한이 변경된 사용자가 로그인 상태라면 세션을 무효화하세요.
 
     - `sessionRegistry`를 활용하세요.
 
@@ -566,7 +566,7 @@ ExceptionTranslationFilter
   }
   ```
 
-- [ ] UserStatus 엔티티 대신 SessionRegistry를 활용해 사용자의 로그인 여부를 판단하도록 리팩토링하세요.
+- [x] UserStatus 엔티티 대신 SessionRegistry를 활용해 사용자의 로그인 여부를 판단하도록 리팩토링하세요.
 
     - UserStatus 엔티티와 관련된 코드는 모두 삭제하세요.
     - (로그아웃처럼)`HttpSession`만료 시`SessionRegistry`의`SessionInformation`도 자동으로 만료 처리할 수 있도록
@@ -581,7 +581,7 @@ ExceptionTranslationFilter
 
 ### 로그인 고도화 - RememberMe
 
-- [ ] 로그인 요청 파라미터(`remember-me`)가 `true`인 경우 세션이 무효화되어도 자동으로 다시 로그인되도록 하세요.
+- [x] 로그인 요청 파라미터(`remember-me`)가 `true`인 경우 세션이 무효화되어도 자동으로 다시 로그인되도록 하세요.
 
     - 로그인 화면에서 로그인 유지 체크 후 로그인하면`remember-me`파라미터가`true`로 설정되어 요청합니다.
 
@@ -600,7 +600,7 @@ ExceptionTranslationFilter
 
 ### 03. 권한 적용 고도화
 
-- [ ] `SpEL`을 활용해 Method Security 기반 리소스 보호 정책을 강화해보세요.
+- [x] `SpEL`을 활용해 Method Security 기반 리소스 보호 정책을 강화해보세요.
 - 사용자 정보 수정, 삭제는 본인만 할 수 있습니다.
 - 메시지 수정, 삭제는 해당 메시지를 작성한 사람만 할 수 있습니다.
 
