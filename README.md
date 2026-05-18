@@ -596,6 +596,7 @@ ExceptionTranslationFilter
     - 로그인 상태에서 `JESSIONID` 쿠키를 삭제 후 새로고침했을 때 인증 상태가 유지 되는지 확인해보세요.
 
       ![aroseetgw-image.png](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=14411&version=1&directory=/aroseetgw-image.png&name=aroseetgw-image.png)
+      => 인증 상태가 유지되는 것 확인 완료
 
 ### 03. 권한 적용 고도화
 

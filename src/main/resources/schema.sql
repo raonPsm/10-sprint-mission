@@ -126,5 +126,14 @@ ALTER TABLE read_statuses
             REFERENCES channels (id)
             ON DELETE CASCADE;
 
-ALTER TABLE users
-    ADD role VARCHAR(20) NOT NULL DEFAULT 'USER';
+-- 마이그레이션
+-- ALTER TABLE users
+--     ADD role VARCHAR(20) NOT NULL DEFAULT 'USER';
+
+-- Persistence Token
+CREATE TABLE IF NOt EXISTS persistent_logins (
+    username  VARCHAR(64) NOT NULL,    -- 누구의 토큰인지 식별하는 값
+    series    VARCHAR(64) PRIMARY KEY, -- 쿠키 식별자 (고정) | 기기/브라우저를 식별하는 식별자
+    token     VARCHAR(64) NOT NULL,    -- 매 요청마다 갱신 (인증에 사용되는 값)
+    last_used TIMESTAMP   NOT NULL     -- 만료 체크, 쿠키 탈취 감지 보조
+)

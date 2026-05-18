@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 import jakarta.servlet.http.HttpServletResponse;
+import javax.sql.DataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -17,10 +18,13 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -31,8 +35,14 @@ import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 public class SecurityConfig {
 
   @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http, LoginSuccessHandler loginSuccessHandler,
-      LoginFailureHandler loginFailureHandler, SessionRegistry sessionRegistry) throws Exception {
+  public SecurityFilterChain filterChain(
+      HttpSecurity http,
+      LoginSuccessHandler loginSuccessHandler,
+      LoginFailureHandler loginFailureHandler,
+      SessionRegistry sessionRegistry,
+      UserDetailsService userDetailsService,
+      PersistentTokenRepository persistentTokenRepository
+  ) throws Exception {
     http
         .csrf(csrf -> csrf
             // CookieCsrfTokenRepository -> 클라이언트 쿠기에 저장 (<-> HttpSessionCsrfTokenRepository - SSR 환경)
@@ -85,6 +95,7 @@ public class SecurityConfig {
                 .logoutSuccessHandler( // 기본값(200)을 204로 교체
                     new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)
                 )
+                .deleteCookies("remember-me", "JSESSIONID")
             // 세션 무효화, SecurityContext 초기화 등 나머지 로그아웃 동작은 Spring Security 기본값 그대로 유지
             // <Spring Security 로그아웃 기본값>
             //  1. logoutUrl                -> POST /logout
@@ -99,9 +110,17 @@ public class SecurityConfig {
             // .sessionConcurrency(...) 동일한 사용자 계정으로 허용되는 최대 동시 세션 수를 제어하는 설정
             .sessionConcurrency(concurrency -> concurrency
                 .maximumSessions(1) // 동시 세션 1개 제한 (한 번에 한 곳에서만 로그인 가능)
-                .maxSessionsPreventsLogin(true) // 이미 로그인 중이면 새 로그인 자체를 차단 (기존 세션 유지)
+                .maxSessionsPreventsLogin(false) // remember-me 정상 동작을 위해 false 설정
                 .sessionRegistry(sessionRegistry) // SessionRegistry 빈을 주입
             )
+        )
+        .rememberMe(rememberMe -> rememberMe
+                .tokenRepository(persistentTokenRepository) // Persistent Token 방식 사용
+                .tokenValiditySeconds(60 * 60 * 24 * 7) // 쿠키 유효 기간 = 7일
+                .userDetailsService(userDetailsService) // 자동 로그인 성공 시 username으로 사용자 정보를 조회할 서비스 지정
+                .rememberMeParameter("remember-me") // 로그인 폼 체크박스의 name 속성값
+                .rememberMeCookieName("remember-me") // 브라우저에 저장될 쿠키의 이름
+            // .useSecureCookie(true) // HTTPS 환경에서만 활성화
         );
 
     return http.build();
@@ -156,5 +175,15 @@ public class SecurityConfig {
   @Bean
   public HttpSessionEventPublisher httpSessionEventPublisher() {
     return new HttpSessionEventPublisher();
+  }
+
+  // DataSource는 DB 커넥션 정보를 담고 있는 객체로,
+  // application.yml의 spring.datasource 설정값을 Spring이 자동으로 주입해줌
+  @Bean
+  public PersistentTokenRepository persistentTokenRepository(DataSource dataSource) {
+    JdbcTokenRepositoryImpl repo = new JdbcTokenRepositoryImpl(); // Spring Security가 제공하는 JDBC 기반 구현체 생성
+    repo.setDataSource(dataSource); // 위에서 주입받은 DataSource를 구현체에 연결
+    repo.setCreateTableOnStartup(false); // false -> 자동 생성 안 함 (테이블이 이미 있다고 가정)
+    return repo;
   }
 }
