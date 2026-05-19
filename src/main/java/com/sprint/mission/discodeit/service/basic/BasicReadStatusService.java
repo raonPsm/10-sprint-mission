@@ -46,7 +46,7 @@ public class BasicReadStatusService implements ReadStatusService {
         .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
 
     if (readStatusRepository.findByUserIdAndChannelId(user.getId(), channel.getId()).isPresent()) {
-      throw DuplicateReadStatusException.withUserIdAndChannelId(userId, channelId); // 예외 던지도록 수정함
+      throw DuplicateReadStatusException.withUserIdAndChannelId(userId, channelId);
     }
 
     ReadStatus readStatus = readStatusRepository.save(

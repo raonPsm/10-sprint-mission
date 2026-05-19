@@ -54,15 +54,14 @@ class S3BinaryContentStorageTest {
 
   @BeforeEach
   void setUp() {
-    // 테스트 준비 작업
-    // 실제 S3BinaryContentStorage는 스프링이 의존성 주입으로 제공
+
   }
 
   @AfterEach
   void tearDown() {
-    // 테스트 종료 후 생성된 S3 객체 삭제
+
     try {
-      // S3 클라이언트 생성
+
       S3Client s3Client = S3Client.builder()
           .region(Region.of(region))
           .credentialsProvider(
@@ -72,7 +71,6 @@ class S3BinaryContentStorageTest {
           )
           .build();
 
-      // 테스트에서 생성한 객체 삭제
       DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
           .bucket(bucket)
           .key(testId.toString())
@@ -81,10 +79,10 @@ class S3BinaryContentStorageTest {
       s3Client.deleteObject(deleteRequest);
       System.out.println("테스트 객체 삭제 완료: " + testId);
     } catch (NoSuchKeyException e) {
-      // 객체가 이미 없는 경우는 무시
+
       System.out.println("삭제할 객체가 없음: " + testId);
     } catch (Exception e) {
-      // 정리 실패 시 로그만 남기고 테스트는 실패로 처리하지 않음
+
       System.err.println("테스트 객체 정리 실패: " + e.getMessage());
     }
   }
@@ -92,26 +90,22 @@ class S3BinaryContentStorageTest {
   @Test
   @DisplayName("S3에 파일 업로드 성공 테스트")
   void put_success() {
-    // when
+
     UUID resultId = s3BinaryContentStorage.put(testId, testData);
 
-    // then
     assertThat(resultId).isEqualTo(testId);
   }
 
   @Test
   @DisplayName("S3에서 파일 다운로드 테스트")
   void get_success() throws IOException {
-    // given
+
     s3BinaryContentStorage.put(testId, testData);
 
-    // when
     InputStream result = s3BinaryContentStorage.get(testId);
 
-    // then
     assertNotNull(result);
 
-    // 내용 검증
     byte[] resultBytes = result.readAllBytes();
     assertThat(resultBytes).isEqualTo(testData);
   }
@@ -119,7 +113,7 @@ class S3BinaryContentStorageTest {
   @Test
   @DisplayName("존재하지 않는 파일 조회 시 예외 발생 테스트")
   void get_notFound() {
-    // when & then
+
     assertThatThrownBy(() -> s3BinaryContentStorage.get(UUID.randomUUID()))
         .isInstanceOf(NoSuchElementException.class);
   }
@@ -127,16 +121,14 @@ class S3BinaryContentStorageTest {
   @Test
   @DisplayName("Presigned URL 생성 테스트")
   void download_success() {
-    // given
+
     s3BinaryContentStorage.put(testId, testData);
     BinaryContentDto dto = new BinaryContentDto(
         testId, "test.txt", (long) testData.length, "text/plain"
     );
 
-    // when
     ResponseEntity<Void> response = s3BinaryContentStorage.download(dto);
 
-    // then
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FOUND);
     assertThat(response.getHeaders().get(HttpHeaders.LOCATION)).isNotNull();
 
@@ -144,4 +136,4 @@ class S3BinaryContentStorageTest {
     assertThat(location).contains(bucket);
     assertThat(location).contains(testId.toString());
   }
-} 
+}

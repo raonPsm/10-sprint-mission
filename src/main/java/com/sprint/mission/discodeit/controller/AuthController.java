@@ -31,18 +31,14 @@ public class AuthController implements AuthApi {
     String tokenValue = csrfToken.getToken();
     log.debug("CSRF 토큰 요청: {}", tokenValue);
     return ResponseEntity
-        .status(HttpStatus.NON_AUTHORITATIVE_INFORMATION) // 204가 더 적절해보이지만, 명세에 맞춤
+        .status(HttpStatus.NON_AUTHORITATIVE_INFORMATION)
         .build();
   }
 
-  // @AuthenticationPrincipal
-  //   - Principal을 Controller 메서드의 파라미터로 직접 주입받을 수 있게 해주는 어노테이션
-  //   - 내부적으로 AuthenticationPrincipalArgumentResolver가 작동하여
-  //     세션 내 SecurityContext의 Authentication 객체에서 principal을 꺼내온다.
   @GetMapping("me")
   public ResponseEntity<UserDto> me(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
     log.info("사용자 본인 정보 조회 요청");
-    UserDto userDto = userService.find(userDetails.getUserDto().id()); // 최신 정보 조회 후 반환
+    UserDto userDto = userService.find(userDetails.getUserDto().id());
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(userDto);

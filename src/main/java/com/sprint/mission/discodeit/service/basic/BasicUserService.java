@@ -160,13 +160,11 @@ public class BasicUserService implements UserService {
 
     user.updateRole(newRole);
 
-    sessionRegistry.getAllPrincipals().stream() // 현재 로그인된 모든 사용자 가져와서
-        .filter(p -> p instanceof DiscodeitUserDetails) // DiscodeitUserDetails 타입만 필터링
-        .map(p -> (DiscodeitUserDetails) p) // Object -> DiscodeitUserDetails로 캐스팅
-        .filter(ud -> ud.getUserDto().id().equals(userId)) // 찾으려는 userId와 일치하는 사용자 필터링
-        // 그 사용자의 모든 활성 세션을 꺼내
+    sessionRegistry.getAllPrincipals().stream()
+        .filter(p -> p instanceof DiscodeitUserDetails)
+        .map(p -> (DiscodeitUserDetails) p)
+        .filter(ud -> ud.getUserDto().id().equals(userId))
         .flatMap(ud -> sessionRegistry.getAllSessions(ud, false).stream())
-        // 각 세션을 만료 처리
         .forEach(SessionInformation::expireNow);
 
     log.info("사용자 권한 수정 완료: id={}, newRole={}", userId, newRole);

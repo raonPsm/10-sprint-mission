@@ -62,7 +62,7 @@ class UserApiIntegrationTest {
   @Test
   @DisplayName("사용자 생성 API 통합 테스트")
   void createUser_Success() throws Exception {
-    // Given
+
     UserCreateRequest createRequest = new UserCreateRequest(
         "testuser",
         "test@example.com",
@@ -83,7 +83,6 @@ class UserApiIntegrationTest {
         "test-image".getBytes()
     );
 
-    // When & Then
     mockMvc.perform(multipart("/api/users")
             .file(userCreateRequestPart)
             .file(profilePart)
@@ -94,18 +93,18 @@ class UserApiIntegrationTest {
         .andExpect(jsonPath("$.username", is("testuser")))
         .andExpect(jsonPath("$.email", is("test@example.com")))
         .andExpect(jsonPath("$.profile.fileName", is("profile.jpg")))
-        // 기존 처럼 '사용자 생성 == online = true'가 아님
-        .andExpect(jsonPath("$.online", is(false))); // 세션 없는 신규 사용자
+
+        .andExpect(jsonPath("$.online", is(false)));
   }
 
   @Test
   @DisplayName("사용자 생성 실패 API 통합 테스트 - 유효하지 않은 요청")
   void createUser_Failure_InvalidRequest() throws Exception {
-    // Given
+
     UserCreateRequest invalidRequest = new UserCreateRequest(
-        "t", // 최소 길이 위반
-        "invalid-email", // 이메일 형식 위반
-        "short" // 비밀번호 정책 위반
+        "t",
+        "invalid-email",
+        "short"
     );
 
     MockMultipartFile userCreateRequestPart = new MockMultipartFile(
@@ -115,7 +114,6 @@ class UserApiIntegrationTest {
         objectMapper.writeValueAsBytes(invalidRequest)
     );
 
-    // When & Then
     mockMvc.perform(multipart("/api/users")
             .file(userCreateRequestPart)
             .with(csrf())
@@ -126,8 +124,7 @@ class UserApiIntegrationTest {
   @Test
   @DisplayName("모든 사용자 조회 API 통합 테스트")
   void findAllUsers_Success() throws Exception {
-    // Given
-    // 테스트 사용자 생성 - Service를 통해 초기화
+
     UserCreateRequest userRequest1 = new UserCreateRequest(
         "user1",
         "user1@example.com",
@@ -143,8 +140,6 @@ class UserApiIntegrationTest {
     userService.create(userRequest1, Optional.empty());
     userService.create(userRequest2, Optional.empty());
 
-    // When & Then
-    // AdminInitializer가 앱 시작 시 admin 계정을 생성하므로 hasSize 대신 hasItems로 검증
     mockMvc.perform(get("/api/users")
             .contentType(MediaType.APPLICATION_JSON)
             .with(asUser(UUID.randomUUID(), UserRole.USER)))
@@ -156,8 +151,7 @@ class UserApiIntegrationTest {
   @Test
   @DisplayName("사용자 업데이트 API 통합 테스트")
   void updateUser_Success() throws Exception {
-    // Given
-    // 테스트 사용자 생성 - Service를 통해 초기화
+
     UserCreateRequest createRequest = new UserCreateRequest(
         "originaluser",
         "original@example.com",
@@ -187,7 +181,6 @@ class UserApiIntegrationTest {
         "updated-image".getBytes()
     );
 
-    // When & Then
     mockMvc.perform(multipart("/api/users/{userId}", userId)
             .file(userUpdateRequestPart)
             .file(profilePart)
@@ -208,7 +201,7 @@ class UserApiIntegrationTest {
   @Test
   @DisplayName("사용자 업데이트 실패 API 통합 테스트 - 존재하지 않는 사용자")
   void updateUser_Failure_UserNotFound() throws Exception {
-    // Given
+
     UUID nonExistentUserId = UUID.randomUUID();
     UserUpdateRequest updateRequest = new UserUpdateRequest(
         "updateduser",
@@ -223,7 +216,6 @@ class UserApiIntegrationTest {
         objectMapper.writeValueAsBytes(updateRequest)
     );
 
-    // When & Then
     mockMvc.perform(multipart("/api/users/{userId}", nonExistentUserId)
             .file(userUpdateRequestPart)
             .with(csrf())
@@ -239,8 +231,7 @@ class UserApiIntegrationTest {
   @Test
   @DisplayName("사용자 삭제 API 통합 테스트")
   void deleteUser_Success() throws Exception {
-    // Given
-    // 테스트 사용자 생성 - Service를 통해 초기화
+
     UserCreateRequest createRequest = new UserCreateRequest(
         "deleteuser",
         "delete@example.com",
@@ -250,13 +241,11 @@ class UserApiIntegrationTest {
     UserDto createdUser = userService.create(createRequest, Optional.empty());
     UUID userId = createdUser.id();
 
-    // When & Then
     mockMvc.perform(delete("/api/users/{userId}", userId)
             .with(csrf())
             .with(asUser(userId, UserRole.USER)))
         .andExpect(status().isNoContent());
 
-    // 삭제 확인
     mockMvc.perform(get("/api/users")
             .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isOk())
@@ -266,13 +255,12 @@ class UserApiIntegrationTest {
   @Test
   @DisplayName("사용자 삭제 실패 API 통합 테스트 - 존재하지 않는 사용자")
   void deleteUser_Failure_UserNotFound() throws Exception {
-    // Given
+
     UUID nonExistentUserId = UUID.randomUUID();
 
-    // When & Then
     mockMvc.perform(delete("/api/users/{userId}", nonExistentUserId)
             .with(csrf())
             .with(asUser(nonExistentUserId, UserRole.USER)))
         .andExpect(status().isNotFound());
   }
-} 
+}

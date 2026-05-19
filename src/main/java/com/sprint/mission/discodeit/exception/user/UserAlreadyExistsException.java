@@ -26,4 +26,4 @@ public class UserAlreadyExistsException extends UserException {
     exception.addDetail("role", role);
     return exception;
   }
-} 
+}

@@ -32,7 +32,7 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
         ex.getClass().getSimpleName(),
         HttpServletResponse.SC_UNAUTHORIZED
     );
-    res.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 Unauthorized
+    res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     res.setContentType(MediaType.APPLICATION_JSON_VALUE);
     res.setCharacterEncoding("UTF-8");
     objectMapper.writeValue(res.getWriter(), body);

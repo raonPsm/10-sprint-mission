@@ -22,7 +22,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
   public void onAuthenticationSuccess(HttpServletRequest req, HttpServletResponse res,
       Authentication auth) throws IOException, ServletException {
     UserDto userDto = ((DiscodeitUserDetails) auth.getPrincipal()).getUserDto();
-    res.setStatus(HttpServletResponse.SC_OK); // 200 OK
+    res.setStatus(HttpServletResponse.SC_OK);
     res.setContentType(MediaType.APPLICATION_JSON_VALUE);
     res.setCharacterEncoding("UTF-8");
     objectMapper.writeValue(res.getWriter(), userDto);

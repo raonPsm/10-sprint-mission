@@ -66,32 +66,28 @@ class BinaryContentApiIntegrationTest {
   @Autowired
   private MessageService messageService;
 
-  // 로그인한 상태로 요청을 보낼 수 있도록 하는 헬퍼 메서드
   private RequestPostProcessor asUser(UUID userId, UserRole role) {
     UserDto userDto = new UserDto(userId, "testuser", "test@example.com", null, false, role);
     DiscodeitUserDetails userDetails = new DiscodeitUserDetails(userDto, "password");
     Authentication auth = new UsernamePasswordAuthenticationToken(
-        userDetails, null, userDetails.getAuthorities()); // Spring Security Authentication 객체 생성
-    // 인증 된 상태를 만드는 것으로 credentials : null
-    return authentication(auth); // SecurityMockMvcRequestPostProcessors.authentication(...)
+        userDetails, null, userDetails.getAuthorities());
+
+    return authentication(auth);
   }
 
-  // 테스트 데이터 생성 시 @PreAuthorize 통과를 위해 추가
   private void setCurrentUser(UUID userId, UserRole role) {
     UserDto userDto = new UserDto(userId, "testuser", "test@example.com", null, false, role);
     DiscodeitUserDetails userDetails = new DiscodeitUserDetails(userDto, "password");
     SecurityContextHolder.getContext().setAuthentication(
         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
-    // 현재 스레드의 SecurityContext에 Authentication 객체 저장
+
   }
 
   @Test
   @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("바이너리 컨텐츠 조회 API 통합 테스트")
   void findBinaryContent_Success() throws Exception {
-    // Given
-    // 테스트 바이너리 컨텐츠 생성 (메시지 첨부파일을 통해 생성)
-    // 사용자 생성
+
     UserCreateRequest userRequest = new UserCreateRequest(
         "contentuser",
         "content@example.com",
@@ -99,14 +95,12 @@ class BinaryContentApiIntegrationTest {
     );
     UserDto user = userService.create(userRequest, Optional.empty());
 
-    // 채널 생성
     PublicChannelCreateRequest channelRequest = new PublicChannelCreateRequest(
         "테스트 채널",
         "테스트 채널 설명입니다."
     );
     var channel = channelService.create(channelRequest);
 
-    // 첨부파일이 있는 메시지 생성
     MessageCreateRequest messageRequest = new MessageCreateRequest(
         "첨부파일이 있는 메시지입니다.",
         channel.id(),
@@ -124,7 +118,6 @@ class BinaryContentApiIntegrationTest {
     MessageDto message = messageService.create(messageRequest, List.of(attachmentRequest));
     UUID binaryContentId = message.attachments().get(0).id();
 
-    // When & Then
     mockMvc.perform(get("/api/binaryContents/{binaryContentId}", binaryContentId)
             .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isOk())
@@ -137,10 +130,9 @@ class BinaryContentApiIntegrationTest {
   @Test
   @DisplayName("존재하지 않는 바이너리 컨텐츠 조회 API 통합 테스트")
   void findBinaryContent_Failure_NotFound() throws Exception {
-    // Given
+
     UUID nonExistentBinaryContentId = UUID.randomUUID();
 
-    // When & Then
     mockMvc.perform(get("/api/binaryContents/{binaryContentId}", nonExistentBinaryContentId)
             .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isNotFound());
@@ -150,8 +142,7 @@ class BinaryContentApiIntegrationTest {
   @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("여러 바이너리 컨텐츠 조회 API 통합 테스트")
   void findAllBinaryContentsByIds_Success() throws Exception {
-    // Given
-    // 테스트 바이너리 컨텐츠 생성 (메시지 첨부파일을 통해 생성)
+
     UserCreateRequest userRequest = new UserCreateRequest(
         "contentuser2",
         "content2@example.com",
@@ -171,21 +162,18 @@ class BinaryContentApiIntegrationTest {
         user.id()
     );
 
-    // 첫 번째 첨부파일
     BinaryContentCreateRequest attachmentRequest1 = new BinaryContentCreateRequest(
         "test1.txt",
         MediaType.TEXT_PLAIN_VALUE,
         "첫 번째 테스트 파일 내용입니다.".getBytes()
     );
 
-    // 두 번째 첨부파일
     BinaryContentCreateRequest attachmentRequest2 = new BinaryContentCreateRequest(
         "test2.txt",
         MediaType.TEXT_PLAIN_VALUE,
         "두 번째 테스트 파일 내용입니다.".getBytes()
     );
 
-    // 첨부파일 두 개를 가진 메시지 생성
     setCurrentUser(user.id(), UserRole.USER);
     MessageDto message = messageService.create(
         messageRequest,
@@ -196,7 +184,6 @@ class BinaryContentApiIntegrationTest {
         .map(BinaryContentDto::id)
         .toList();
 
-    // When & Then
     mockMvc.perform(get("/api/binaryContents")
             .param("binaryContentIds", binaryContentIds.get(0).toString())
             .param("binaryContentIds", binaryContentIds.get(1).toString())
@@ -209,7 +196,7 @@ class BinaryContentApiIntegrationTest {
   @Test
   @DisplayName("바이너리 컨텐츠 다운로드 API 통합 테스트")
   void downloadBinaryContent_Success() throws Exception {
-    // Given
+
     String fileContent = "다운로드 테스트 파일 내용입니다.";
     BinaryContentCreateRequest createRequest = new BinaryContentCreateRequest(
         "download-test.txt",
@@ -220,7 +207,6 @@ class BinaryContentApiIntegrationTest {
     BinaryContentDto binaryContent = binaryContentService.create(createRequest);
     UUID binaryContentId = binaryContent.id();
 
-    // When & Then
     mockMvc.perform(get("/api/binaryContents/{binaryContentId}/download", binaryContentId)
             .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isOk())
@@ -233,13 +219,12 @@ class BinaryContentApiIntegrationTest {
   @Test
   @DisplayName("존재하지 않는 바이너리 컨텐츠 다운로드 API 통합 테스트")
   void downloadBinaryContent_Failure_NotFound() throws Exception {
-    // Given
+
     UUID nonExistentBinaryContentId = UUID.randomUUID();
 
-    // When & Then
     mockMvc.perform(
             get("/api/binaryContents/{binaryContentId}/download", nonExistentBinaryContentId)
                 .with(asUser(UUID.randomUUID(), UserRole.USER)))
         .andExpect(status().isNotFound());
   }
-} 
+}

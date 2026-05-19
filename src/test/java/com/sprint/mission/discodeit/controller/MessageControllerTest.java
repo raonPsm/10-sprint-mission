@@ -56,7 +56,7 @@ class MessageControllerTest {
   @Test
   @DisplayName("메시지 생성 성공 테스트")
   void createMessage_Success() throws Exception {
-    // Given
+
     UUID channelId = UUID.randomUUID();
     UUID authorId = UUID.randomUUID();
     MessageCreateRequest createRequest = new MessageCreateRequest(
@@ -111,7 +111,6 @@ class MessageControllerTest {
     given(messageService.create(any(MessageCreateRequest.class), any(List.class)))
         .willReturn(createdMessage);
 
-    // When & Then
     mockMvc.perform(multipart("/api/messages")
             .file(messageCreateRequestPart)
             .file(attachment)
@@ -128,11 +127,11 @@ class MessageControllerTest {
   @Test
   @DisplayName("메시지 생성 실패 테스트 - 유효하지 않은 요청")
   void createMessage_Failure_InvalidRequest() throws Exception {
-    // Given
+
     MessageCreateRequest invalidRequest = new MessageCreateRequest(
-        "", // 내용이 비어있음 (NotBlank 위반)
-        null, // 채널 ID가 비어있음 (NotNull 위반)
-        null  // 작성자 ID가 비어있음 (NotNull 위반)
+        "",
+        null,
+        null
     );
 
     MockMultipartFile messageCreateRequestPart = new MockMultipartFile(
@@ -142,7 +141,6 @@ class MessageControllerTest {
         objectMapper.writeValueAsBytes(invalidRequest)
     );
 
-    // When & Then
     mockMvc.perform(multipart("/api/messages")
             .file(messageCreateRequestPart)
             .with(csrf())
@@ -153,7 +151,7 @@ class MessageControllerTest {
   @Test
   @DisplayName("메시지 업데이트 성공 테스트")
   void updateMessage_Success() throws Exception {
-    // Given
+
     UUID messageId = UUID.randomUUID();
     UUID channelId = UUID.randomUUID();
     UUID authorId = UUID.randomUUID();
@@ -186,7 +184,6 @@ class MessageControllerTest {
     given(messageService.update(eq(messageId), any(MessageUpdateRequest.class)))
         .willReturn(updatedMessage);
 
-    // When & Then
     mockMvc.perform(patch("/api/messages/{messageId}", messageId)
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
@@ -201,7 +198,7 @@ class MessageControllerTest {
   @Test
   @DisplayName("메시지 업데이트 실패 테스트 - 존재하지 않는 메시지")
   void updateMessage_Failure_MessageNotFound() throws Exception {
-    // Given
+
     UUID nonExistentMessageId = UUID.randomUUID();
 
     MessageUpdateRequest updateRequest = new MessageUpdateRequest(
@@ -211,7 +208,6 @@ class MessageControllerTest {
     given(messageService.update(eq(nonExistentMessageId), any(MessageUpdateRequest.class)))
         .willThrow(MessageNotFoundException.withId(nonExistentMessageId));
 
-    // When & Then
     mockMvc.perform(patch("/api/messages/{messageId}", nonExistentMessageId)
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
@@ -222,11 +218,10 @@ class MessageControllerTest {
   @Test
   @DisplayName("메시지 삭제 성공 테스트")
   void deleteMessage_Success() throws Exception {
-    // Given
+
     UUID messageId = UUID.randomUUID();
     willDoNothing().given(messageService).delete(messageId);
 
-    // When & Then
     mockMvc.perform(delete("/api/messages/{messageId}", messageId)
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON))
@@ -236,12 +231,11 @@ class MessageControllerTest {
   @Test
   @DisplayName("메시지 삭제 실패 테스트 - 존재하지 않는 메시지")
   void deleteMessage_Failure_MessageNotFound() throws Exception {
-    // Given
+
     UUID nonExistentMessageId = UUID.randomUUID();
     willThrow(MessageNotFoundException.withId(nonExistentMessageId))
         .given(messageService).delete(nonExistentMessageId);
 
-    // When & Then
     mockMvc.perform(delete("/api/messages/{messageId}", nonExistentMessageId)
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON))
@@ -251,7 +245,7 @@ class MessageControllerTest {
   @Test
   @DisplayName("채널별 메시지 목록 조회 성공 테스트")
   void findAllByChannelId_Success() throws Exception {
-    // Given
+
     UUID channelId = UUID.randomUUID();
     UUID authorId = UUID.randomUUID();
     Instant cursor = Instant.now();
@@ -289,16 +283,15 @@ class MessageControllerTest {
 
     PageResponse<MessageDto> pageResponse = new PageResponse<>(
         messages,
-        cursor.minusSeconds(30), // nextCursor 값
+        cursor.minusSeconds(30),
         pageable.getPageSize(),
-        true, // hasNext
-        (long) messages.size() // totalElements
+        true,
+        (long) messages.size()
     );
 
     given(messageService.findAllByChannelId(eq(channelId), eq(cursor), any(Pageable.class)))
         .willReturn(pageResponse);
 
-    // When & Then
     mockMvc.perform(get("/api/messages")
             .param("channelId", channelId.toString())
             .param("cursor", cursor.toString())
@@ -313,4 +306,4 @@ class MessageControllerTest {
         .andExpect(jsonPath("$.hasNext").value(true))
         .andExpect(jsonPath("$.totalElements").value(2));
   }
-} 
+}

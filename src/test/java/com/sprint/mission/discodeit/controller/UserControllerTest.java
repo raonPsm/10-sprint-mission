@@ -34,7 +34,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(UserController.class)
-@WithMockUser // Spring Security 테스트 시 가짜 인증 사용자를 생성하는 애너테이션
+@WithMockUser
 class UserControllerTest {
 
   @Autowired
@@ -49,7 +49,7 @@ class UserControllerTest {
   @Test
   @DisplayName("사용자 생성 성공 테스트")
   void createUser_Success() throws Exception {
-    // Given
+
     UserCreateRequest createRequest = new UserCreateRequest(
         "testuser",
         "test@example.com",
@@ -90,7 +90,6 @@ class UserControllerTest {
     given(userService.create(any(UserCreateRequest.class), any(Optional.class)))
         .willReturn(createdUser);
 
-    // When & Then
     mockMvc.perform(multipart("/api/users")
             .file(userCreateRequestPart)
             .file(profilePart)
@@ -107,11 +106,11 @@ class UserControllerTest {
   @Test
   @DisplayName("사용자 생성 실패 테스트 - 유효하지 않은 요청")
   void createUser_Failure_InvalidRequest() throws Exception {
-    // Given
+
     UserCreateRequest invalidRequest = new UserCreateRequest(
-        "t", // 최소 길이 위반
-        "invalid-email", // 이메일 형식 위반
-        "short" // 비밀번호 정책 위반
+        "t",
+        "invalid-email",
+        "short"
     );
 
     MockMultipartFile userCreateRequestPart = new MockMultipartFile(
@@ -121,7 +120,6 @@ class UserControllerTest {
         objectMapper.writeValueAsBytes(invalidRequest)
     );
 
-    // When & Then
     mockMvc.perform(multipart("/api/users")
             .file(userCreateRequestPart)
             .with(csrf())
@@ -132,7 +130,7 @@ class UserControllerTest {
   @Test
   @DisplayName("사용자 조회 성공 테스트")
   void findAllUsers_Success() throws Exception {
-    // Given
+
     UUID userId1 = UUID.randomUUID();
     UUID userId2 = UUID.randomUUID();
 
@@ -158,7 +156,6 @@ class UserControllerTest {
 
     given(userService.findAll()).willReturn(users);
 
-    // When & Then
     mockMvc.perform(get("/api/users")
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
@@ -173,7 +170,7 @@ class UserControllerTest {
   @Test
   @DisplayName("사용자 업데이트 성공 테스트")
   void updateUser_Success() throws Exception {
-    // Given
+
     UUID userId = UUID.randomUUID();
     UserUpdateRequest updateRequest = new UserUpdateRequest(
         "updateduser",
@@ -214,7 +211,6 @@ class UserControllerTest {
     given(userService.update(eq(userId), any(UserUpdateRequest.class), any(Optional.class)))
         .willReturn(updatedUser);
 
-    // When & Then
     mockMvc.perform(multipart("/api/users/{userId}", userId)
             .file(userUpdateRequestPart)
             .file(profilePart)
@@ -235,7 +231,7 @@ class UserControllerTest {
   @Test
   @DisplayName("사용자 업데이트 실패 테스트 - 존재하지 않는 사용자")
   void updateUser_Failure_UserNotFound() throws Exception {
-    // Given
+
     UUID nonExistentUserId = UUID.randomUUID();
     UserUpdateRequest updateRequest = new UserUpdateRequest(
         "updateduser",
@@ -261,7 +257,6 @@ class UserControllerTest {
         any(Optional.class)))
         .willThrow(UserNotFoundException.withId(nonExistentUserId));
 
-    // When & Then
     mockMvc.perform(multipart("/api/users/{userId}", nonExistentUserId)
             .file(userUpdateRequestPart)
             .file(profilePart)
@@ -277,11 +272,10 @@ class UserControllerTest {
   @Test
   @DisplayName("사용자 삭제 성공 테스트")
   void deleteUser_Success() throws Exception {
-    // Given
+
     UUID userId = UUID.randomUUID();
     willDoNothing().given(userService).delete(userId);
 
-    // When & Then
     mockMvc.perform(delete("/api/users/{userId}", userId)
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON))
@@ -291,15 +285,14 @@ class UserControllerTest {
   @Test
   @DisplayName("사용자 삭제 실패 테스트 - 존재하지 않는 사용자")
   void deleteUser_Failure_UserNotFound() throws Exception {
-    // Given
+
     UUID nonExistentUserId = UUID.randomUUID();
     willThrow(UserNotFoundException.withId(nonExistentUserId))
         .given(userService).delete(nonExistentUserId);
 
-    // When & Then
     mockMvc.perform(delete("/api/users/{userId}", nonExistentUserId)
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isNotFound());
   }
-} 
+}

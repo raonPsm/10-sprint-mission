@@ -14,9 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-// ApplicationRunner
-//   애플리케이션 구동이 완료된 직후(SpringApplication.run(...) 메서드가 끝나기 직전)에
-//   특정 로직을 자동으로 실행하고 싶을 때 사용하는 인터페이스
 public class AdminInitializer implements ApplicationRunner {
 
   private final UserRepository userRepository;
@@ -39,7 +36,7 @@ public class AdminInitializer implements ApplicationRunner {
         null,
         UserRole.ADMIN
     );
-    userRepository.save(admin); // 초기화 로직이므로 repo 계층 직접 접근
+    userRepository.save(admin);
 
     log.info("Admin 계정 생성 완료: username={}", adminProperties.username());
   }

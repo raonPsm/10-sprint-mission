@@ -53,7 +53,7 @@ class ChannelControllerTest {
   @Test
   @DisplayName("공개 채널 생성 성공 테스트")
   void createPublicChannel_Success() throws Exception {
-    // Given
+
     PublicChannelCreateRequest createRequest = new PublicChannelCreateRequest(
         "test-channel",
         "채널 설명입니다."
@@ -72,7 +72,6 @@ class ChannelControllerTest {
     given(channelService.create(any(PublicChannelCreateRequest.class)))
         .willReturn(createdChannel);
 
-    // When & Then
     mockMvc.perform(post("/api/channels/public")
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
@@ -87,13 +86,12 @@ class ChannelControllerTest {
   @Test
   @DisplayName("공개 채널 생성 실패 테스트 - 유효하지 않은 요청")
   void createPublicChannel_Failure_InvalidRequest() throws Exception {
-    // Given
+
     PublicChannelCreateRequest invalidRequest = new PublicChannelCreateRequest(
-        "a", // 최소 길이 위반 (2자 이상이어야 함)
-        "채널 설명은 최대 255자까지 가능합니다.".repeat(10) // 최대 길이 위반
+        "a",
+        "채널 설명은 최대 255자까지 가능합니다.".repeat(10)
     );
 
-    // When & Then
     mockMvc.perform(post("/api/channels/public")
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
@@ -104,7 +102,7 @@ class ChannelControllerTest {
   @Test
   @DisplayName("비공개 채널 생성 성공 테스트")
   void createPrivateChannel_Success() throws Exception {
-    // Given
+
     List<UUID> participantIds = List.of(UUID.randomUUID(), UUID.randomUUID());
     PrivateChannelCreateRequest createRequest = new PrivateChannelCreateRequest(participantIds);
 
@@ -127,7 +125,6 @@ class ChannelControllerTest {
     given(channelService.create(any(PrivateChannelCreateRequest.class)))
         .willReturn(createdChannel);
 
-    // When & Then
     mockMvc.perform(post("/api/channels/private")
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
@@ -142,7 +139,7 @@ class ChannelControllerTest {
   @Test
   @DisplayName("공개 채널 업데이트 성공 테스트")
   void updateChannel_Success() throws Exception {
-    // Given
+
     UUID channelId = UUID.randomUUID();
     PublicChannelUpdateRequest updateRequest = new PublicChannelUpdateRequest(
         "updated-channel",
@@ -161,7 +158,6 @@ class ChannelControllerTest {
     given(channelService.update(eq(channelId), any(PublicChannelUpdateRequest.class)))
         .willReturn(updatedChannel);
 
-    // When & Then
     mockMvc.perform(patch("/api/channels/{channelId}", channelId)
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
@@ -175,7 +171,7 @@ class ChannelControllerTest {
   @Test
   @DisplayName("채널 업데이트 실패 테스트 - 존재하지 않는 채널")
   void updateChannel_Failure_ChannelNotFound() throws Exception {
-    // Given
+
     UUID nonExistentChannelId = UUID.randomUUID();
     PublicChannelUpdateRequest updateRequest = new PublicChannelUpdateRequest(
         "updated-channel",
@@ -185,7 +181,6 @@ class ChannelControllerTest {
     given(channelService.update(eq(nonExistentChannelId), any(PublicChannelUpdateRequest.class)))
         .willThrow(ChannelNotFoundException.withId(nonExistentChannelId));
 
-    // When & Then
     mockMvc.perform(patch("/api/channels/{channelId}", nonExistentChannelId)
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
@@ -196,7 +191,7 @@ class ChannelControllerTest {
   @Test
   @DisplayName("채널 업데이트 실패 테스트 - 비공개 채널 업데이트 시도")
   void updateChannel_Failure_PrivateChannelUpdate() throws Exception {
-    // Given
+
     UUID privateChannelId = UUID.randomUUID();
     PublicChannelUpdateRequest updateRequest = new PublicChannelUpdateRequest(
         "updated-channel",
@@ -206,7 +201,6 @@ class ChannelControllerTest {
     given(channelService.update(eq(privateChannelId), any(PublicChannelUpdateRequest.class)))
         .willThrow(PrivateChannelUpdateException.forChannel(privateChannelId));
 
-    // When & Then
     mockMvc.perform(patch("/api/channels/{channelId}", privateChannelId)
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
@@ -217,11 +211,10 @@ class ChannelControllerTest {
   @Test
   @DisplayName("채널 삭제 성공 테스트")
   void deleteChannel_Success() throws Exception {
-    // Given
+
     UUID channelId = UUID.randomUUID();
     willDoNothing().given(channelService).delete(channelId);
 
-    // When & Then
     mockMvc.perform(delete("/api/channels/{channelId}", channelId)
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON))
@@ -231,12 +224,11 @@ class ChannelControllerTest {
   @Test
   @DisplayName("채널 삭제 실패 테스트 - 존재하지 않는 채널")
   void deleteChannel_Failure_ChannelNotFound() throws Exception {
-    // Given
+
     UUID nonExistentChannelId = UUID.randomUUID();
     willThrow(ChannelNotFoundException.withId(nonExistentChannelId))
         .given(channelService).delete(nonExistentChannelId);
 
-    // When & Then
     mockMvc.perform(delete("/api/channels/{channelId}", nonExistentChannelId)
             .with(csrf())
             .contentType(MediaType.APPLICATION_JSON))
@@ -246,7 +238,7 @@ class ChannelControllerTest {
   @Test
   @DisplayName("사용자별 채널 목록 조회 성공 테스트")
   void findAllByUserId_Success() throws Exception {
-    // Given
+
     UUID userId = UUID.randomUUID();
     UUID channelId1 = UUID.randomUUID();
     UUID channelId2 = UUID.randomUUID();
@@ -272,7 +264,6 @@ class ChannelControllerTest {
 
     given(channelService.findAllByUserId(userId)).willReturn(channels);
 
-    // When & Then
     mockMvc.perform(get("/api/channels")
             .param("userId", userId.toString())
             .contentType(MediaType.APPLICATION_JSON))
@@ -283,4 +274,4 @@ class ChannelControllerTest {
         .andExpect(jsonPath("$[1].id").value(channelId2.toString()))
         .andExpect(jsonPath("$[1].type").value("PRIVATE"));
   }
-} 
+}

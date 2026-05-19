@@ -31,7 +31,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
 @Configuration
-@EnableMethodSecurity // 메서드 보안 활성화
+@EnableMethodSecurity
 public class SecurityConfig {
 
   @Bean
@@ -45,43 +45,31 @@ public class SecurityConfig {
   ) throws Exception {
     http
         .csrf(csrf -> csrf
-            // CookieCsrfTokenRepository -> 클라이언트 쿠기에 저장 (<-> HttpSessionCsrfTokenRepository - SSR 환경)
-            // withHttpOnlyFalse() -> JS에서 document.cookie로 읽을 수 있게 허용
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-            // 들어오는 요청에서 CSRF 토큰을 어떻게 추출하고 검증할지 설정
             .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
         )
-        // Spring Security 기본 제공 폼 로그인 기능을 활성화하고 설정을 커스터마이징
         .formLogin(login -> login
-            // 클라이언트가 POST /api/auth/login으로 username, password를 전송하면 Spring Security가 가로채서 인증 처리
-            .loginProcessingUrl("/api/auth/login") // 로그인 요청을 처리할 URL을 지정
-            // CSR 방식에서는 JSON 응답을 해야 하므로 리다이렉트를 사용하지 않는다
-            .successHandler(loginSuccessHandler) // 인증 성공 시 호출되는 핸들러
-            .failureHandler(loginFailureHandler) // 인증 실패 시 호출되는 핸들러
+            .loginProcessingUrl("/api/auth/login")
+            .successHandler(loginSuccessHandler)
+            .failureHandler(loginFailureHandler)
         )
-        // 어떤 요청을 허용하고 막을지 인가(Authorization) 규칙을 정의하는 설정
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(
-                // GET /api/auth/csrf-token 허용
                 AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/auth/csrf-token"),
-                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/users"), // 회원가입
-                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/login"), // 로그인
-                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/logout"), // 로그아웃
-                // /api/** 가 아닌 모든 요청 허용 (정적 리소스 등)
+                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/users"),
+                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/login"),
+                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/logout"),
                 new NegatedRequestMatcher(AntPathRequestMatcher.antMatcher("/api/**"))
-            ).permitAll() // <- 위 조건들은 인증 없이 허용
-            .anyRequest().authenticated() // <- 나머지는 모두 인증 필요
+            ).permitAll()
+            .anyRequest().authenticated()
         )
         .exceptionHandling(ex -> ex
-            // CSR 환경: 비인증 요청에 HTML redirect 대신 401 JSON 반환
-            // authenticationEntryPoint - 인증되지 않은 사용자가 보호된 리소스에 접근할 때 발생하는 예외를 처리하는 인터페이스
             .authenticationEntryPoint((request, response, authException) -> {
               response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
               response.setContentType(MediaType.APPLICATION_JSON_VALUE);
               response.setCharacterEncoding("UTF-8");
               response.getWriter().write("{\"message\":\"인증이 필요합니다.\"}");
             })
-            // 인증은 완료되었으나 특정 리소스에 접근할 권한이 없는 사용자가 요청을 보냈을 때 발생하는 인가(Authorization) 예외를 처리하는 인터페이스
             .accessDeniedHandler((request, response, accessDeniedException) -> {
               response.setStatus(HttpServletResponse.SC_FORBIDDEN);
               response.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -90,37 +78,25 @@ public class SecurityConfig {
             })
         )
         .logout(logout -> logout
-                // POST 요청을 이 URL로 받으면 Spring Security LogoutFilter가 처리
-                .logoutUrl("/api/auth/logout")
-                .logoutSuccessHandler( // 기본값(200)을 204로 교체
-                    new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)
-                )
-                .deleteCookies("remember-me", "JSESSIONID")
-            // 세션 무효화, SecurityContext 초기화 등 나머지 로그아웃 동작은 Spring Security 기본값 그대로 유지
-            // <Spring Security 로그아웃 기본값>
-            //  1. logoutUrl                -> POST /logout
-            //  2. invalidateHttpSession    -> true  (세션 무효화)
-            //  3. deleteCookies            -> (기본 없음, 명시해야 삭제)
-            //  4. clearAuthentication      -> true  (SecurityContext에서 인증 제거)
-            //  5. logoutSuccessUrl         -> /login?logout  (리다이렉트)
-            //  6. logoutSuccessHandler     -> SimpleUrlLogoutSuccessHandler
+            .logoutUrl("/api/auth/logout")
+            .logoutSuccessHandler(
+                new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)
+            )
+            .deleteCookies("remember-me", "JSESSIONID")
         )
-        // .sessionManagement(...) 사용자의 인증 세션 생성 정책, 동시성 제어, 세션 고정 보호 등을 설정하는 메서드
         .sessionManagement(management -> management
-            // .sessionConcurrency(...) 동일한 사용자 계정으로 허용되는 최대 동시 세션 수를 제어하는 설정
             .sessionConcurrency(concurrency -> concurrency
-                .maximumSessions(1) // 동시 세션 1개 제한 (한 번에 한 곳에서만 로그인 가능)
-                .maxSessionsPreventsLogin(false) // remember-me 정상 동작을 위해 false 설정
-                .sessionRegistry(sessionRegistry) // SessionRegistry 빈을 주입
+                .maximumSessions(1)
+                .maxSessionsPreventsLogin(false)
+                .sessionRegistry(sessionRegistry)
             )
         )
         .rememberMe(rememberMe -> rememberMe
-                .tokenRepository(persistentTokenRepository) // Persistent Token 방식 사용
-                .tokenValiditySeconds(60 * 60 * 24 * 7) // 쿠키 유효 기간 = 7일
-                .userDetailsService(userDetailsService) // 자동 로그인 성공 시 username으로 사용자 정보를 조회할 서비스 지정
-                .rememberMeParameter("remember-me") // 로그인 폼 체크박스의 name 속성값
-                .rememberMeCookieName("remember-me") // 브라우저에 저장될 쿠키의 이름
-            // .useSecureCookie(true) // HTTPS 환경에서만 활성화
+            .tokenRepository(persistentTokenRepository)
+            .tokenValiditySeconds(60 * 60 * 24 * 7)
+            .userDetailsService(userDetailsService)
+            .rememberMeParameter("remember-me")
+            .rememberMeCookieName("remember-me")
         );
 
     return http.build();
@@ -131,59 +107,37 @@ public class SecurityConfig {
     return new BCryptPasswordEncoder();
   }
 
-  // 역할 계층 구조를 정의하는 RoleHierarchy 빈을 등록
   @Bean
   public RoleHierarchy roleHierarchy() {
-    return RoleHierarchyImpl.withDefaultRolePrefix() // 'ROLE_' 접두사를 자동으로 붙여주는 빌더를 시작
-        // ADMIN은 CHANNEL_MANAGER의 모든 권한을 자동으로 포함
+    return RoleHierarchyImpl.withDefaultRolePrefix()
         .role("ADMIN").implies("CHANNEL_MANAGER")
-        // CHANNEL_MANAGER는 USER의 모든 권한을 자동으로 포함
         .role("CHANNEL_MANAGER").implies("USER")
         .build();
   }
 
-  /*
-  - RoleHierarchy를 Bean으로 등록해도 Method Security에는 자동으로 적용되지 않는다 -> 명시적 주입 필요
-  - @EnableMethodSecurity가 동작할 때 필요하므로 static 메서드로 선언하여 SecurityConfig 인스턴스 생성 전에 실행 되도록 한다
-  - Spring 컨텍스트 초기화 순서
-    - @EnableMethodSecurity 처리 시작 <- 이때 MethodSecurityExpressionHandler가 필요함
-    - SecurityConfig 인스턴스 생성
-    - 일반 @Bean 메서드 실행
-   */
   @Bean
   static MethodSecurityExpressionHandler methodSecurityExpressionHandler(
-      RoleHierarchy roleHierarchy) { // Spring이 자동으로 주입해줌
-    // Method Security용 표현식 핸들러 생성
+      RoleHierarchy roleHierarchy) {
     DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
-    // RoleHierarchy 주입 - @PreAuthorize에서 계층 구조 인식을 위해 필요함
     handler.setRoleHierarchy(roleHierarchy);
-    // Bean으로 반환 -> Spring Security가 자동으로 감지해서 사용
     return handler;
   }
 
-  // SessionRegistry
-  // - 현재 애플리케이션의 모든 활성 세션을 추적하는 저장소
-  // @Bean으로 등록해야 하나의 인스턴스를 SecurityConfig와 AuthService가 공유할 수 있다
   @Bean
   public SessionRegistry sessionRegistry() {
-    return new SessionRegistryImpl(); // SessionRegistry의 기본 구현체 - 내부적으로 두 개의 Map으로 세션 관리
+    return new SessionRegistryImpl();
   }
 
-  // HttpSessionEventPublisher
-  // - HttpSession의 생명주기 이벤트를 감지해서 Spring ApplicationEvent로 변환해 발행하는 리스너
-  // - HttpSessionDestroyedEvent 발행을 위해서 필요하다
   @Bean
   public HttpSessionEventPublisher httpSessionEventPublisher() {
     return new HttpSessionEventPublisher();
   }
 
-  // DataSource는 DB 커넥션 정보를 담고 있는 객체로,
-  // application.yml의 spring.datasource 설정값을 Spring이 자동으로 주입해줌
   @Bean
   public PersistentTokenRepository persistentTokenRepository(DataSource dataSource) {
-    JdbcTokenRepositoryImpl repo = new JdbcTokenRepositoryImpl(); // Spring Security가 제공하는 JDBC 기반 구현체 생성
-    repo.setDataSource(dataSource); // 위에서 주입받은 DataSource를 구현체에 연결
-    repo.setCreateTableOnStartup(false); // false -> 자동 생성 안 함 (테이블이 이미 있다고 가정)
+    JdbcTokenRepositoryImpl repo = new JdbcTokenRepositoryImpl();
+    repo.setDataSource(dataSource);
+    repo.setCreateTableOnStartup(false);
     return repo;
   }
 }

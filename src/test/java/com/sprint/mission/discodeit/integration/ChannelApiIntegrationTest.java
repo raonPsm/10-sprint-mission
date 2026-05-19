@@ -68,11 +68,11 @@ class ChannelApiIntegrationTest {
   }
 
   @Test
-  @WithMockUser(roles = "CHANNEL_MANAGER") // 가짜 인증된 사용자를 등록하여 테스트 실행
-  // Spring이 자동으로 userdetails.User 타입의 principal을 만들어 SecurityContext에 넣어줌
+  @WithMockUser(roles = "CHANNEL_MANAGER")
+
   @DisplayName("공개 채널 생성 API 통합 테스트")
   void createPublicChannel_Success() throws Exception {
-    // Given
+
     PublicChannelCreateRequest createRequest = new PublicChannelCreateRequest(
         "테스트 채널",
         "테스트 채널 설명입니다."
@@ -80,7 +80,6 @@ class ChannelApiIntegrationTest {
 
     String requestBody = objectMapper.writeValueAsString(createRequest);
 
-    // When & Then
     mockMvc.perform(post("/api/channels/public")
             .with(csrf())
             .with(asUser(UUID.randomUUID(), UserRole.CHANNEL_MANAGER))
@@ -97,15 +96,14 @@ class ChannelApiIntegrationTest {
   @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("공개 채널 생성 실패 API 통합 테스트 - 유효하지 않은 요청")
   void createPublicChannel_Failure_InvalidRequest() throws Exception {
-    // Given
+
     PublicChannelCreateRequest invalidRequest = new PublicChannelCreateRequest(
-        "a", // 최소 길이 위반
+        "a",
         "테스트 채널 설명입니다."
     );
 
     String requestBody = objectMapper.writeValueAsString(invalidRequest);
 
-    // When & Then
     mockMvc.perform(post("/api/channels/public")
             .with(csrf())
             .with(asUser(UUID.randomUUID(), UserRole.CHANNEL_MANAGER))
@@ -117,8 +115,7 @@ class ChannelApiIntegrationTest {
   @Test
   @DisplayName("비공개 채널 생성 API 통합 테스트")
   void createPrivateChannel_Success() throws Exception {
-    // Given
-    // 테스트 사용자 생성
+
     UserCreateRequest userRequest1 = new UserCreateRequest(
         "user1",
         "user1@example.com",
@@ -139,7 +136,6 @@ class ChannelApiIntegrationTest {
 
     String requestBody = objectMapper.writeValueAsString(createRequest);
 
-    // When & Then
     mockMvc.perform(post("/api/channels/private")
             .with(csrf())
             .with(asUser(UUID.randomUUID(), UserRole.USER))
@@ -155,8 +151,7 @@ class ChannelApiIntegrationTest {
   @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("사용자별 채널 목록 조회 API 통합 테스트")
   void findAllChannelsByUserId_Success() throws Exception {
-    // Given
-    // 테스트 사용자 생성
+
     UserCreateRequest userRequest = new UserCreateRequest(
         "channeluser",
         "channeluser@example.com",
@@ -166,7 +161,6 @@ class ChannelApiIntegrationTest {
     UserDto user = userService.create(userRequest, Optional.empty());
     UUID userId = user.id();
 
-    // 공개 채널 생성
     PublicChannelCreateRequest publicChannelRequest = new PublicChannelCreateRequest(
         "공개 채널 1",
         "공개 채널 설명입니다."
@@ -174,7 +168,6 @@ class ChannelApiIntegrationTest {
 
     channelService.create(publicChannelRequest);
 
-    // 비공개 채널 생성
     UserCreateRequest otherUserRequest = new UserCreateRequest(
         "otheruser",
         "otheruser@example.com",
@@ -189,7 +182,6 @@ class ChannelApiIntegrationTest {
 
     channelService.create(privateChannelRequest);
 
-    // When & Then
     mockMvc.perform(get("/api/channels")
             .param("userId", userId.toString())
             .contentType(MediaType.APPLICATION_JSON)
@@ -204,8 +196,7 @@ class ChannelApiIntegrationTest {
   @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("채널 업데이트 API 통합 테스트")
   void updateChannel_Success() throws Exception {
-    // Given
-    // 공개 채널 생성
+
     PublicChannelCreateRequest createRequest = new PublicChannelCreateRequest(
         "원본 채널",
         "원본 채널 설명입니다."
@@ -221,7 +212,6 @@ class ChannelApiIntegrationTest {
 
     String requestBody = objectMapper.writeValueAsString(updateRequest);
 
-    // When & Then
     mockMvc.perform(patch("/api/channels/{channelId}", channelId)
             .with(csrf())
             .with(asUser(UUID.randomUUID(), UserRole.CHANNEL_MANAGER))
@@ -237,7 +227,7 @@ class ChannelApiIntegrationTest {
   @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("채널 업데이트 실패 API 통합 테스트 - 존재하지 않는 채널")
   void updateChannel_Failure_ChannelNotFound() throws Exception {
-    // Given
+
     UUID nonExistentChannelId = UUID.randomUUID();
 
     PublicChannelUpdateRequest updateRequest = new PublicChannelUpdateRequest(
@@ -247,7 +237,6 @@ class ChannelApiIntegrationTest {
 
     String requestBody = objectMapper.writeValueAsString(updateRequest);
 
-    // When & Then
     mockMvc.perform(patch("/api/channels/{channelId}", nonExistentChannelId)
             .with(csrf())
             .with(asUser(UUID.randomUUID(), UserRole.CHANNEL_MANAGER))
@@ -260,8 +249,7 @@ class ChannelApiIntegrationTest {
   @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("채널 삭제 API 통합 테스트")
   void deleteChannel_Success() throws Exception {
-    // Given
-    // 공개 채널 생성
+
     PublicChannelCreateRequest createRequest = new PublicChannelCreateRequest(
         "삭제할 채널",
         "삭제할 채널 설명입니다."
@@ -270,13 +258,11 @@ class ChannelApiIntegrationTest {
     ChannelDto createdChannel = channelService.create(createRequest);
     UUID channelId = createdChannel.id();
 
-    // When & Then
     mockMvc.perform(delete("/api/channels/{channelId}", channelId)
             .with(csrf())
             .with(asUser(UUID.randomUUID(), UserRole.CHANNEL_MANAGER)))
         .andExpect(status().isNoContent());
 
-    // 삭제 확인 - 사용자로 채널 조회 시 삭제된 채널은 조회되지 않아야 함
     UserCreateRequest userRequest = new UserCreateRequest(
         "testuser",
         "testuser@example.com",
@@ -297,13 +283,12 @@ class ChannelApiIntegrationTest {
   @WithMockUser(roles = "CHANNEL_MANAGER")
   @DisplayName("채널 삭제 실패 API 통합 테스트 - 존재하지 않는 채널")
   void deleteChannel_Failure_ChannelNotFound() throws Exception {
-    // Given
+
     UUID nonExistentChannelId = UUID.randomUUID();
 
-    // When & Then
     mockMvc.perform(delete("/api/channels/{channelId}", nonExistentChannelId)
             .with(csrf())
             .with(asUser(UUID.randomUUID(), UserRole.CHANNEL_MANAGER)))
         .andExpect(status().isNotFound());
   }
-} 
+}

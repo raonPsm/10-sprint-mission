@@ -36,7 +36,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
   private final String region;
   private final String bucket;
 
-  @Value("${discodeit.storage.s3.presigned-url-expiration:600}") // 기본값 10분
+  @Value("${discodeit.storage.s3.presigned-url-expiration:600}")
   private long presignedUrlExpirationSeconds;
 
   public S3BinaryContentStorage(
@@ -148,4 +148,4 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         )
         .build();
   }
-} 
+}

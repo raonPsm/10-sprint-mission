@@ -102,7 +102,7 @@ public class AWSS3Test {
   @Test
   @DisplayName("S3에서 파일을 다운로드한다")
   void downloadFromS3() {
-    // 테스트를 위한 파일 먼저 업로드
+
     String content = "Test content for download";
     PutObjectRequest uploadRequest = PutObjectRequest.builder()
         .bucket(bucket)
@@ -128,7 +128,7 @@ public class AWSS3Test {
   @Test
   @DisplayName("S3 파일에 대한 Presigned URL을 생성한다")
   void generatePresignedUrl() {
-    // 테스트를 위한 파일 먼저 업로드
+
     String content = "Test content for presigned URL";
     PutObjectRequest uploadRequest = PutObjectRequest.builder()
         .bucket(bucket)
