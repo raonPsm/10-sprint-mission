@@ -88,6 +88,15 @@ public class JwtTokenProvider {
     }
   }
 
+  // JWT의 username 값 꺼내기
+  public String extractUsername(String token) {
+    try {
+      return SignedJWT.parse(token).getJWTClaimsSet().getStringClaim(CLAIM_USERNAME);
+    } catch (ParseException e) {
+      throw new IllegalArgumentException("토큰 파싱 실패: " + e.getMessage());
+    }
+  }
+
   // JWT를 생성하고 HMAC-SHA256으로 서명한 뒤 직렬화된 문자열로 반환
   // generateAccessToken과 generateRefreshToken 둘 다 사용하는 중복 코드 분리
   private String buildToken(UserDto userDto, String type, long expiryMs) {

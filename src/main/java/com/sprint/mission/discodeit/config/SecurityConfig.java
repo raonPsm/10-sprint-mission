@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.security.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.security.JwtTokenProvider;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,6 +25,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
@@ -38,6 +41,7 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(
       HttpSecurity http,
+      JwtAuthenticationFilter jwtAuthenticationFilter,
       JwtLoginSuccessHandler jwtLoginSuccessHandler,
       LoginFailureHandler loginFailureHandler,
       UserDetailsService userDetailsService,
@@ -93,7 +97,9 @@ public class SecurityConfig {
             .userDetailsService(userDetailsService)
             .rememberMeParameter("remember-me")
             .rememberMeCookieName("remember-me")
-        );
+        )
+        // (UsernamePasswordAuthenticationFilter 앞에) JwtAuthenticationFilter 추가
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
   }
@@ -135,5 +141,16 @@ public class SecurityConfig {
     repo.setDataSource(dataSource);
     repo.setCreateTableOnStartup(false);
     return repo;
+  }
+
+  // @Component 사용하면 이중 등록 되는 문제가 발생함
+  // 이중 등록 시 SecurityContextHolderFilter가 컨텍스트를 다시 빈 컨텍스트로 덮어 씌우는 문제 발생
+  // JwtAuthenticationFilter는 OncePerRequestFilter 이기 때문에 뒤(Spring Security 레이어)에서 다시 실행도 안됨
+  // -> @Bean으로 생성하여 해결 (단일 생성 등록)
+  @Bean
+  public JwtAuthenticationFilter jwtAuthenticationFilter(
+      JwtTokenProvider jwtTokenProvider,
+      UserDetailsService userDetailsService) {
+    return new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService);
   }
 }
