@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.controller.api.AuthApi;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.JwtDto;
-import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.security.jwt.JwtProperties;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.UserService;
@@ -15,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,14 +42,14 @@ public class AuthController implements AuthApi {
         .build();
   }
 
-  @GetMapping("me")
-  public ResponseEntity<UserDto> me(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
-    log.info("사용자 본인 정보 조회 요청");
-    UserDto userDto = userService.find(userDetails.getUserDto().id());
-    return ResponseEntity
-        .status(HttpStatus.OK)
-        .body(userDto);
-  }
+//  @GetMapping("me")
+//  public ResponseEntity<UserDto> me(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
+//    log.info("사용자 본인 정보 조회 요청");
+//    UserDto userDto = userService.find(userDetails.getUserDto().id());
+//    return ResponseEntity
+//        .status(HttpStatus.OK)
+//        .body(userDto);
+//  }
 
   @PutMapping("role")
   public ResponseEntity<UserDto> updateRole(@Valid @RequestBody UserRoleUpdateRequest request) {
