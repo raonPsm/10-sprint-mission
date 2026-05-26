@@ -64,6 +64,25 @@ public class JwtTokenProvider {
     }
   }
 
+  // 검증 + 파싱만 하고 UserDto 반환, 토큰 생성은 컨트롤러가 담당
+  public UserDto extractUserDtoFromRefreshToken(String refreshToken) {
+    if (!validateToken(refreshToken)) {
+      throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+    }
+    try {
+      JWTClaimsSet claims = SignedJWT.parse(refreshToken).getJWTClaimsSet();
+      if (!TYPE_REFRESH.equals(claims.getStringClaim(CLAIM_TYPE))) {
+        throw new IllegalArgumentException("Refresh 토큰이 아닙니다.");
+      }
+      UUID userId = UUID.fromString(claims.getSubject());
+      String username = claims.getStringClaim(CLAIM_USERNAME);
+      UserRole role = UserRole.valueOf(claims.getStringClaim(CLAIM_ROLE));
+      return new UserDto(userId, username, null, null, false, role);
+    } catch (ParseException e) {
+      throw new IllegalArgumentException("토큰 파싱 실패: " + e.getMessage());
+    }
+  }
+
   // 토큰의 서명과 만료 여부를 검증
   public boolean validateToken(String token) {
     try {

@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.security.JwtTokenProvider;
 import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 import jakarta.servlet.http.HttpServletResponse;
-import javax.sql.DataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,18 +18,13 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
-import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
-import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
@@ -43,9 +37,9 @@ public class SecurityConfig {
       HttpSecurity http,
       JwtAuthenticationFilter jwtAuthenticationFilter,
       JwtLoginSuccessHandler jwtLoginSuccessHandler,
-      LoginFailureHandler loginFailureHandler,
-      UserDetailsService userDetailsService,
-      PersistentTokenRepository persistentTokenRepository
+      LoginFailureHandler loginFailureHandler
+//      UserDetailsService userDetailsService
+//      PersistentTokenRepository persistentTokenRepository
   ) throws Exception {
     http
         .csrf(csrf -> csrf
@@ -63,6 +57,7 @@ public class SecurityConfig {
                 AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/users"),
                 AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/login"),
                 AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/logout"),
+                AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/auth/refresh"),
                 new NegatedRequestMatcher(AntPathRequestMatcher.antMatcher("/api/**"))
             ).permitAll()
             .anyRequest().authenticated()
@@ -86,18 +81,18 @@ public class SecurityConfig {
             .logoutSuccessHandler(
                 new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)
             )
-            .deleteCookies("remember-me", "JSESSIONID")
+            .deleteCookies("REFRESH_TOKEN")
         )
         .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
-        .rememberMe(rememberMe -> rememberMe
-            .tokenRepository(persistentTokenRepository)
-            .tokenValiditySeconds(60 * 60 * 24 * 7)
-            .userDetailsService(userDetailsService)
-            .rememberMeParameter("remember-me")
-            .rememberMeCookieName("remember-me")
-        )
+//        .rememberMe(rememberMe -> rememberMe
+//            .tokenRepository(persistentTokenRepository)
+//            .tokenValiditySeconds(60 * 60 * 24 * 7)
+//            .userDetailsService(userDetailsService)
+//            .rememberMeParameter("remember-me")
+//            .rememberMeCookieName("remember-me")
+//        )
         // (UsernamePasswordAuthenticationFilter 앞에) JwtAuthenticationFilter 추가
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -125,23 +120,23 @@ public class SecurityConfig {
     return handler;
   }
 
-  @Bean
-  public SessionRegistry sessionRegistry() {
-    return new SessionRegistryImpl();
-  }
+//  @Bean
+//  public SessionRegistry sessionRegistry() {
+//    return new SessionRegistryImpl();
+//  }
 
-  @Bean
-  public HttpSessionEventPublisher httpSessionEventPublisher() {
-    return new HttpSessionEventPublisher();
-  }
+//  @Bean
+//  public HttpSessionEventPublisher httpSessionEventPublisher() {
+//    return new HttpSessionEventPublisher();
+//  }
 
-  @Bean
-  public PersistentTokenRepository persistentTokenRepository(DataSource dataSource) {
-    JdbcTokenRepositoryImpl repo = new JdbcTokenRepositoryImpl();
-    repo.setDataSource(dataSource);
-    repo.setCreateTableOnStartup(false);
-    return repo;
-  }
+//  @Bean
+//  public PersistentTokenRepository persistentTokenRepository(DataSource dataSource) {
+//    JdbcTokenRepositoryImpl repo = new JdbcTokenRepositoryImpl();
+//    repo.setDataSource(dataSource);
+//    repo.setCreateTableOnStartup(false);
+//    return repo;
+//  }
 
   // @Component 사용하면 이중 등록 되는 문제가 발생함
   // 이중 등록 시 SecurityContextHolderFilter가 컨텍스트를 다시 빈 컨텍스트로 덮어 씌우는 문제 발생
