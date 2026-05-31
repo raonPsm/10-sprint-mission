@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.security.SpaCsrfTokenRequestHandler;
 import com.sprint.mission.discodeit.security.jwt.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.security.jwt.JwtLogoutHandler;
+import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
@@ -39,8 +40,6 @@ public class SecurityConfig {
       JwtAuthenticationFilter jwtAuthenticationFilter,
       JwtLoginSuccessHandler jwtLoginSuccessHandler,
       LoginFailureHandler loginFailureHandler,
-//      UserDetailsService userDetailsService
-//      PersistentTokenRepository persistentTokenRepository
       JwtLogoutHandler jwtLogoutHandler) throws Exception {
     http
         .csrf(csrf -> csrf
@@ -87,13 +86,6 @@ public class SecurityConfig {
         .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
-//        .rememberMe(rememberMe -> rememberMe
-//            .tokenRepository(persistentTokenRepository)
-//            .tokenValiditySeconds(60 * 60 * 24 * 7)
-//            .userDetailsService(userDetailsService)
-//            .rememberMeParameter("remember-me")
-//            .rememberMeCookieName("remember-me")
-//        )
         // (UsernamePasswordAuthenticationFilter 앞에) JwtAuthenticationFilter 추가
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -121,24 +113,6 @@ public class SecurityConfig {
     return handler;
   }
 
-//  @Bean
-//  public SessionRegistry sessionRegistry() {
-//    return new SessionRegistryImpl();
-//  }
-
-//  @Bean
-//  public HttpSessionEventPublisher httpSessionEventPublisher() {
-//    return new HttpSessionEventPublisher();
-//  }
-
-//  @Bean
-//  public PersistentTokenRepository persistentTokenRepository(DataSource dataSource) {
-//    JdbcTokenRepositoryImpl repo = new JdbcTokenRepositoryImpl();
-//    repo.setDataSource(dataSource);
-//    repo.setCreateTableOnStartup(false);
-//    return repo;
-//  }
-
   // @Component 사용하면 이중 등록 되는 문제가 발생함
   // 이중 등록 시 SecurityContextHolderFilter가 컨텍스트를 다시 빈 컨텍스트로 덮어 씌우는 문제 발생
   // JwtAuthenticationFilter는 OncePerRequestFilter 이기 때문에 뒤(Spring Security 레이어)에서 다시 실행도 안됨
@@ -146,7 +120,8 @@ public class SecurityConfig {
   @Bean
   public JwtAuthenticationFilter jwtAuthenticationFilter(
       JwtTokenProvider jwtTokenProvider,
-      UserDetailsService userDetailsService) {
-    return new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService);
+      UserDetailsService userDetailsService,
+      JwtRegistry jwtRegistry) {
+    return new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService, jwtRegistry);
   }
 }

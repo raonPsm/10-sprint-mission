@@ -16,12 +16,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-// JWT Access/Refresh Token의 생성/검증/갱신을 담당
+// JWT Access/Refresh Token의 생성/검증/파싱을 담당
 // 서명 알고리즘으로 HMAC-SHA256(HS256)을 사용
+
+// 생성 generateAccessToken / generateRefreshToken
+// 검증 validateToken
+// 파싱 extractUsername / extractUserDtoFromRefreshToken
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtTokenProvider {
+
+  public static final String REFRESH_TOKEN_COOKIE_NAME = "REFRESH_TOKEN";
 
   // JWT Claims 키 상수
   private static final String CLAIM_USERNAME = "username";
@@ -42,78 +49,6 @@ public class JwtTokenProvider {
   // 사용자 정보 기반 RefreshToken 생성
   public String generateRefreshToken(UserDto userDto) {
     return buildToken(userDto, TYPE_REFRESH, jwtProperties.refreshTokenExpiry());
-  }
-
-  // 유효한 RefreshToken을 받아서 새 AccessToken을 발급
-  public String refreshAccessToken(String refreshToken) {
-    if (!validateToken(refreshToken)) {
-      throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
-    }
-    try {
-      JWTClaimsSet claims = SignedJWT.parse(refreshToken).getJWTClaimsSet();
-      if (!TYPE_REFRESH.equals(claims.getStringClaim(CLAIM_TYPE))) {
-        throw new IllegalArgumentException("Refresh 토큰이 아닙니다.");
-      }
-      UUID userId = UUID.fromString(claims.getSubject());
-      String username = claims.getStringClaim(CLAIM_USERNAME);
-      UserRole role = UserRole.valueOf(claims.getStringClaim(CLAIM_ROLE));
-      UserDto userDto = new UserDto(userId, username, null, null, false, role);
-      return buildToken(userDto, TYPE_ACCESS, jwtProperties.accessTokenExpiry());
-    } catch (ParseException e) {
-      throw new IllegalArgumentException("토큰 파싱 실패: " + e.getMessage());
-    }
-  }
-
-  // 검증 + 파싱만 하고 UserDto 반환, 토큰 생성은 컨트롤러가 담당
-  public UserDto extractUserDtoFromRefreshToken(String refreshToken) {
-    if (!validateToken(refreshToken)) {
-      throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
-    }
-    try {
-      JWTClaimsSet claims = SignedJWT.parse(refreshToken).getJWTClaimsSet();
-      if (!TYPE_REFRESH.equals(claims.getStringClaim(CLAIM_TYPE))) {
-        throw new IllegalArgumentException("Refresh 토큰이 아닙니다.");
-      }
-      UUID userId = UUID.fromString(claims.getSubject());
-      String username = claims.getStringClaim(CLAIM_USERNAME);
-      UserRole role = UserRole.valueOf(claims.getStringClaim(CLAIM_ROLE));
-      return new UserDto(userId, username, null, null, false, role);
-    } catch (ParseException e) {
-      throw new IllegalArgumentException("토큰 파싱 실패: " + e.getMessage());
-    }
-  }
-
-  // 토큰의 서명과 만료 여부를 검증
-  public boolean validateToken(String token) {
-    try {
-      SignedJWT signedJWT = SignedJWT.parse(token); // token -> SignedJWT 객체로 변환
-
-      // 서명 검증
-      // Header + Payload + 비밀키 -> HMAC 연산 -> 기존 Signature와 비교
-      byte[] secretBytes = jwtProperties.secretKey().getBytes(StandardCharsets.UTF_8);
-      MACVerifier verifier = new MACVerifier(secretBytes);
-      if (!signedJWT.verify(verifier)) {
-        return false;
-      }
-
-      // 만료 시간 검증
-      // exp 클레임을 Date 객체로 변환해서 반환
-      Date expiration = signedJWT.getJWTClaimsSet().getExpirationTime();
-      // exp 클레임이 존재하고 만료시간이 현재 시각보다 이후이면 -> true
-      return expiration != null && expiration.after(new Date());
-    } catch (Exception e) {
-      log.debug("토큰 검증 실패: {}", e.getMessage());
-      return false;
-    }
-  }
-
-  // JWT의 username 값 꺼내기
-  public String extractUsername(String token) {
-    try {
-      return SignedJWT.parse(token).getJWTClaimsSet().getStringClaim(CLAIM_USERNAME);
-    } catch (ParseException e) {
-      throw new IllegalArgumentException("토큰 파싱 실패: " + e.getMessage());
-    }
   }
 
   // JWT를 생성하고 HMAC-SHA256으로 서명한 뒤 직렬화된 문자열로 반환
@@ -140,11 +75,66 @@ public class JwtTokenProvider {
     }
   }
 
+  // 토큰의 서명과 만료 여부를 검증
+  public boolean validateToken(String token) {
+    try {
+      SignedJWT signedJWT = SignedJWT.parse(token); // token -> SignedJWT 객체로 변환
+
+      // 서명 검증
+      // Header + Payload + 비밀키 -> HMAC 연산 -> 기존 Signature와 비교
+      // 비밀키를 바이트 배열로 변환
+      byte[] secretBytes = jwtProperties.secretKey().getBytes(StandardCharsets.UTF_8);
+      MACVerifier verifier = new MACVerifier(secretBytes); // 검증키 객체 생성
+      // 토큰의 Header + Payload를 secretBytes로 HMAC-SHA256 재계산
+      // 재계산한 값이 토큰의 Signature 부분과 같으면 true
+      if (!signedJWT.verify(verifier)) {
+        return false;
+      }
+
+      // 만료 시간 검증
+      // exp 클레임을 Date 객체로 변환해서 반환
+      Date expiration = signedJWT.getJWTClaimsSet().getExpirationTime();
+      // exp 클레임이 존재하고 만료시간이 현재 시각보다 이후이면 -> true
+      return expiration != null && expiration.after(new Date());
+    } catch (Exception e) {
+      log.debug("토큰 검증 실패: {}", e.getMessage());
+      return false;
+    }
+  }
+
+  // JWT의 username 값 꺼내기
+  public String extractUsername(String token) {
+    try {
+      return SignedJWT.parse(token).getJWTClaimsSet().getStringClaim(CLAIM_USERNAME);
+    } catch (ParseException e) {
+      throw new IllegalArgumentException("토큰 파싱 실패: " + e.getMessage());
+    }
+  }
+
+  // 검증 + 파싱만 하고 UserDto 반환, 토큰 생성은 컨트롤러가 담당
+  public UserDto extractUserDtoFromRefreshToken(String refreshToken) {
+    if (!validateToken(refreshToken)) {
+      throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+    }
+    try {
+      JWTClaimsSet claims = SignedJWT.parse(refreshToken).getJWTClaimsSet();
+      if (!TYPE_REFRESH.equals(claims.getStringClaim(CLAIM_TYPE))) {
+        throw new IllegalArgumentException("Refresh 토큰이 아닙니다.");
+      }
+      UUID userId = UUID.fromString(claims.getSubject());
+      String username = claims.getStringClaim(CLAIM_USERNAME);
+      UserRole role = UserRole.valueOf(claims.getStringClaim(CLAIM_ROLE));
+      return new UserDto(userId, username, null, null, false, role);
+    } catch (ParseException e) {
+      throw new IllegalArgumentException("토큰 파싱 실패: " + e.getMessage());
+    }
+  }
+
   // 토큰 문자열을 파싱해 Claims를 추출
   private JWTClaimsSet parseClaims(String token) {
     try {
       return SignedJWT.parse(token).getJWTClaimsSet();
-    } catch (java.text.ParseException e) {
+    } catch (ParseException e) {
       throw new IllegalArgumentException("토큰 파싱 실패: " + e.getMessage());
     }
   }

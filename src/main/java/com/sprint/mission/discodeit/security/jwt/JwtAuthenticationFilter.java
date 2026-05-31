@@ -25,6 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtTokenProvider jwtTokenProvider;
   private final UserDetailsService userDetailsService;
+  private final JwtRegistry jwtRegistry;
 
   /*
    * 처리 흐름:
@@ -50,13 +51,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     // 토큰 유효성 검사 실패 -> 401 즉시 반환
     if (!jwtTokenProvider.validateToken(token)) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-      response.setCharacterEncoding("UTF-8");
-      response.getWriter().write(
-          "{\"code\":\"INVALID_TOKEN\",\"message\":\""
-              + ErrorCode.INVALID_TOKEN.getMessage() + "\"}");
+      sendUnauthorized(response);
       return; // 필터 체인 진행 중단 -> 컨트롤러까지 요청이 도달하지 않음
+    }
+
+    // registry에 없는 토큰 (로그아웃/강제 무효화) -> 401 즉시 반환
+    if (!jwtRegistry.hasActiveJwtInformationByAccessToken(token)) {
+      sendUnauthorized(response);
+      return;
     }
 
     // 유효한 토큰 -> SecurityContext에 인증 주입
@@ -80,5 +82,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     SecurityContextHolder.getContext().setAuthentication(authentication);
 
     filterChain.doFilter(request, response); // 다음 필터로 요청 전달
+  }
+
+  private void sendUnauthorized(HttpServletResponse response) throws IOException {
+    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    response.setCharacterEncoding("UTF-8");
+    response.getWriter().write(
+        "{\"code\":\"INVALID_TOKEN\",\"message\":\""
+            + ErrorCode.INVALID_TOKEN.getMessage() + "\"}");
   }
 }

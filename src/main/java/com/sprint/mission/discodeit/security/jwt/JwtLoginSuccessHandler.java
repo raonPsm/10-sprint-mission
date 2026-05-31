@@ -22,6 +22,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
   private final JwtTokenProvider jwtTokenProvider;
   private final JwtProperties jwtProperties;
   private final ObjectMapper objectMapper;
+  private final JwtRegistry jwtRegistry;
 
   @Override
   public void onAuthenticationSuccess(
@@ -36,8 +37,11 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     String accessToken = jwtTokenProvider.generateAccessToken(userDto);
     String refreshToken = jwtTokenProvider.generateRefreshToken(userDto);
 
-    // 리프레시 토큰을 쿠키에 담기
-    Cookie cookie = new Cookie("REFRESH_TOKEN", refreshToken);
+    // registry 등록
+    jwtRegistry.registerJwtInformation(new JwtInformation(userDto, accessToken, refreshToken));
+
+    // 리프레시 토큰을 HttpOnly 쿠키에 담기
+    Cookie cookie = new Cookie(JwtTokenProvider.REFRESH_TOKEN_COOKIE_NAME, refreshToken);
     cookie.setHttpOnly(true);
     cookie.setPath("/");
     cookie.setMaxAge((int) (jwtProperties.refreshTokenExpiry() / 1000)); // '초' 단위로 변경
@@ -47,6 +51,6 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
     response.setStatus(HttpServletResponse.SC_OK);
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setCharacterEncoding("UTF-8");
-    objectMapper.writeValue(response.getWriter(), new JwtDto(accessToken)); // JSON 직렬화
+    objectMapper.writeValue(response.getWriter(), new JwtDto(userDto, accessToken)); // JSON 직렬화
   }
 }
