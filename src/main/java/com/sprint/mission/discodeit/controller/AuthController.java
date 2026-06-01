@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.controller.api.AuthApi;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.JwtDto;
+import com.sprint.mission.discodeit.exception.jwt.InvalidTokenException;
 import com.sprint.mission.discodeit.security.jwt.JwtInformation;
 import com.sprint.mission.discodeit.security.jwt.JwtProperties;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
@@ -63,13 +64,13 @@ public class AuthController implements AuthApi {
   ) {
     // 쿠키 자체가 없는 경우 (로그아웃 후 재발급 시도, 브라우저 쿠키 삭제, 쿠키 만료)
     if (refreshToken == null) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      throw new InvalidTokenException();
     }
 
     // registry에 없는 토큰 (로그아웃/강제 무효화) -> 401
     // 서버가 발급한 후 아직 유효한 상태인지 or 로그아웃/강제 무효화된 토큰이 아닌지 검증
     if (!jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      throw new InvalidTokenException();
     }
 
     UserDto userDto;
@@ -80,7 +81,7 @@ public class AuthController implements AuthApi {
       // - 서명 검증 (위변조 여부) -> 만료 시각(exp) 확인
       // -> type 클레임이 'refresh'인지 확인 -> claims에서 userId, username, role 꺼내 UserDto 생성
     } catch (IllegalArgumentException e) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      throw new InvalidTokenException();
     }
 
     // 새 토큰 발급
