@@ -1,11 +1,21 @@
-# 실행 명령어 정리
-
-실행 및 로그 저장 - 로컬
+### 실행 명령어 정리
+Docker Compose 실행
 ```shell
-mkdir -p logs && ./gradlew bootRun 2>&1 | tee logs/build-$(date +%Y%m%d_%H%M%S).log 
+mkdir -p logs && docker-compose --env-file .env up --build 2>&1 | tee logs/build-$(date +%Y%m%d_%H%M%S).log
 ```
 
-psql 접속
+로컬 실행 (gradlew)
+```shell
+mkdir -p logs && ./gradlew bootRun 2>&1 | tee logs/build-$(date +%Y%m%d_%H%M%S).log
+```
+
+### DB 접속
+(Docker) psql 접속
+```shell
+docker exec -it discodeit-db bash -c 'psql -U $POSTGRES_USER -d $POSTGRES_DB'
+```
+
+(로컬) psql 접속
 ```shell
 psql -U discodeit_user -d discodeit -h localhost -p 5432
 ```
