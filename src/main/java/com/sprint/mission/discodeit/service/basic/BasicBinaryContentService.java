@@ -53,6 +53,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     return binaryContentMapper.toDto(binaryContent);
   }
 
+  @Transactional(readOnly = true)
   @Override
   public BinaryContentDto find(UUID binaryContentId) {
     log.debug("바이너리 컨텐츠 조회 시작: id={}", binaryContentId);
@@ -64,6 +65,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     return dto;
   }
 
+  @Transactional(readOnly = true)
   @Override
   public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
     log.debug("바이너리 컨텐츠 목록 조회 시작: ids={}", binaryContentIds);
