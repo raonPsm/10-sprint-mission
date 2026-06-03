@@ -33,6 +33,11 @@ psql -U discodeit_user -d discodeit -h localhost -p 5432
 \dn             스키마 목록
 ```
 
+테이블 삭제 명령어
+```shell
+DROP TABLE IF EXISTS notifications, message_attachments, read_statuses, messages, users, binary_contents, channels CASCADE;
+```
+
 # [SB] 스프린트 미션 11
 
 ## 🏔️ 프로젝트 마일스톤
@@ -292,6 +297,122 @@ psql -U discodeit_user -d discodeit -h localhost -p 5432
         - `/actuator/metrics/message.create.async` 에서 측정된 시간을 확인할 수 있습니다.
 
     - `@EnableAsync`를 활성화 / 비활성화 해보면서 동기 / 비동기 처리 간 응답 속도의 차이를 확인해보세요.
+
+**statistic 의미 표**
+
+| statistic | 의미 |
+|---|---|
+| COUNT | 호출 횟수 |
+| TOTAL_TIME | 모든 호출의 누적 시간 합계 |
+| MAX | 단일 호출 중 가장 오래 걸린 시간 |
+
+**수치 비교 표**
+
+| | 비동기 | 동기 |
+|---|---|---|
+| COUNT | 8회 | 8회 |
+| TOTAL_TIME | 0.165초 | 24.221초 |
+| MAX | 0.057초 (57ms) | 3.049초 (3,049ms) |
+| 호출당 평균 | 0.165 / 8 = ~20ms | 24.221 / 8 = ~3,028ms |
+
+비동기 처리가 호출당 평균 약 **150배** 빠른 결과를 보여주고 있습니다.
+```json
+{
+  "name": "message.create.async",
+  "description": "바이너리 컨텐츠 IO 작업 동기 처리 비동기 처리 간 성능 차이 측정",
+  "baseUnit": "seconds",
+  "measurements": [
+    {
+      "statistic": "COUNT",
+      "value": 8
+    },
+    {
+      "statistic": "TOTAL_TIME",
+      "value": 0.164658874
+    },
+    {
+      "statistic": "MAX",
+      "value": 0.056618375
+    }
+  ],
+  "availableTags": [
+    {
+      "tag": "exception",
+      "values": [
+        "none"
+      ]
+    },
+    {
+      "tag": "method",
+      "values": [
+        "create"
+      ]
+    },
+    {
+      "tag": "class",
+      "values": [
+        "com.sprint.mission.discodeit.controller.MessageController"
+      ]
+    }
+  ]
+}
+```
+
+```json
+{
+  "name": "message.create.async",
+  "description": "바이너리 컨텐츠 IO 작업 동기 처리 비동기 처리 간 성능 차이 측정",
+  "baseUnit": "seconds",
+  "measurements": [
+    {
+      "statistic": "COUNT",
+      "value": 8
+    },
+    {
+      "statistic": "TOTAL_TIME",
+      "value": 24.22070125
+    },
+    {
+      "statistic": "MAX",
+      "value": 3.04876075
+    }
+  ],
+  "availableTags": [
+    {
+      "tag": "exception",
+      "values": [
+        "none"
+      ]
+    },
+    {
+      "tag": "method",
+      "values": [
+        "create"
+      ]
+    },
+    {
+      "tag": "class",
+      "values": [
+        "com.sprint.mission.discodeit.controller.MessageController"
+      ]
+    }
+  ]
+}
+```
+
+- MDC값이 전파된 것을 확인
+```markdown
+26-06-03 17:09:37.008 [http-nio-8080-exec-5] DEBUG c.s.m.d.config.MDCLoggingInterceptor [021d064cf11a4c90a5b2625829b80f10 | POST | /api/messages] - Request started  
+26-06-03 17:09:37.046 [http-nio-8080-exec-5] INFO  c.s.m.d.controller.MessageController [021d064cf11a4c90a5b2625829b80f10 | POST | /api/messages] - 메시지 생성 요청: request=MessageCreateRequest[content=배, channelId=f625e3da-7879-4f3e-a784-b39ecc9507e8, authorId=19c140e8-99c7-4ac1-ba21-991dbf997f83], attachmentCount=1  
+26-06-03 17:09:37.051 [http-nio-8080-exec-5] DEBUG c.s.m.d.s.basic.BasicMessageService  [021d064cf11a4c90a5b2625829b80f10 | POST | /api/messages] - 메시지 생성 시작: request=MessageCreateRequest[content=배, channelId=f625e3da-7879-4f3e-a784-b39ecc9507e8, authorId=19c140e8-99c7-4ac1-ba21-991dbf997f83]  
+26-06-03 17:09:37.067 [http-nio-8080-exec-5] INFO  c.s.m.d.s.basic.BasicMessageService  [021d064cf11a4c90a5b2625829b80f10 | POST | /api/messages] - 메시지 생성 완료: id=b4b865a1-6f39-49ab-a19d-95ae34425765, channelId=f625e3da-7879-4f3e-a784-b39ecc9507e8  
+26-06-03 17:09:37.080 [http-nio-8080-exec-5] DEBUG c.s.m.d.controller.MessageController [021d064cf11a4c90a5b2625829b80f10 | POST | /api/messages] - 메시지 생성 응답: MessageDto[id=b4b865a1-6f39-49ab-a19d-95ae34425765, createdAt=2026-06-03T08:09:37.066435Z, updatedAt=2026-06-03T08:09:37.066435Z, content=배, channelId=f625e3da-7879-4f3e-a784-b39ecc9507e8, author=UserDto[id=19c140e8-99c7-4ac1-ba21-991dbf997f83, username=admin, email=admin@gmail.com, profile=null, online=true, role=ADMIN], attachments=[BinaryContentDto[id=8d9deebf-49f9-4c16-8659-98bed4562df2, fileName=pear.jpg, size=25090, contentType=image/jpeg, status=PROCESSING]]]  
+26-06-03 17:09:37.084 [http-nio-8080-exec-5] DEBUG c.s.m.d.config.MDCLoggingInterceptor [021d064cf11a4c90a5b2625829b80f10 | POST | /api/messages] - Request completed
+
+...
+
+26-06-03 17:09:40.086 [event-1] INFO  c.s.m.d.e.BinaryContentEventListener [021d064cf11a4c90a5b2625829b80f10 | POST | /api/messages] - 바이너리 컨텐츠 파일 저장 성공: id=8d9deebf-49f9-4c16-8659-98bed4562df2
+```
 
 ### 비동기 실패 처리하기
 
