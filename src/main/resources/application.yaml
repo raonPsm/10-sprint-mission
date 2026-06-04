@@ -16,12 +16,18 @@ spring:
       - dev
   config:
     import: optional:file:.env[.properties]
+  cache:
+    type: caffeine # Srping Cache의 구현체로 Caffeine을 사용
+    cache-names: users, userChannels, userNotifications # 사용한 캐시 이름 목록
+    caffeine:
+      # 캐시에 저장할 수 있는 최대 항목 수, 마지막 접근으로부터 600초 후 반료, 캐시 통계 수집 활성화
+      spec: maximumSize=100, expireAfterAccess=600s, recordStats
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,loggers
+        include: health,info,metrics,loggers,caches
   endpoint:
     health:
       show-details: always
