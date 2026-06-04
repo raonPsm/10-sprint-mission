@@ -461,6 +461,50 @@ DROP TABLE IF EXISTS notifications, message_attachments, read_statuses, messages
         - 사용자 추가/로그인/로그아웃 -> 사용자 목록 캐시 무효화
 - [ ] 캐시 적용 전후의 차이를 비교해보세요.
     - 로그를 통해 SQL 실행 여부를 확인해보세요.
+
+캐시 적용됨
+```markdown
+26-06-04 13:43:02.353 [http-nio-8080-exec-4] DEBUG c.s.m.d.config.MDCLoggingInterceptor [90398105c3ff4c97b8d829e326ea5b58 | GET | /api/users] - Request started
+26-06-04 13:43:02.354 [http-nio-8080-exec-4] DEBUG c.s.m.d.config.MDCLoggingInterceptor [90398105c3ff4c97b8d829e326ea5b58 | GET | /api/users] - Request completed
+```
+
+캐시 적용되지 않음
+```markdown
+26-06-04 14:25:34.133 [http-nio-8080-exec-5] INFO  c.s.m.d.controller.UserController    [4a91800d1b0340919c1e66333ee902d6 | PATCH | /api/users/bc77d311-0407-499b-b5b1-2196fe3ef90e] - 사용자 수정 요청: id=bc77d311-0407-499b-b5b1-2196fe3ef90e, request=UserUpdateRequest[newUsername=apple-new, newEmail=null, newPassword=null]
+26-06-04 14:25:34.140 [http-nio-8080-exec-5] DEBUG c.s.m.d.s.basic.BasicUserService     [4a91800d1b0340919c1e66333ee902d6 | PATCH | /api/users/bc77d311-0407-499b-b5b1-2196fe3ef90e] - 사용자 수정 시작: id=bc77d311-0407-499b-b5b1-2196fe3ef90e, request=UserUpdateRequest[newUsername=apple-new, newEmail=null, newPassword=null]
+
+...
+
+26-06-04 14:25:34.150 [http-nio-8080-exec-5] INFO  c.s.m.d.s.basic.BasicUserService     [4a91800d1b0340919c1e66333ee902d6 | PATCH | /api/users/bc77d311-0407-499b-b5b1-2196fe3ef90e] - 사용자 수정 완료: id=bc77d311-0407-499b-b5b1-2196fe3ef90e
+
+...
+26-06-04 14:25:49.141 [http-nio-8080-exec-2] DEBUG c.s.m.d.config.MDCLoggingInterceptor [5d5bdfd7467d4b278cbeafd15a0c06fa | GET | /api/users] - Request started
+26-06-04 14:25:49.142 [http-nio-8080-exec-2] DEBUG c.s.m.d.s.basic.BasicUserService     [5d5bdfd7467d4b278cbeafd15a0c06fa | GET | /api/users] - 모든 사용자 조회 시작
+26-06-04 14:25:49.142 [http-nio-8080-exec-2] DEBUG org.hibernate.SQL                    [5d5bdfd7467d4b278cbeafd15a0c06fa | GET | /api/users] - 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.email,
+        u1_0.password,
+        p1_0.id,
+        p1_0.content_type,
+        p1_0.created_at,
+        p1_0.file_name,
+        p1_0.size,
+        p1_0.status,
+        p1_0.updated_at,
+        u1_0.role,
+        u1_0.updated_at,
+        u1_0.username 
+    from
+        users u1_0 
+    left join
+        binary_contents p1_0 
+            on p1_0.id=u1_0.profile_id
+26-06-04 14:25:49.144 [http-nio-8080-exec-2] INFO  c.s.m.d.s.basic.BasicUserService     [5d5bdfd7467d4b278cbeafd15a0c06fa | GET | /api/users] - 모든 사용자 조회 완료: 총 3명
+26-06-04 14:25:49.146 [http-nio-8080-exec-2] DEBUG c.s.m.d.config.MDCLoggingInterceptor [5d5bdfd7467d4b278cbeafd15a0c06fa | GET | /api/users] - Request completed
+```
+
 - [ ] Spring Actuator를 활용해 캐시 관련 통계 지표를 확인해보세요.
     - Caffein Spec에 `recordStats` 옵션을 추가하세요.
 
@@ -476,6 +520,68 @@ DROP TABLE IF EXISTS notifications, message_attachments, read_statuses, messages
       ```
 
     - `/actuator/caches`, `/actuator/metrics/cache.*` 를 통해 캐시 관련 데이터를 확인해보세요.
+
+등록된 캐시 목록 확인 http://localhost:8080/actuator/caches
+```json
+{
+  "cacheManagers": {
+    "cacheManager": {
+      "caches": {
+        "userChannels": {
+          "target": "com.github.benmanes.caffeine.cache.BoundedLocalCache$BoundedLocalManualCache"
+        },
+        "users": {
+          "target": "com.github.benmanes.caffeine.cache.BoundedLocalCache$BoundedLocalManualCache"
+        },
+        "userNotifications": {
+          "target": "com.github.benmanes.caffeine.cache.BoundedLocalCache$BoundedLocalManualCache"
+        }
+      }
+    }
+  }
+}
+```
+캐시 조회 횟수 (hit/miss 합)
+http://localhost:8080/actuator/metrics/cache.gets?tag=name:users
+```json
+{
+  "name": "cache.gets",
+  "description": "The number of times cache lookup methods have returned a cached (hit) or uncached (newly loaded or null) value (miss).",
+  "measurements": [
+    {
+      "statistic": "COUNT",
+      "value": 9
+    }
+  ],
+  "availableTags": [
+    {
+      "tag": "result",
+      "values": [
+        "hit",
+        "miss"
+      ]
+    },
+    {
+      "tag": "cache.manager",
+      "values": [
+        "cacheManager"
+      ]
+    },
+    {
+      "tag": "cache",
+      "values": [
+        "users"
+      ]
+    }
+  ]
+}
+```
+적중(hit)만
+http://localhost:8080/actuator/metrics/cache.gets?tag=name:users&tag=result:hit
+실패(miss)만
+http://localhost:8080/actuator/metrics/cache.gets?tag=name:users&tag=result:miss
+evict 횟수 (제거된 항목 수)
+http://localhost:8080/actuator/metrics/cache.evictions?tag=name:users
 
 ### ✏️ 심화 요구사항
 ### 유의사항
