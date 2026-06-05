@@ -1,32 +1,46 @@
+# app, db, prometheus, grafana 묶어서 실행
 services:
   app:
+    # 'docker compose up --build' 시 아래 build 설정으로 이미지를 생성
     image: discodeit:local
     build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: discodeit
+      context: . # Dockerfile이 위치한 빌드 컨텍스트 루트 (프로젝트 최상위 디렉토리)
+      dockerfile: Dockerfile # 사용할 Dockerfile 명시
+    container_name: discodeit # 실행 중인 컨테이너에 고정 이름을 부여
     ports:
+      # 호스트의 8080포트 -> 컨테이너 내부 8080포트(Spring Boot 기본 포트)로 포워딩
       - "8080:8080"
     environment:
+      # Spring profile
       - SPRING_PROFILES_ACTIVE=dev
+      # DB
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/discodeit
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
       - STORAGE_TYPE=local
       - STORAGE_LOCAL_ROOT_PATH=.discodeit/storage
+      - # Logging
+      - LOG_PATTERN=%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %clr(%-5level) %-36logger{36} [%X{requestId} | %X{requestMethod} | %X{requestUri}] - %msg%n
+      - LOG_FILE_PATH=.logs
+      - LOG_FILE_NAME=application
+      # AWS S3
       - AWS_S3_ACCESS_KEY=${AWS_S3_ACCESS_KEY}
       - AWS_S3_SECRET_KEY=${AWS_S3_SECRET_KEY}
       - AWS_S3_REGION=${AWS_S3_REGION}
       - AWS_S3_BUCKET=${AWS_S3_BUCKET}
       - AWS_S3_PRESIGNED_URL_EXPIRATION=600
+      # JWT
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      # Admin (관리자 계정)
       - DISCODEIT_ADMIN_USERNAME=${DISCODEIT_ADMIN_USERNAME}
       - DISCODEIT_ADMIN_EMAIL=${DISCODEIT_ADMIN_EMAIL}
       - DISCODEIT_ADMIN_PASSWORD=${DISCODEIT_ADMIN_PASSWORD}
     depends_on:
       db:
+        # db 컨테이너가 healthcheck를 통과해 정상 상태가 된 후에 app을 시작
         condition: service_healthy
     volumes:
+      # 로컬 스토리지에 업로드된 바이너리 파일을 'binary-content-storage'에 저장해 컨테이너 재시작 시에도 유지
       - binary-content-storage:/app/.discodeit/storage
     networks:
       - discodeit-network
@@ -39,11 +53,17 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
+      # FIXME: prod 환경에서는 포트 노출 제거 권장
       - "5432:5432"
     volumes:
+      # PostgreSQL 데이터 파일을 named volume에 저장하여 컨테이너 삭제 후에도 데이터가 유지
       - postgres-data:/var/lib/postgresql/data
+      # 호스트의 schema.sql을 컨테이너의 초기화 스크립트 디렉토리에 마운트
+      # '/docker-entrypoint-initdb.d/'에 있는 .sql 파일은 DB가 처음 생성될 때 자동 실행
+      # 이미 데이터가 존재하면 재실행하지 않음
       - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     healthcheck:
+      # pg_isready 명령으로 DB가 실제 쿼리를 받을 수 있는 상태인지 확인
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d discodeit" ]
       interval: 5s
       timeout: 5s
@@ -51,9 +71,42 @@ services:
     networks:
       - discodeit-network
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: discodeit-prometheus
+    ports:
+      - "9090:9090"
+    # 호스트의 prometheus.yml을 컨테이너 내 설정 파일 경로에 마운트
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    # 호스트에서 bootRun으로 앱을 실행할 때 host.docker.internal 해석을 위해 필요 (Linux)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - discodeit-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: discodeit-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      # Grafana 초기 관리자 계정 설정
+      # FIXME: prod 환경에서는 반드시 강력한 비밀번호로 변경하고 외부 환경변수로 관리 권장
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      # Grafana 설정, 대시보드, 플러그인 등 영속 데이터를 named volume에 저장
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - discodeit-network
+
 volumes:
   postgres-data:
   binary-content-storage:
+  grafana-data:
 
 networks:
   discodeit-network:
