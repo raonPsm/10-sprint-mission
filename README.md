@@ -478,6 +478,7 @@ DROP TABLE IF EXISTS notifications, message_attachments, read_statuses, messages
 26-06-04 14:25:34.150 [http-nio-8080-exec-5] INFO  c.s.m.d.s.basic.BasicUserService     [4a91800d1b0340919c1e66333ee902d6 | PATCH | /api/users/bc77d311-0407-499b-b5b1-2196fe3ef90e] - 사용자 수정 완료: id=bc77d311-0407-499b-b5b1-2196fe3ef90e
 
 ...
+
 26-06-04 14:25:49.141 [http-nio-8080-exec-2] DEBUG c.s.m.d.config.MDCLoggingInterceptor [5d5bdfd7467d4b278cbeafd15a0c06fa | GET | /api/users] - Request started
 26-06-04 14:25:49.142 [http-nio-8080-exec-2] DEBUG c.s.m.d.s.basic.BasicUserService     [5d5bdfd7467d4b278cbeafd15a0c06fa | GET | /api/users] - 모든 사용자 조회 시작
 26-06-04 14:25:49.142 [http-nio-8080-exec-2] DEBUG org.hibernate.SQL                    [5d5bdfd7467d4b278cbeafd15a0c06fa | GET | /api/users] - 
