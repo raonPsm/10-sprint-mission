@@ -17,13 +17,19 @@ spring:
   config:
     import: optional:file:.env[.properties]
   cache:
-    type: caffeine # Srping Cache의 구현체로 Caffeine을 사용
+    type: redis
     cache-names: users, userChannels, userNotifications # 사용한 캐시 이름 목록
-    caffeine:
-      # 캐시에 저장할 수 있는 최대 항목 수, 마지막 접근으로부터 600초 후 반료, 캐시 통계 수집 활성화
-      spec: maximumSize=100, expireAfterAccess=600s, recordStats
+    redis:
+      enable-statistics: true # 캐시 매니저가 만드는 RedisCache에 대해 통계 수집을 켬
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
   kafka:
-    bootstrap-servers: localhost:9092
+    # 호스트 bootRun -> localhost:9092 (broker의 PLAINTEXT_HOST 리스너)
+    # 컨테이너 실행    -> broker:29092  (KAFKA_BOOTSTRAP_SERVERS env로 주입, 내부 PLAINTEXT 리스너)
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
       # 메시지 키를 직렬화할 클래스
       key-serializer: org.apache.kafka.common.serialization.StringSerializer

@@ -17,6 +17,11 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/discodeit
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      # Redis (컨테이너 네트워크 내 redis 서비스명으로 접근)
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      # Kafka (컨테이너 네트워크 내 broker 서비스의 내부 리스너로 접근)
+      - KAFKA_BOOTSTRAP_SERVERS=broker:29092
       - STORAGE_TYPE=local
       - STORAGE_LOCAL_ROOT_PATH=.discodeit/storage
       # Logging
@@ -39,6 +44,12 @@ services:
       db:
         # db 컨테이너가 healthcheck를 통과해 정상 상태가 된 후에 app을 시작
         condition: service_healthy
+      redis:
+        # redis 컨테이너가 시작된 후에 app을 시작
+        condition: service_started
+      broker:
+        # kafka broker 컨테이너가 시작된 후에 app을 시작
+        condition: service_started
     volumes:
       # 로컬 스토리지에 업로드된 바이너리 파일을 'binary-content-storage'에 저장해 컨테이너 재시작 시에도 유지
       - binary-content-storage:/app/.discodeit/storage
@@ -136,6 +147,8 @@ services:
       # 'kafka-storage.sh random-uuid' 명령으로 생성 가능
       # 한 번 설정 후 변경 불가 - 변경 시 기존 데이터와 호환 불가
       CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    networks:
+      - discodeit-network
 
   prometheus:
     image: prom/prometheus:latest
@@ -148,6 +161,29 @@ services:
     # 호스트에서 bootRun으로 앱을 실행할 때 host.docker.internal 해석을 위해 필요 (Linux)
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    networks:
+      - discodeit-network
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    # 컨테이너 시작 시 기본 커맨드 대신 실행할 명령어를 지정
+    # redis-server: Redis 서버 실행 명령어
+    # --appendonly yes: AOF(Append Only File) 영속성 모드 활성화
+    #
+    # 1. RDB (기본값): 특정 시점의 스냅샷을 .rdb 파일로 저장
+    #    - 장점: 파일 크기 작음, 복구 속도 빠름
+    #    - 단점: 스냅샷 사이에 서버가 죽으면 그 사이 데이터 유실
+    #    ex) 매 5분마다 스냅샷 -> 4분 59초에 서버 다운 -> 4분 59초치 데이터 유실
+    #
+    # 2. AOF (--appendonly yes): 모든 쓰기 명령어를 .aof 파일에 순서대로 기록
+    #    - 장점: 장애 발생 시 데이터 유실 최소화 (기본설정: 1초 단위)
+    #    - 단점: RDB보다 파일 크기 크고 복구 속도 느림
+    #    ex) SET key1 "a" 기록, SET key2 "b" 기록... -> 서버 다운 -> .aof 재실행으로 복구
+    command: redis-server --appendonly yes
     networks:
       - discodeit-network
 
@@ -173,6 +209,7 @@ volumes:
   postgres-data:
   binary-content-storage:
   grafana-data:
+  redis-data:
 
 networks:
   discodeit-network:
