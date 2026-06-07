@@ -19,7 +19,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
       - STORAGE_TYPE=local
       - STORAGE_LOCAL_ROOT_PATH=.discodeit/storage
-      - # Logging
+      # Logging
       - LOG_PATTERN=%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %clr(%-5level) %-36logger{36} [%X{requestId} | %X{requestMethod} | %X{requestUri}] - %msg%n
       - LOG_FILE_PATH=.logs
       - LOG_FILE_NAME=application

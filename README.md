@@ -720,6 +720,56 @@ http://localhost:8080/actuator/metrics/cache.evictions?tag=name:users
 
            ...
            ```
+    
+    **토픽 리스트 확인**  
+    - `docker exec -it -w /opt/kafka/bin broker sh`: broker 컨테이너 안에 /opt/kafka/bin 위치로 터미널 접속
+        - /opt/kafka/bin 안에 운영용 CLI 스크립트가 들어 있음
+    - `./kafka-topics.sh --list --bootstrap-server broker:29092`
+      - ./kafka-topics.sh : 토픽을 관리(CRUD)하는 CLI 도구
+      - --list : 브로커에 존재하는 모든 토픽 이름 나열 옵션
+      - --bootstrap-server borker:29092 : 접속할 Kafka 브로커의 주소. 클리어언트가 클러스터에 처음 진입하는 진입점
+        - 같은 Docker 네트워크 안이므로 KAFKA_ADVERTISED_LISTENERS(Kafka가 클라이언트에게 알려주는 주소)의 
+          내부용 주소인 PLAINTEXT://broker:29092를 사용
+    ```shell
+    /opt/kafka/bin $  ./kafka-topics.sh --list --bootstrap-server broker:29092
+    __consumer_offsets
+    discodeit.MessageCreatedEvent
+    discodeit.RoleUpdatedEvent
+    discodeit.S3UploadFailedEvent
+    ```
+    - __consumer_offsets : Kafka가 자동으로 만드는 내부 시스템 토픽. 각 컨슈머 그룹이 어디까지 읽었는지(offset)를 저장함. Kafka가 알아서 관리함.
+    - discodeit.* : 애플리케이션이 발행하는 도메인 이벤트 토픽.
+    
+    **discodeit.MessageCreatedEvent**  
+    - `./kafka-console-consumer.sh` : 토픽의 메시지를 터미널에서 직접 consume해서 출력해주는 디버깅용 컨슈머
+    - `--topic discodeit.MessageCreatedEvent` : 구독할 대상 토픽 이름
+    - `--from-beginning` : 토픽에 쌓인 맨 처음 메시지부터 전부 읽기. 이 옵션이 없으면 명령 실행 이후 새로 들어오는 메시지만 보여줌 
+    - `--bootstrap-server broker:29092` : 접속할 브로커 주소
+    ```shell
+    /opt/kafka/bin $ ./kafka-console-consumer.sh \
+    > --topic discodeit.MessageCreatedEvent \
+    > --from-beginning \
+    > --bootstrap-server broker:29092
+    {"messageId":"93193475-bd05-45df-889a-b6785062866b","channelId":"aed40b8e-043e-4018-bdec-ce907af89612","authorId":"19c140e8-99c7-4ac1-ba21-991dbf997f83","authorUsername":"admin","content":"새로운 메시지","channelName":"과일장사"}
+    {"messageId":"4239af0e-626d-440f-bc32-32b28484300d","channelId":"f625e3da-7879-4f3e-a784-b39ecc9507e8","authorId":"19c140e8-99c7-4ac1-ba21-991dbf997f83","authorUsername":"admin","content":"알고리즘 공부","channelName":"알고리즘"}
+    
+    ...
+    
+    ```
+    - 애플리케이션이 JSON으로 직렬화해서 발행한 MessageCreatedEvent의 내용을 확인할 수 있다.
+    
+    **discodeit.RoleUpdatedEvent**
+    ```shell
+    /opt/kafka/bin $ ./kafka-console-consumer.sh \
+    > --topic discodeit.RoleUpdatedEvent \
+    > --from-beginning \
+    > --bootstrap-server broker:29092
+    {"userId":"bc77d311-0407-499b-b5b1-2196fe3ef90e","oldRole":"CHANNEL_MANAGER","newRole":"USER"}
+    {"userId":"bc77d311-0407-499b-b5b1-2196fe3ef90e","oldRole":"USER","newRole":"CHANNEL_MANAGER"}
+    
+    ...
+    
+    ```
 
     - [ ] Kafka 토픽을 구독해 알림을 생성하는 리스너를 구현하세요.
 
