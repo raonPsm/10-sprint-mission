@@ -897,6 +897,68 @@ http://localhost:8080/actuator/metrics/cache.evictions?tag=name:users
 
 - [ ] DataGrip을 통해 Redis에 저장된 캐시 정보를 조회해보세요.
 
+```shell
+docker exec -it redis redis-cli
+```
+
+캐시 초기화
+```shell
+127.0.0.1:6379> FLUSHALL
+OK
+127.0.0.1:6379> KEYS 'discodeit*'
+(empty array)
+```
+
+- 캐시 채워진 것 확인
+- TTL 확인 (캐시 만료까지 얼마 남았는지 확인)
+- 캐시 값 구조
+- @CacheEvict를 통한 캐시 무효화 확인 (userChannels 키 사라짐으로 확인)
+```shell
+127.0.0.1:6379> KEYS 'discodeit*' 
+1) "discodeit:users::SimpleKey []"
+2) "discodeit:userNotifications::93185263-f589-4022-a273-92913d340d2b"
+3) "discodeit:userChannels::93185263-f589-4022-a273-92913d340d2b"
+127.0.0.1:6379> TTL "discodeit:users::SimpleKey []"
+(integer) 577
+127.0.0.1:6379> GET "discodeit:users::SimpleKey []"
+"[\
+  "java.util.ImmutableCollections$ListN\",
+  [
+    {
+      \"@class\":\"com.sprint.mission.discodeit.dto.data.UserDto\",
+      \"id\":[\"java.util.UUID\",\"93185263-f589-4022-a273-92913d340d2b\"],
+      \"username\":\"admin\",
+      \"email\":\"admin@gmail.com\",
+      \"profile\":null,
+      \"online\":true,
+      \"role\":[\"com.sprint.mission.discodeit.entity.UserRole\",\"ADMIN\"]
+    },
+    {
+      \"@class\":\"com.sprint.mission.discodeit.dto.data.UserDto\",
+      \"id\":[\"java.util.UUID\",\"a2ef0e70-8d98-4313-b92b-3179ca999643\"],
+      \"username\":\"abc\",
+      \"email\":\"abc@gmail.com\",
+      \"profile\":{
+        \"@class\":\"com.sprint.mission.discodeit.dto.data.BinaryContentDto\",
+        \"id\":[\"java.util.UUID\",\"a7c575b1-5193-4a68-85c1-2ad6f78540c6\"],
+        \"fileName\":\"Blueberry.jpg\",
+        \"size\":[\"java.lang.Long\",73894],
+        \"contentType\":\"image/jpeg\",
+        \"status\":[\"com.sprint.mission.discodeit.entity.BinaryContentStatus\",\"SUCCESS\"]
+      },
+      \"online\":false,
+      \"role\":[\"com.sprint.mission.discodeit.entity.UserRole\",\"USER\"]
+    },
+    ...
+  ]
+] 
+  
+127.0.0.1:6379> KEYS 'discodeit:userChannels*'
+1) "discodeit:userChannels::93185263-f589-4022-a273-92913d340d2b"
+127.0.0.1:6379> KEYS 'discodeit:userChannels*'
+(empty array)
+```
+
 ## 🔄 주요 변경사항
 
 ## 📸 스크린샷
