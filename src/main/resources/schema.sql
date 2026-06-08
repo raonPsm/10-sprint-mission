@@ -64,7 +64,7 @@ CREATE TABLE messages (
     updated_at TIMESTAMP WITH TIME ZONE,
     content TEXT,
     channel_id UUID NOT NULL,
-    author_id UUID,
+    author_id UUID NOT NULL,
 
     FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE,
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL
