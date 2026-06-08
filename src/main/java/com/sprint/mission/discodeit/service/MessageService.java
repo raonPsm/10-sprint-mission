@@ -1,30 +1,25 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.Dto.MessageDto;
-import com.sprint.mission.discodeit.dto.requestRespose.PageResponse;
-import com.sprint.mission.discodeit.dto.requestRespose.binarycontent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.requestRespose.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.requestRespose.message.MessageUpdateRequest;
-import org.springframework.data.domain.Pageable;
-
+import com.sprint.mission.discodeit.dto.data.MessageDto;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 
 public interface MessageService {
-    MessageDto create(
-            MessageCreateRequest request,
-            List<BinaryContentCreateRequest> attachments
-    );
 
-    MessageDto find(UUID messageId);
+  MessageDto create(MessageCreateRequest messageCreateRequest,
+      List<BinaryContentCreateRequest> binaryContentCreateRequests);
 
-    PageResponse<MessageDto> findAllByChannelId(
-            UUID channelId, Instant createdAt, Pageable pageable
-    );
+  MessageDto find(UUID messageId);
 
-    MessageDto update(UUID messageId, MessageUpdateRequest request);
+  PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant createdAt, Pageable pageable);
 
-    // 첨부파일 함께 삭제
-    void delete(UUID messageId);
+  MessageDto update(UUID messageId, MessageUpdateRequest request);
+
+  void delete(UUID messageId);
 }

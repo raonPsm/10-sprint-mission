@@ -1,17 +1,17 @@
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.0'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'io.spring.dependency-management' version '1.1.6'
     id 'jacoco'
 }
 
 group = 'com.sprint.mission'
-version = '0.0.1-SNAPSHOT'
-description = 'Demo project - discodeit'
+version = '1.2-M8'
 
 java {
-    // Railway.app 배포 중 생긴 문제로 toolchain에서 sourceCompatibility로 변경
-    sourceCompatibility = '17'
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 configurations {
@@ -56,15 +56,30 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
 
     // MapStruct
-    implementation 'org.mapstruct:mapstruct:1.6.0'
-    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.0'
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 
     // Lombok과 MapStruct 연동을 위한 바인딩
     annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+
+    // AWS SDK v2 BOM
+    implementation platform('software.amazon.awssdk:bom:2.20.70')
+
+    // S3와의 통신을 위한 AWS SDK v2 라이브러리
+    implementation 'software.amazon.awssdk:s3'
+
+    // AWS 인증 처리 모듈
+    implementation 'software.amazon.awssdk:auth'
+
+    // JUnit5
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.0'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+test {
     finalizedBy jacocoTestReport
 }
 

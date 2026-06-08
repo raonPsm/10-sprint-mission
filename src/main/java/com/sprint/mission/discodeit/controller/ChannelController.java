@@ -1,16 +1,15 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.ChannelApi;
-import com.sprint.mission.discodeit.dto.Dto.ChannelDto;
-import com.sprint.mission.discodeit.dto.requestRespose.channel.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.requestRespose.channel.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.requestRespose.channel.PublicChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.data.ChannelDto;
+import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.service.ChannelService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,73 +21,65 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/channels")
-@RequiredArgsConstructor
-@Slf4j
 public class ChannelController implements ChannelApi {
 
   private final ChannelService channelService;
 
-  /// POST /api/channels/public - Public Channel 생성
-  @PostMapping("/public")
-  public ResponseEntity<ChannelDto> createPublicChannel(
-      @Valid @RequestBody PublicChannelCreateRequest request
-  ) {
-    log.info("[CHANNEL_CREATE_PUBLIC] Public Channel 생성 API 요청: name={}", request.name());
-
-    ChannelDto createdPublicChannel = channelService.create(request);
-
+  @PostMapping(path = "public")
+  public ResponseEntity<ChannelDto> create(@RequestBody @Valid PublicChannelCreateRequest request) {
+    log.info("공개 채널 생성 요청: {}", request);
+    ChannelDto createdChannel = channelService.create(request);
+    log.debug("공개 채널 생성 응답: {}", createdChannel);
     return ResponseEntity
         .status(HttpStatus.CREATED)
-        .body(createdPublicChannel);
+        .body(createdChannel);
   }
 
-  /// POST /api/channels/private - Private Channel 생성
-  @PostMapping("/private")
-  public ResponseEntity<ChannelDto> createPrivateChannel(
-      @Valid @RequestBody PrivateChannelCreateRequest request
-  ) {
-    log.info("[CHANNEL_CREATE_PRIVATE] Private Channel 생성 API 요청");
-
-    ChannelDto createdPrivateChannel = channelService.create(request);
-
+  @PostMapping(path = "private")
+  public ResponseEntity<ChannelDto> create(@RequestBody @Valid PrivateChannelCreateRequest request) {
+    log.info("비공개 채널 생성 요청: {}", request);
+    ChannelDto createdChannel = channelService.create(request);
+    log.debug("비공개 채널 생성 응답: {}", createdChannel);
     return ResponseEntity
         .status(HttpStatus.CREATED)
-        .body(createdPrivateChannel);
+        .body(createdChannel);
   }
 
-  /// DELETE /api/channels/{channelId} - Channel 삭제
-  @DeleteMapping("/{channelId}")
-  public ResponseEntity<Void> delete(@PathVariable UUID channelId) {
-    log.info("[CHANNEL_DELETE] Channel 삭제 API 요청: channelId={}", channelId);
-
-    channelService.delete(channelId);
-
-    return ResponseEntity.noContent().build();
-  }
-
-  /// PATCH /api/channels/{channelId} - Channel 정보 수정
-  // 공개 채널의 정보 수정 (비공개 채널의 정보는 수정 불가능)
-  @PatchMapping("/{channelId}")
+  @PatchMapping(path = "{channelId}")
   public ResponseEntity<ChannelDto> update(
-      @PathVariable UUID channelId,
-      @Valid @RequestBody PublicChannelUpdateRequest request
-  ) {
-    log.info("[CHANNEL_UPDATE] Channel 정보 수정 API 요청: channelId={}", channelId);
-
+      @PathVariable("channelId") UUID channelId,
+      @RequestBody @Valid PublicChannelUpdateRequest request) {
+    log.info("채널 수정 요청: id={}, request={}", channelId, request);
     ChannelDto updatedChannel = channelService.update(channelId, request);
-
-    return ResponseEntity.ok(updatedChannel);
+    log.debug("채널 수정 응답: {}", updatedChannel);
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(updatedChannel);
   }
 
-  /// GET /api/channels - User가 참여 중인 Channel 목록 조회
-  @GetMapping
-  public ResponseEntity<List<ChannelDto>> findAllByUserId(@RequestParam UUID userId) {
-    log.debug("[CHANNEL_FIND_BY_USER] User가 참여 중인 Channel 목록 조회 API 요청: userId={}", userId);
+  @DeleteMapping(path = "{channelId}")
+  public ResponseEntity<Void> delete(@PathVariable("channelId") UUID channelId) {
+    log.info("채널 삭제 요청: id={}", channelId);
+    channelService.delete(channelId);
+    log.debug("채널 삭제 완료");
+    return ResponseEntity
+        .status(HttpStatus.NO_CONTENT)
+        .build();
+  }
 
+  @GetMapping
+  public ResponseEntity<List<ChannelDto>> findAll(@RequestParam("userId") UUID userId) {
+    log.info("사용자별 채널 목록 조회 요청: userId={}", userId);
     List<ChannelDto> channels = channelService.findAllByUserId(userId);
-    return ResponseEntity.ok(channels);
+    log.debug("사용자별 채널 목록 조회 응답: count={}", channels.size());
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(channels);
   }
 }
