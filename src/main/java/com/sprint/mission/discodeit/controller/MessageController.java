@@ -1,55 +1,87 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.MessageApi;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.service.MessageService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+// FIXME: 메서드 내부 기타 부수효과 문제 확인 후 수정
 @RestController
-@RequestMapping("/api/message")
-public class MessageController {
+@RequestMapping("/api/messages")
+@RequiredArgsConstructor
+public class MessageController implements MessageApi {
     private final MessageService messageService;
+    private final MessageMapper messageMapper;
 
-    @Autowired
-    public MessageController(MessageService messageService) {
-        this.messageService = messageService;
-    }
-    // TODO: @RequiredArgsConstructor로 리펙토링 고려
-
-    // 메시지를 보낼 수 있다.
-    @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<MessageResponse> create(@RequestBody MessageCreateRequest request) {
-        MessageResponse response = messageService.create(request);
-        return ResponseEntity.ok(response); // ResponseEntity.status(HttpStatus.OK).body(responses); 축약형
+    /// GET /api/messages - Channel의 Message 목록 조회
+    @GetMapping
+    public ResponseEntity<List<MessageResponse>> findAllByChannelId(@RequestParam UUID channelId) {
+        List<MessageResponse> responses = messageService.findAllByChannelId(channelId).stream()
+                .map(messageMapper::toResponse)
+                .toList();
+        return ResponseEntity.ok(responses);
     }
 
-    //  메시지를 수정할 수 있다.
-    @RequestMapping(value = "/{messageId}", method = RequestMethod.PATCH)
-    public ResponseEntity<MessageResponse> update(
-            @PathVariable UUID messageId,
-            @RequestBody MessageUpdateRequest request
+    /// POST /api/messages - Message 생성
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<MessageResponse> create(
+            @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
+            @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
-        MessageResponse response = messageService.update(messageId, request);
-        return ResponseEntity.ok(response);
+        List<BinaryContentCreateRequest> fileRequests = Optional.ofNullable(attachments)
+                .map(files -> files.stream()
+                        .map(file -> {
+                            try {
+                                return new BinaryContentCreateRequest(
+                                        file.getOriginalFilename(),
+                                        file.getContentType(),
+                                        file.getBytes()
+                                );
+                            } catch (IOException e) {
+                                throw new RuntimeException("파일 처리 중 오류가 발생했습니다.", e);
+                            }
+                        })
+                        .toList())
+                .orElse(new ArrayList<>());
+        Message message = messageService.create(messageCreateRequest, fileRequests);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(messageMapper.toResponse(message));
     }
 
-    // 메시지를 삭제할 수 있다.
-    @RequestMapping(value = "/{messageId}", method = RequestMethod.DELETE)
+    /// DELETE /api/messages/{messageId} - Message 삭제
+    @DeleteMapping("/{messageId}")
     public ResponseEntity<Void> delete(@PathVariable UUID messageId) {
         messageService.delete(messageId);
         return ResponseEntity.noContent().build();
     }
 
-    // 특정 채널의 메시지 목록을 조회할 수 있다.
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<MessageResponse>> findAllByChannelId(@RequestParam UUID channelId) {
-        List<MessageResponse> responses = messageService.findAllByChannelId(channelId);
-        return ResponseEntity.ok(responses);
+    /// PATCH /api/messages/{messageId} - Message 내용 수정
+    @PatchMapping(value = "/{messageId}")
+    public ResponseEntity<MessageResponse> update(
+            @PathVariable UUID messageId,
+            @RequestBody MessageUpdateRequest request
+    ) {
+        Message message = messageService.update(messageId, request);
+        return ResponseEntity.ok(messageMapper.toResponse(message));
     }
 }

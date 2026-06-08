@@ -26,7 +26,7 @@ public class BasicReadStatusService implements ReadStatusService {
     private final ChannelRepository channelRepository;
 
     @Override
-    public ReadStatusResponse create(ReadStatusCreateRequest request) {
+    public ReadStatus create(ReadStatusCreateRequest request) {
         // 관련된 Channel, User 있는지 확인
         if (!userRepository.existsById(request.userId())) {
             throw new NoSuchElementException("존재하지 않는 사용자입니다. id: " + request.userId());
@@ -36,6 +36,7 @@ public class BasicReadStatusService implements ReadStatusService {
         }
 
         // 같은 Channel과 User와 관련된 객체가 이미 존재하면 예외 발생
+        // FIXME: existsByUserIdAndChannelId -> repo 계층 위임 수정
         boolean exists = readStatusRepository.findAll().stream()
                 .anyMatch(rs -> rs.getUserId().equals(request.userId())
                         && rs.getChannelId().equals(request.channelId()));
@@ -43,53 +44,41 @@ public class BasicReadStatusService implements ReadStatusService {
             throw new IllegalArgumentException("해당 유저의 readStatus가 이미 존재합니다.");
         }
 
-        ReadStatus readStatus = new ReadStatus(request.channelId(), request.userId());
-        ReadStatus saved = readStatusRepository.save(readStatus);
+        ReadStatus readStatus = new ReadStatus(request.channelId(), request.userId(), request.lastReadAt());
 
-        return toResponse(saved);
+        return readStatusRepository.save(readStatus);
     }
 
     @Override
-    public ReadStatusResponse find(UUID readStatusId) {
-        ReadStatus readStatus = readStatusRepository.findById(readStatusId)
+    public ReadStatus find(UUID readStatusId) {
+        return readStatusRepository.findById(readStatusId)
                 .orElseThrow(() -> new NoSuchElementException("읽기 상태(readStatus)를 찾을 수 없습니다. id: " + readStatusId));
-        return toResponse(readStatus);
     }
 
     @Override
-    public List<ReadStatusResponse> findAllByUserId(UUID userId) {
+    public List<ReadStatus> findAllByUserId(UUID userId) {
+        // FIXME: return readStatusRepository.findAllByUserId(userId);
         return readStatusRepository.findAll().stream()
                 .filter(rs -> rs.getUserId().equals(userId))
-                .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public ReadStatusResponse update(ReadStatusUpdateRequest request) {
-        ReadStatus readStatus = readStatusRepository.findById(request.id())
-                .orElseThrow(() -> new NoSuchElementException("수정할 읽기 상태(readStatus)를 찾을 수 없습니다. id: " + request.id()));
+    public ReadStatus update(UUID readStatusId, ReadStatusUpdateRequest request) {
+        ReadStatus readStatus = readStatusRepository.findById(readStatusId)
+                .orElseThrow(() -> new NoSuchElementException("수정할 읽기 상태(readStatus)를 찾을 수 없습니다. id: " + readStatusId));
 
         // 읽은 시간 갱신
-        readStatus.markAsRead();
-        ReadStatus updated = readStatusRepository.save(readStatus);
+        readStatus.updateLastReadAt(request.newLastReadAt());
 
-        return toResponse(updated);
+        return readStatusRepository.save(readStatus);
     }
 
     @Override
     public void delete(UUID readStatusId) {
-        if (!readStatusRepository.existById(readStatusId)) {
+        if (!readStatusRepository.existsById(readStatusId)) {
             throw new NoSuchElementException("삭제할 읽기 상태가 존재하지 않습니다. id: " + readStatusId);
         }
         readStatusRepository.deleteById(readStatusId);
-    }
-
-    private ReadStatusResponse toResponse(ReadStatus readStatus) {
-        return new ReadStatusResponse(
-                readStatus.getId(),
-                readStatus.getUserId(),
-                readStatus.getChannelId(),
-                readStatus.getUpdatedAt() // 마지막으로 읽은 시간
-        );
     }
 }

@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
@@ -91,6 +92,13 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     }
 
     @Override
+    public List<ReadStatus> findAllByUserId(UUID userId) {
+        return findAll().stream()
+                .filter(rs -> rs.getUserId().equals(userId))
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public void deleteById(UUID id) {
         Path path = resolvePath(id);
         try {
@@ -101,7 +109,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     }
 
     @Override
-    public boolean existById(UUID id) {
+    public boolean existsById(UUID id) {
         Path path = resolvePath(id);
         return Files.exists(path);
     }

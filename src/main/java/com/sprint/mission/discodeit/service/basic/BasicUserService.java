@@ -1,9 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserDto;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
@@ -14,181 +12,166 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.time.Instant;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-  // @Component의 자식이므로 빈으로 자동으로 등록해 줌
-  // 해당 클래스가 service 계층임을 명시
-  // 스프링은 Service 계층을 트랜잭션의 시작과 끝으로 봄
 @RequiredArgsConstructor
-  // final이 붙은 필드를 초기화하는 생성자를 자동으로 생성한다. -> Lombok 적용
-  // Lombok이 알아서 만들어 주기 때문에 Repository가 하나 더 늘어나도 생성자 크드를 수정할 필요가 없다.
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
 
+    @Transactional
     @Override
-    public UserResponse create(UserCreateRequest request) {
-        if(userRepository.existsByUsername(request.username())) {
-            throw new IllegalArgumentException("이미 존재하는 사용자 이름(username)입니다: " + request.username());
-        }
-        if(userRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("이미 사용중인 이메일(email)입니다: " + request.email());
-        }
+    public User create(UserCreateRequest userCreateRequest,
+                       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+        String username = userCreateRequest.username();
+        String email = userCreateRequest.email();
+        String password = userCreateRequest.password();
 
-        // 프로필 이미지 처리 (있으면 저정, 없으면 null)
-        UUID profileImageId = null;
-        if(request.profileImage() != null) {
-            BinaryContent binaryContent = createBinaryContent(request.profileImage());
-            binaryContentRepository.save(binaryContent);
-            profileImageId = binaryContent.getId();
+        // email, username 중복 검증
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("이미 사용중인 이메일(email)입니다: " + email);
+        }
+        if (userRepository.existsByUsername(username)) {
+            throw new IllegalArgumentException("이미 존재하는 사용자 이름(username)입니다.: " + username);
         }
 
-        // User 엔티티 생성 (있으면 저장, 없으면 null)
-        User user = new User(
-                request.username(),
-                request.email(),
-                request.password(),
-                profileImageId
-        );
+        // 프로필 이미지 처리
+        UUID nullableProfileId = optionalProfileCreateRequest
+                .map(profileRequest -> {
+                    String fileName = profileRequest.fileName();
+                    String contentType = profileRequest.contentType();
+                    byte[] bytes = profileRequest.bytes();
 
-        User savedUser = userRepository.save(user);
+                    BinaryContent binaryContent = new BinaryContent(fileName, contentType, bytes);
+                    return binaryContentRepository.save(binaryContent).getId();
+                })
+                .orElse(null);
 
-        // UserStatus 생성
-        UserStatus userStatus = new UserStatus(savedUser.getId());
-        // TODO: 트랜잭션 롤백 필요성 존재 -> 추후 단계에서 고민
+        // 유저 생성 및 젖아
+        User user = new User(username, email, password, nullableProfileId);
+        User createdUser = userRepository.save(user);
+
+        // 유저 상태 초기화
+        UserStatus userStatus = new UserStatus(createdUser.getId(), Instant.now());
         userStatusRepository.save(userStatus);
 
-        return toResponse(savedUser, userStatus);
+        return createdUser;
 
+        // TODO: 트랜잭션 롤백 필요성 존재 -> 추후 단계에서 고민
         // TODO: username 유효성 검사 로직 추가
         // TODO: email 중복 불가능 검사 로직 추가
         // TODO: password 유효성 검사 로직 추가
     }
 
     @Override
-    public UserResponse find(UUID userId) {
+    public User findByUserId(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 id의 유저가 존재하지 않습니다. (userId: " + userId + " )"));
 
-        // UserStatus 조회 (데이터 무결성을 위해 없으면 예외 처리 - 트랜잭션 없는 상황에서는 발생할 일 없음)
-        UserStatus status = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalStateException("유저 상태(접속 정보)데이터가 누락되었습니다. (userId: " + userId + " )"));
+        // UserStatus 조회 (데이터 무결성을 위해 없으면 예외 처리)
+        validateUserStatusExists(userId);
 
-        return toResponse(user, status);
+        return user;
     }
 
     @Override
-    public List<UserResponse> findAll() {
-        return userRepository.findAll().stream()
-                .map(user -> {
-                    // 각 유저의 상태 정보 조회 // TODO: N+1 문제로 최적화 필요. 현재는 단순 조회 (Later)
-                    UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
-                            .orElseThrow(() -> new NoSuchElementException("UserStatus를 찾을 수 없습니다."));
-                    return toResponse(user, userStatus);
-                }).collect(Collectors.toList());
+    public List<User> findAll() {
+        List<User> users = userRepository.findAll();
+
+        Map<UUID, UserStatus> statusMap = userStatusRepository.findAll().stream()
+                .collect(Collectors.toMap(
+                        UserStatus::getUserId,
+                        Function.identity()
+                ));
+        return users.stream()
+                .map(user -> { // TODO: [Later] .peek()로 변경 고려
+                    if (!statusMap.containsKey(user.getId())) {
+                        throw new NoSuchElementException("UserStatus를 찾을 수 없습니다.");
+                        // TODO: [Later] 목록 조회에서 예외 던지는 것 보다는 로그를 남기거나 내부적으로 처리 하는 방향으로
+                    }
+                    return user;
+                })
+                .collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
-    public UserResponse update(UUID userId, UserUpdateRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다. id: " + userId));
+    public User update(UUID userId,
+                       UserUpdateRequest userUpdateRequest,
+                       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+        // 유저 존재 확인
+        User user = findByUserId(userId);
 
-        // 새 프로필 이미지가 전달되었다면 저장 - 이미지 수정 안했을 경우 기존 id 유지
-        UUID newProfileImageId = user.getProfileImageId();
+        String newUsername = userUpdateRequest.newUsername();
+        String newEmail = userUpdateRequest.newEmail();
 
-        if(request.profileImage() != null) {
-            // 기존에 설정된 프로필 이미지가 있다면 삭제
-            // TODO: 현재 profileId가 null일 경우 기본 프로필 설정으므로 / 기존 설정된 프로필 이미지가 기본 프로필인지 구분하기 위해
-            //   기본 프로필 설정을 null이 아니라 명시적으로 따른 사진으로 지정해 줄 필요성 있어보임 -> entity 수정 필요
-            if(user.getProfileImageId() != null) {
-                binaryContentRepository.deleteById(user.getProfileImageId());
-            }
-
-            // 새 이미지 생성 및 저장
-            BinaryContent binaryContent = createBinaryContent(request.profileImage());
-            binaryContentRepository.save(binaryContent);
-
-            // 새 ID로 교체
-            newProfileImageId = binaryContent.getId();
+        // FIX: 본인의 현재 정보와 다를 때만 중복 검사 실시
+        if (!user.getEmail().equals(newEmail) && userRepository.existsByEmail(newEmail)) {
+            throw new IllegalArgumentException("이미 사용중인 이메일(email)입니다.: " + newEmail);
+        }
+        if (!user.getUsername().equals(newUsername) && userRepository.existsByUsername(newUsername)) {
+            throw new IllegalArgumentException("이미 존재하는 사용자 이름(username)입니다.: " + newUsername);
         }
 
-        // 유저 정보 수정
-        user.update(
-                request.username(),
-                request.email(),
-                request.password(),
-                newProfileImageId
-        );
-        User updatedUser = userRepository.save(user);
+        // 회원가입 시 사진을 등록했다면 기본 프로필로 돌아갈 수 있는 기능 없음
+        // -> 업데이트 시 파일이 존재하면 기존 사진 삭제 후 새로 저장, 파일이 없으면 기존 사진 유지
+        UUID nullableProfileId = resolveNullableProfileId(user, optionalProfileCreateRequest);
 
-        UserStatus status = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalStateException("유저 상태 데이터가 누락되었습니다. id: " + userId));
-
-        return toResponse(updatedUser, status);
+        // user 업데이트 및 저장
+        user.update(newUsername, newEmail, userUpdateRequest.newPassword(), nullableProfileId);
+        return userRepository.save(user);
     }
 
+    @Transactional
     @Override
     public void delete(UUID userId) {
-        // TODO: findById() 활용해서 중복되는 부분 제거할 수 있는지 확인 필요
+        // 유저 존재 확인
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다. id: " + userId));
+                .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다. (userId: " + userId + " )"));
 
         // 연관된 UserStatus 삭제
         userStatusRepository.deleteByUserId(userId);
 
         // 연관된 BinaryContent (프로필 이미지) 삭제
-        if (user.getProfileImageId() != null) {
-            binaryContentRepository.deleteById(user.getProfileImageId()); // TODO: deleteByUserId 사용 고려 요망
-        }
+        Optional.ofNullable(user.getProfileId())
+                .ifPresent(binaryContentRepository::deleteById); // TODO: [Later] deleteByUserId 사용 고려 및 판단 필요
 
-        // User 삭제
         userRepository.deleteById(userId);
     }
 
-    @Override
-    public List<UserDto> findAllUsers() {
-        return userRepository.findAll().stream()
-                .map(user -> {
-                    UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
-                            .orElseThrow(() -> new NoSuchElementException("UserStatus를 찾을 수 없습니다."));
+    // === Helper Method ===
 
-                    return new UserDto(
-                            user.getId(),
-                            user.getCreatedAt(),
-                            user.getUpdatedAt(),
-                            user.getUsername(),
-                            user.getEmail(),
-                            user.getProfileImageId(),
-                            userStatus.isOnline()
+    private void validateUserStatusExists(UUID userId) {
+        if (!userStatusRepository.existsByUserId(userId)) {
+            throw new IllegalStateException("유저 상태 데이터가 누락되었습니다. (userId: " + userId + ")");
+        }
+    }
+
+    // FIX: 별도 메서드 분리
+    // TODO: 별도 메서드 분리 기준 고민
+    // (프로필 이미지 업데이트 로직이 UserService에 존재하는 것이 적절한지, BinaryContentService로 분리하는 것이 나은지)
+    private UUID resolveNullableProfileId(User user,
+                                          Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+
+        return optionalProfileCreateRequest
+                .map(profileRequest -> {
+                    Optional.ofNullable(user.getProfileId())
+                            .ifPresent(binaryContentRepository::deleteById);
+
+                    BinaryContent binaryContent = new BinaryContent(
+                            profileRequest.fileName(),
+                            profileRequest.contentType(),
+                            profileRequest.bytes()
                     );
-                }).collect(Collectors.toList());
-    }
-
-    // ===
-
-    // DTO -> BinaryContent 변환 로직
-    private BinaryContent createBinaryContent(BinaryContentRequest request) {
-        return new BinaryContent(
-                request.fileName(),
-                request.contentType(),
-                request.bytes()
-        );
-    }
-
-    // Entity -> DTO 변환 로직
-    private UserResponse toResponse(User user, UserStatus userStatus) {
-        return new UserResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getProfileImageId(),
-                userStatus.isOnline()
-        );
+                    return binaryContentRepository.save(binaryContent).getId();
+                })
+                .orElse(user.getProfileId());
     }
 }

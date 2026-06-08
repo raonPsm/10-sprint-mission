@@ -1,64 +1,71 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.channel.ChannelResponse;
-import com.sprint.mission.discodeit.dto.channel.ChannelUpdateRequest;
-import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.controller.api.ChannelApi;
+import com.sprint.mission.discodeit.dto.channel.*;
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.service.ChannelService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/channel")
-public class ChannelController {
+@RequestMapping("/api/channels")
+@RequiredArgsConstructor
+public class ChannelController implements ChannelApi {
     private final ChannelService channelService;
+    private final ChannelMapper channelMapper;
 
-    @Autowired
-    public ChannelController(ChannelService channelService) {
-        this.channelService = channelService;
+    /// POST /api/channels/public - Public Channel 생성
+    @PostMapping("/public")
+    public ResponseEntity<ChannelResponse> createPublicChannel(@RequestBody PublicChannelCreateRequest request) {
+        Channel createdPublicChannel = channelService.create(request);
+        ChannelResponse response = channelMapper.toResponse(createdPublicChannel);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
 
-    // 공개 채널을 생성할 수 있다.
-    @RequestMapping(value = "/public", method = RequestMethod.POST)
-    public ResponseEntity<ChannelResponse> createPublic(@RequestBody PublicChannelCreateRequest request) {
-        ChannelResponse response = channelService.createPublic(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    /// POST /api/channels/private - Private Channel 생성
+    @PostMapping("/private")
+    public ResponseEntity<ChannelResponse> createPrivateChannel(@RequestBody PrivateChannelCreateRequest request) {
+        Channel createdPrivateChannel = channelService.create(request);
+        ChannelResponse response = channelMapper.toResponse(createdPrivateChannel);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
 
-    // 비공개 채널을 생성할 수 있다.
-    @RequestMapping(value = "/private", method = RequestMethod.POST)
-    public ResponseEntity<ChannelResponse> creatPrivate(@RequestBody PrivateChannelCreateRequest request) {
-        ChannelResponse response = channelService.createPrivate(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    // 공개 채널의 정보를 수정할 수 있다.
-    @RequestMapping(value = "/{channelId}", method = RequestMethod.PATCH)
-    public ResponseEntity<ChannelResponse> update(
-            @PathVariable UUID channelId,
-            @RequestBody ChannelUpdateRequest request
-    ) {
-        ChannelResponse response = channelService.update(channelId, request);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
-
-    // 채널을 삭제할 수 있다.
-    @RequestMapping(value = "/{channelId}", method = RequestMethod.DELETE)
+    /// DELETE /api/channels/{channelId} - Channel 삭제
+    @DeleteMapping("/{channelId}")
     public ResponseEntity<Void> delete(@PathVariable UUID channelId) {
         channelService.delete(channelId);
         return ResponseEntity.noContent().build();
     }
 
-    // 특정 사용자가 볼 수 있는 모든 채널 목록을 조회할 수 있다.
-    @RequestMapping(method = RequestMethod.GET)
+    /// PATCH /api/channels/{channelId} - Channel 정보 수정
+    // 공개 채널의 정보 수정 (비공개 채널의 정보는 수정 불가능)
+    @PatchMapping("/{channelId}")
+    public ResponseEntity<ChannelResponse> update(
+            @PathVariable UUID channelId,
+            @RequestBody PublicChannelUpdateRequest request
+    ) {
+        Channel updatedChannel = channelService.update(channelId, request);
+        ChannelResponse response = channelMapper.toResponse(updatedChannel);
+        return ResponseEntity.ok(response);
+    }
+
+    /// GET /api/channels - User가 참여 중인 Channel 목록 조회
+    @GetMapping
     public ResponseEntity<List<ChannelResponse>> findAllByUserId(@RequestParam UUID userId) {
-        List<ChannelResponse> responses = channelService.findAllByUserId(userId);
-        return ResponseEntity.status(HttpStatus.OK).body(responses);
+        List<Channel> channels = channelService.findAllByUserId(userId);
+        List<ChannelResponse> responses = channelMapper.toListResponse(channels);
+        return ResponseEntity.ok(responses);
     }
 }

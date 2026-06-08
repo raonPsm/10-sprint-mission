@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
@@ -34,21 +35,19 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
     }
 
     @Override
+    public List<ReadStatus> findAllByUserId(UUID userId) {
+        return findAll().stream()
+                .filter(rs -> rs.getUserId().equals(userId))
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public void deleteById(UUID id) {
         data.remove(id);
     }
 
     @Override
-    public boolean existById(UUID id) {
+    public boolean existsById(UUID id) {
         return data.containsKey(id);
     }
-
-    /*
-    @Override
-    public boolean existById(UUID id) {
-        return data.values().stream()
-                .anyMatch(rs -> rs.getId().equals(id));
-    }
-    => O(n)의 시간복잡도를 가진다. containsKey는 해시 알고리즘 사용으로 O(1)의 시간복잡도를 가진다.
-     */
 }

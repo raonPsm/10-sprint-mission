@@ -29,7 +29,15 @@ public class Channel extends BaseEntity {
         }
 
         if (isAnyValueUpdated) {
-            updateInstant();
+            this.updatedAt = Instant.now();
         }
+    }
+
+    public static Channel createPublicChannel(String name, String description) {
+        return new Channel(ChannelType.PUBLIC, name, description);
+    }
+
+    public static Channel createPrivateChannel() {
+        return new Channel(ChannelType.PRIVATE, null, null);
     }
 }

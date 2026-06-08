@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,7 +40,7 @@ public class Message extends BaseEntity {
         }
 
         if (isAnyValueUpdated) {
-            updateInstant();
+            this.updatedAt = Instant.now();
         }
     }
 }

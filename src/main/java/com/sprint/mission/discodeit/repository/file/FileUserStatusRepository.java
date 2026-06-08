@@ -115,4 +115,9 @@ public class FileUserStatusRepository implements UserStatusRepository {
     public boolean existsByUserId(UUID userId) {
         return findByUserId(userId).isPresent();
     }
+
+    @Override
+    public boolean existsById(UUID id) {
+        return Files.exists(resolvePath(id));
+    }
 }
