@@ -1,62 +1,32 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class User extends BaseEntity {
     private String username;
-    private String password;
-    private String email;
-    private List<Channel> myChannels = new ArrayList<>();
-    private List<Message> myMessages = new ArrayList<>();
+    // TODO: User 식별자를 username으로 할 수는 없음 (이름은 중복 가능하기 때문) -> email 필드 추가해서 식별자 생성
+    private final List<ChannelUserRole> channelUserRoles = new ArrayList<>();
 
-    public String getUsername() {
-        return username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void updateUsername(String newUsername){
-        this.username = newUsername;
-        this.setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public void updateEmail(String newEmail){
-        this.email = newEmail;
-        this.setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public void updatePassword(String newPassword){
-        this.password = newPassword;
-        this.setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public List<Message> getMyMessages() {
-        return myMessages;
-    }
-
-    public List<Channel> getMyChannels() {
-        return myChannels;
-    }
-
-    public void addMessage(Message message){
-        this.myMessages.add(message);
-    }
-
-    public User(String username, String password, String email) {
+    public User(String username){
+        super();
+        validateUsername(username);
         this.username = username;
-        this.password = password;
-        this.email = email;
     }
 
-    @Override
-    public String toString() {
-        return "이름: " + username + ", 이메일: " + email + ", 비밀번호: " + password;
+    private void validateUsername(String username){
+        if(username==null || username.trim().isEmpty()){
+            throw new IllegalArgumentException("username은 null 이거나 비어있을 수 없습니다.");
+        }
     }
+
+    public String getUsername() { return this.username; }
+    public List<ChannelUserRole> getChannelUserRoles() { return new ArrayList<>(channelUserRoles); }
+
+    public void updateUsername(String username){
+        validateUsername(username);
+        this.username = username;
+        this.updateTimestamp();
+    }
+    public void addChannelUserRole(ChannelUserRole role) { this.channelUserRoles.add(role); }
+    public void removeChannelUserRole(ChannelUserRole role) { this.channelUserRoles.remove(role); }
 }

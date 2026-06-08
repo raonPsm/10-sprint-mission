@@ -1,23 +1,25 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.service.listener.ChannelLifecycleListener;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public interface ChannelService {
-    Channel createChannel(String channelName);
-
-    void deleteChannel(UUID id);
-
-    Channel findChannelByChannelId(UUID id);
-
+    // 채널 생성
+    Channel createChannel(String channelName, User owner);
+    // 채널 조회
+    Channel findChannelById(UUID channelId);
+    // 채널 전체 조회
     List<Channel> findAllChannels();
-    List<Channel> findChannelByUserId(UUID userID);
+//    Channel findChannelByName(String channelName);
+//    Channel findChannelByOwner(User owner);
+    // 채널 이름 수정
+    Channel updateChannel(UUID channelId, String newChannelName);
+    // 채널 삭제
+    void deleteChannel(UUID channelId);
+    // OWNER가 소유하고 있는 모든 채널 삭제
+    void deleteChannelsByOwnerId(UUID ownerId);
 
-    Channel updateChannel(UUID id, String channelName);
-
-    void joinChannel(UUID userID, UUID channelID);
-
-    void leaveChannel(UUID userID, UUID channelID);
+    void addListener(ChannelLifecycleListener listener);
 }

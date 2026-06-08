@@ -1,23 +1,17 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.service.listener.UserLifecycleListener;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
-public interface UserService {
-    User createUser(String username, String password, String email);
-
-    User findUserById(UUID id);
-
+public interface UserService{
+    User createUser(String username);
+    User findUserByUserId(UUID id);
+    //  User findUserByUsername(String username);
     List<User> findAllUsers();
-
-    User updateUserInfo(UUID id, String newUsername, String newEmail);
-
-    User changePassword(UUID id, String newPassword);
-
+    User updateUser(UUID id, String username);
     void deleteUser(UUID id);
 
-    List<User> findParticipants(UUID channelID);
-
+    void addListener(UserLifecycleListener listener);
 }

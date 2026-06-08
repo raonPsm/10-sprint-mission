@@ -2,7 +2,8 @@ plugins {
     id 'java'
 }
 
-group = 'org.example'
+group = 'com.sprint.mission'
+
 version = '1.0-SNAPSHOT'
 
 repositories {
@@ -17,4 +18,10 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
