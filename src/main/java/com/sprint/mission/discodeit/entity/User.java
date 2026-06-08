@@ -1,32 +1,50 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.*;
+import lombok.Getter;
 
+import java.util.UUID;
+
+@Getter
+  // 자동으로 getter 메서드를 생성해준다. -> Lombok 적용
 public class User extends BaseEntity {
     private String username;
-    // TODO: User 식별자를 username으로 할 수는 없음 (이름은 중복 가능하기 때문) -> email 필드 추가해서 식별자 생성
-    private final List<ChannelUserRole> channelUserRoles = new ArrayList<>();
+    private String email;
+    private String password;
 
-    public User(String username){
+    // 프로필 이미지 id (User 1..0 BinaryContent)
+    private UUID profileImageId;
+
+    // 첨부파일이 있는 경우 (생성자 오버로드)
+    public User(String username, String email, String password, UUID profileImageId) {
         super();
-        validateUsername(username);
         this.username = username;
+        this.email = email;
+        this.password = password;
+        this.profileImageId = profileImageId;
     }
 
-    private void validateUsername(String username){
-        if(username==null || username.trim().isEmpty()){
-            throw new IllegalArgumentException("username은 null 이거나 비어있을 수 없습니다.");
+    public void update(String newUsername, String newEmail, String newPassword, UUID newProfileImageId) {
+        boolean isAnyValueUpdated = false;
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
+            isAnyValueUpdated = true;
+        }
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+            isAnyValueUpdated = true;
+        }
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            isAnyValueUpdated = true;
+        }
+        if (newProfileImageId != null && !newProfileImageId.equals(this.profileImageId)) {  // 프로픨 이미지 id는 null일 수 있음
+            // TODO: null로 수정하는 것도 추가 -> 기존 등록된 사진 수정 로직 추가 필요 -> 관련 DTO 수정(UserUpdateRequest) + BasicUserService 수정 필요할 것으로 예쌍
+            this.profileImageId = newProfileImageId;
+            isAnyValueUpdated = true;
+        }
+
+        if (isAnyValueUpdated) {
+            updateInstant();
         }
     }
-
-    public String getUsername() { return this.username; }
-    public List<ChannelUserRole> getChannelUserRoles() { return new ArrayList<>(channelUserRoles); }
-
-    public void updateUsername(String username){
-        validateUsername(username);
-        this.username = username;
-        this.updateTimestamp();
-    }
-    public void addChannelUserRole(ChannelUserRole role) { this.channelUserRoles.add(role); }
-    public void removeChannelUserRole(ChannelUserRole role) { this.channelUserRoles.remove(role); }
 }
