@@ -1,34 +1,27 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.Dto.UserDto;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFUserStatusRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Component
-@RequiredArgsConstructor
-public class UserMapper {
-    private final UserStatusRepository userStatusRepository;
+import java.util.List;
 
-    public UserResponse toResponse(User user) {
-        if (user == null) return null;
+@Mapper(
+        componentModel = "spring", // MapStruct가 생성하는 Mapper 구현체에 자동으로 @Component 어노테이션이 붙음
+        uses = {BinaryContentMapper.class} // 다른 Mapper 클래스를 참조하여 복잡한 데이터 변환을 수행
+        // 매퍼가 필드를 변환하는 과정에서 직접 처리할 수 없는 타입을 만났을 때 참조한 Mapper에 정의된 메서드를 찾아 자동으로 사용
+)
+// MapStruct는 컴파일 시점에 인터페이스를 분석하여 실제 변환 로직이 담긴 구현체(.class 파일)를 자동으로 생성
+// 개발자가 인터페이스에 메서드 시그니처만 정의
+// MapStruct -> 컴파일 할 때 UserMapperImpl 이라는 클래스를 만들고, 구현체 코드 작성
 
-        Boolean online = userStatusRepository.findByUserId(user.getId())
-                .map(UserStatus::isOnline)
-                .orElse(null);
+public interface UserMapper {
+    @Mapping(
+            target = "online",
+            expression = "java(entity.getUserStatus() != null ? entity.getUserStatus().isOnline() : null)"
+    )
+    UserDto toDto(User entity);
 
-        return new UserResponse(
-                user.getId(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
-                user.getUsername(),
-                user.getEmail(),
-                // password는 반환 안함
-                user.getProfileId(),
-                online // TODO: N+1 문제?
-        );
-    }
+    List<UserDto> toDtoList(List<User> entities);
 }

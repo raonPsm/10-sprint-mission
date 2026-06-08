@@ -1,0 +1,41 @@
+$kind: http-request
+name: User 등록
+url: "{{baseURL}}/api/users"
+method: POST
+body:
+  type: formdata
+  content:
+    - type: text
+      key: userCreateRequest
+      value: '{"username": "user1", "email": "test1@email.com", "password": "1234"}'
+      contentType: application/json
+      disabled: false
+    - type: file
+      key: profile
+      src: []
+      disabled: false
+scripts:
+  - type: afterResponse
+    code: "// 응답 데이터를 JSON으로 파싱\r
+
+      const jsonData = pm.response.json();\r
+
+      \r
+
+      // 응답에 실제 id값이 있는지 확인 후 저장 (안전한 코드)\r
+
+      if (jsonData && jsonData.id) {\r
+
+      \    // pm.environment 대신 pm.collectionVariables 사용!\r
+
+      \    pm.collectionVariables.set(\"userId\", jsonData.id); \r
+
+      \    console.log(\"유저 ID 저장 완료: \" + jsonData.id);\r
+
+      } else {\r
+
+      \    console.error(\"응답에 id 필드가 없습니다!\", jsonData);\r
+
+      }"
+    language: text/javascript
+order: 2000

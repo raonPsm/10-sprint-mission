@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.controller.api;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponse;
+import com.sprint.mission.discodeit.dto.Dto.BinaryContentDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -10,9 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,7 +27,7 @@ public interface BinaryContentApi {
                     description = "첨부 파일 조회 성공",
                     content = @Content(
                             mediaType = "*/*",
-                            schema = @Schema(implementation = BinaryContentResponse.class)
+                            schema = @Schema(implementation = BinaryContentDto.class)
                     )
             ),
             @ApiResponse(
@@ -41,7 +39,7 @@ public interface BinaryContentApi {
                     )
             )
     })
-    ResponseEntity<BinaryContentResponse> find(
+    ResponseEntity<BinaryContentDto> find(
             @Parameter(description = "조회할 첨부 파일 ID") UUID binaryContentId
     );
 
@@ -52,11 +50,28 @@ public interface BinaryContentApi {
                     description = "첨부 파일 목록 조회 성공",
                     content = @Content(
                             mediaType = "*/*",
-                            array = @ArraySchema(schema = @Schema(implementation = BinaryContentResponse.class))
+                            array = @ArraySchema(schema = @Schema(implementation = BinaryContentDto.class))
                     )
             )
     })
-    ResponseEntity<List<BinaryContentResponse>> findAllByIdIn(
+    ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
             @Parameter(description = "조회할 첨부 파일 ID 목록") List<UUID> binaryContentIds
     );
+
+    @Operation(summary = "파일 다운로드")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "파일 다운로드 성공",
+                    content = @Content(
+                            mediaType = "*/*",
+                            schema = @Schema(type ="string", format = "binary")
+                    )
+            )
+    })
+    ResponseEntity<?> download(
+            @Parameter UUID binaryContentId
+    );
+
+    // TODO: GET /api/{binaryContentId}/download - 파일 다운로드 -> 문서화 추가
 }

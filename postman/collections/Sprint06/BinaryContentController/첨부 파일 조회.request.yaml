@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseURL}}/api/binaryContents/{{binaryContentId}}"
+method: GET
+order: 2000

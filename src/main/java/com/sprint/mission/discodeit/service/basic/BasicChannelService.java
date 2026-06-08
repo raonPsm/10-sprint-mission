@@ -1,10 +1,14 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.channel.*;
+import com.sprint.mission.discodeit.dto.Dto.ChannelDto;
+import com.sprint.mission.discodeit.dto.requestRespose.channel.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.requestRespose.channel.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.requestRespose.channel.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -15,19 +19,26 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
+
     private final ChannelRepository channelRepository;
     private final ReadStatusRepository readStatusRepository;
-    private final MessageRepository messageRepository;
     private final UserRepository userRepository;
+    private final MessageRepository messageRepository;
+    private final ChannelMapper channelMapper;
+    // MessageRepository 의존성 제거 <- Cascade 적용
 
+    @Transactional
     @Override
-    public Channel create(PublicChannelCreateRequest request) {
+    public ChannelDto create(PublicChannelCreateRequest request) {
         // 채널 이름 중복 검사
         if(channelRepository.existsByName(request.name())) {
             throw new IllegalArgumentException("이미 존재하는 공개 채널 이름(name)입니다. " + request.name());
@@ -38,12 +49,13 @@ public class BasicChannelService implements ChannelService {
                 request.name(),
                 request.description()
         );
-        return channelRepository.save(channel);
+
+        return channelMapper.toDto(channelRepository.save(channel));
     }
 
     @Transactional
     @Override
-    public Channel create(PrivateChannelCreateRequest request) {
+    public ChannelDto create(PrivateChannelCreateRequest request) {
         Set<UUID> requestedUserIds = request.participantIds();
 
         // 유효성 검증 - 참여자가 없는 경우 검증
@@ -63,43 +75,44 @@ public class BasicChannelService implements ChannelService {
             }
         }
 
-        // PRIVATE 채널 생성 및 저장
+        // PRIVATE 채널 생성
         Channel channel = Channel.createPrivateChannel();
         Channel savedChannel = channelRepository.save(channel);
 
         // 참여자별 ReadStatus 생성
-        for (UUID userId : requestedUserIds) {
-            ReadStatus readStatus = new ReadStatus(
-                    savedChannel.getId(),
-                    userId,
-                    savedChannel.getCreatedAt()
-            );
-            readStatusRepository.save(readStatus);
-        }
-        return savedChannel;
+        Instant now = Instant.now(); // 루프 내에서 호출 X
+        List<User> users = userRepository.findAllById(requestedUserIds);
+        List<ReadStatus> readStatuses = users.stream()
+                .map(user -> new ReadStatus(user, savedChannel, now))
+                .toList();
+        readStatusRepository.saveAll(readStatuses);
+
+        return channelMapper.toDto(savedChannel);
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public Channel findByChannelId(UUID channelId) {
-        return channelRepository.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다. channelId: " + channelId));
+    public ChannelDto find(UUID channelId) {
+        return channelMapper.toDto(channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다. channelId: " + channelId)));
     }
 
     // 특정 유저가 볼 수 있는 Channel 목록을 조회
+    @Transactional(readOnly = true)
     @Override
-    public List<Channel> findAllByUserId(UUID userId) {
+    public List<ChannelDto> findAllByUserId(UUID userId) {
         // 모든 채널 조회 -> PUBLIC 채널은 모두 포함 / PRIVATE 채널은 해당 유저가 ReadStatus를 가지고 있는 경우만 포함
 
         Set<UUID> accessiblePrivateChannelIds = readStatusRepository.findAllByUserId(userId).stream()
-                .map(ReadStatus::getChannelId)
+                .map(rs -> rs.getChannel().getId())
                 .collect(Collectors.toSet());
 
-        return channelRepository.findAllByAccessible(userId, accessiblePrivateChannelIds);
+        return channelMapper.toDtoList(channelRepository.findAllByAccessible(accessiblePrivateChannelIds));
     }
 
     @Transactional
     @Override
-    public Channel update(UUID channelId, PublicChannelUpdateRequest request) {
+    public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다. id: " + channelId));
 
@@ -117,36 +130,19 @@ public class BasicChannelService implements ChannelService {
 
         channel.update(request.newName(), request.newDescription());
 
-        return channelRepository.save(channel);
+        return channelMapper.toDto(channel);
     }
 
     @Transactional
     @Override
     public void delete(UUID channelId) {
-        if (!channelRepository.existsById(channelId)) {
-            throw new NoSuchElementException("해당 채널이 존재하지 않습니다. id: " + channelId);
-        }
+        // TODO: Channel channel = findByChannelId(channelId); vs Helper Method -> 어떤 방식이 더 나은지?
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다. id: " + channelId));
 
-        // 1 관련 메시지 삭제
-        // JCF Repo 특성상 반복문으로 돌면서 삭제시 ConcurrentModificationException 발생 가능 -> id 수집 후 삭제
-        List<UUID> messageIdsToDelete = messageRepository.findAll().stream()
-                .filter(m -> m.getChannelId().equals(channelId))
-                .map(Message::getId)
-                .toList();
-        messageIdsToDelete.forEach(messageRepository::deleteById);
+        messageRepository.deleteAllByChannel_Id(channelId);
+        readStatusRepository.deleteAllByChannel_Id(channelId);
 
-        // 2 관련 ReadStatus 삭제
-        List<UUID> readStatusIdsToDelete = readStatusRepository.findAll().stream()
-                .filter(rs -> rs.getChannelId().equals(channelId))
-                .map(ReadStatus::getId)
-                .toList();
-        readStatusIdsToDelete.forEach(readStatusRepository::deleteById);
-
-        //    messageRepository.deleteAllByChannelId(channelId);
-        //    readStatusRepository.deleteAllByChannelId(channelId);
-        // -> 이렇게 repo 계층에 위임할 수도 있다. 일단은 service 계층에서 진행한다.
-
-        // 3 채널 삭제
-        channelRepository.deleteById(channelId);
+        channelRepository.delete(channel);
     }
 }

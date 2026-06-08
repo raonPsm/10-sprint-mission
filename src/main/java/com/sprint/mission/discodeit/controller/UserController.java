@@ -2,24 +2,16 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.controller.api.UserApi;
 import com.sprint.mission.discodeit.controller.exception.FileProcessException;
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
-import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.mapper.UserStatusMapper;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.dto.Dto.UserDto;
+import com.sprint.mission.discodeit.dto.Dto.UserStatusDto;
+import com.sprint.mission.discodeit.dto.requestRespose.binarycontent.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.requestRespose.user.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.requestRespose.user.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.requestRespose.userstatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -35,35 +27,32 @@ import java.util.UUID;
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController implements UserApi {
+
     private final UserService userService;
     private final UserStatusService userStatusService;
-    private final UserMapper userMapper;
-    private final UserStatusMapper userStatusMapper;
 
     /// GET /api/users - 전체 User 목록 조회
     @GetMapping
-    public ResponseEntity<List<UserResponse>> findAll() {
-        List<UserResponse> responseList = userService.findAll().stream()
-                .map(userMapper::toResponse)
-                .toList();
+    public ResponseEntity<List<UserDto>> findAll() {
+        List<UserDto> responseList = userService.findAll();
         return ResponseEntity.ok(responseList);
     }
     // TODO: [Later] 특정 사용자 조회기능 추가 - userService.find() - username 또는 email로 유저 검색 기능
 
     /// POST api/users - User 등록
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserResponse> create(
+    public ResponseEntity<UserDto> create(
                     @Valid @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
                     @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
         Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
                 .flatMap(this::resolveProfileRequest);
 
-        User createdUser = userService.create(userCreateRequest, profileRequest);
+        UserDto createdUser = userService.create(userCreateRequest, profileRequest);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(userMapper.toResponse(createdUser));
+                .body(createdUser);
     }
     // TODO: (Later) Validation 추가 -> NotBlank, Email, Size...
     // FIXME: 프론트에서 Email 검증 로직 있는 것 같음
@@ -79,32 +68,33 @@ public class UserController implements UserApi {
 
     /// PATCH /api/users/{userId} - User 정보 수정
     @PatchMapping(value = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserResponse> update(
+    public ResponseEntity<UserDto> update(
             @PathVariable UUID userId,
-            @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
+            @RequestPart UserUpdateRequest userUpdateRequest,
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
         Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
                 .flatMap(this::resolveProfileRequest);
 
-        User updateUser = userService.update(userId, userUpdateRequest, profileRequest);
+        UserDto updateUser = userService.update(userId, userUpdateRequest, profileRequest);
 
-        return ResponseEntity.ok(userMapper.toResponse(updateUser));
+        return ResponseEntity.ok(updateUser);
     }
     // TODO: (Later) 현재 API는 id만 알면 누구나 다른 사람의 정보를 수정할 수 있는 구조 -> 보안 문제
 
     /// PATCH /api/users/{userId}/userStatus - User 온라인 상태 업데이트
     @PatchMapping(value = "/{userId}/userStatus")
-    public ResponseEntity<UserStatusResponse> updateUserStatusByUserId(
+    public ResponseEntity<UserStatusDto> updateUserStatusByUserId(
             @PathVariable UUID userId,
             @RequestBody UserStatusUpdateRequest userStatusUpdateRequest
     ) {
-        UserStatus response = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
-        return ResponseEntity.ok(userStatusMapper.toResponse(response));
+        UserStatusDto response = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
+        return ResponseEntity.ok(response);
     }
 
     // === Helper method ===
     // 사용자가 파일을 보냈는데, 서버가 어떤 이유로 그 파일을 정상적으로 읽어내지 못했을 때 발생하는 예외를 처리하기 위한 메서드
+    // 중복되는 메서드 제거 위함
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
         if (profileFile.isEmpty()) {
             return Optional.empty();

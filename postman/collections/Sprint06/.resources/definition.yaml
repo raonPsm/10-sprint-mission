@@ -1,0 +1,10 @@
+$kind: collection
+name: Sprint06
+variables:
+  baseURL: ""
+  userId: ""
+  channelId: ""
+  messageId: ""
+  readStatusId: ""
+  binaryContentId: ""
+  currentTimestamp: ""

@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseURL}}/api/read-status"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"userId\": \"{{userId}}\",\r
+
+    \    \"channelId\": \"{{channelId}}\"\r
+
+    }"
+order: 1000

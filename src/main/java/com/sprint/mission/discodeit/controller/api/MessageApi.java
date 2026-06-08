@@ -1,23 +1,25 @@
 package com.sprint.mission.discodeit.controller.api;
 
-import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.message.MessageResponse;
-import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.Dto.MessageDto;
+import com.sprint.mission.discodeit.dto.requestRespose.PageResponse;
+import com.sprint.mission.discodeit.dto.requestRespose.message.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.requestRespose.message.MessageUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,12 +34,14 @@ public interface MessageApi {
                     description = "Message 목록 조회 성공",
                     content = @Content(
                             mediaType = "*/*",
-                            array = @ArraySchema(schema = @Schema(implementation = MessageResponse.class))
+                            schema = @Schema(implementation = PageResponse.class)
                     )
             )
     })
-    ResponseEntity<List<MessageResponse>> findAllByChannelId(
-            @Parameter(description = "조회할 Channel ID", required = true) UUID channelId
+    ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
+            @Parameter(description = "조회할 Channel ID", required = true) UUID channelId,
+            @Parameter Instant cursor,
+            @Parameter(description = "페이징 정보") Pageable pageable
     );
 
     /// POST /api/messages - Message 생성
@@ -48,7 +52,7 @@ public interface MessageApi {
                     description = "Message가 성공적으로 생성됨",
                     content = @Content(
                             mediaType = "*/*",
-                            schema = @Schema(implementation = MessageResponse.class)
+                            schema = @Schema(implementation = MessageDto.class)
                     )
             ),
             @ApiResponse(
@@ -60,7 +64,7 @@ public interface MessageApi {
                     )
             )
     })
-    ResponseEntity<MessageResponse> create(
+    ResponseEntity<MessageDto> create(
             @Parameter(description = "Message 생성 정보", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
             @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
 
@@ -96,7 +100,7 @@ public interface MessageApi {
                     description = "Message가 성공적으로 수정됨",
                     content = @Content(
                             mediaType = "*/*",
-                            schema = @Schema(implementation = MessageResponse.class)
+                            schema = @Schema(implementation = MessageDto.class)
                     )
             ),
             @ApiResponse(
@@ -108,7 +112,7 @@ public interface MessageApi {
                     )
             )
     })
-    ResponseEntity<MessageResponse> update(
+    ResponseEntity<MessageDto> update(
             @Parameter(description = "수정할 Message ID", required = true) UUID messageId,
             @RequestBody MessageUpdateRequest request
     );

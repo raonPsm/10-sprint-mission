@@ -1,32 +1,17 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponse;
+import com.sprint.mission.discodeit.dto.Dto.ReadStatusDto;
 import com.sprint.mission.discodeit.entity.ReadStatus;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-import java.util.Collections;
 import java.util.List;
 
-@Component
-public class ReadStatusMapper {
-    public ReadStatusResponse toResponse(ReadStatus readStatus) {
-        if (readStatus == null) return null;
+@Mapper(componentModel = "spring")
+public interface ReadStatusMapper {
+    @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "channelId", source = "channel.id")
+    ReadStatusDto toDto(ReadStatus entity);
 
-        return new ReadStatusResponse(
-                readStatus.getId(),
-                readStatus.getCreatedAt(),
-                readStatus.getUpdatedAt(),
-                readStatus.getUserId(),
-                readStatus.getChannelId(),
-                readStatus.getLastReadAt()
-        );
-    }
-
-    public List<ReadStatusResponse> toListResponse(List<ReadStatus> readStatuses) {
-        if (readStatuses == null || readStatuses.isEmpty()) return Collections.emptyList();
-
-        return readStatuses.stream()
-                .map(this::toResponse)
-                .toList();
-    }
+    List<ReadStatusDto> toDtoList(List<ReadStatus> entities);
 }

@@ -18,8 +18,9 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("Discodeit API Documentation")
-                        .version("v1.0.0")
-                        .description("API 명세서"))
+                        .description("API 명세서")
+                        .version("v7.0.0")
+                )
                 .components(new Components());
     }
 }

@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{baseURL}}/api/users/{{userId}}/userStatus"
+method: PATCH
+body:
+  type: json
+  content: "{\r
+
+    \  \"newLastActiveAt\": \"2026-02-17T14:53:52.831Z\"\r
+
+    }"
+order: 5000

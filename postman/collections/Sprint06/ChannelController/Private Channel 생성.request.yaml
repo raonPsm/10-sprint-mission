@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseURL}}/api/channels/private"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"participantIds\": [\r
+
+    \        \"9ccba120-53da-4afc-b905-ac8796f5e56b\",\r
+
+    \        \"dad326d4-7241-4261-b53b-8b0ce3d6f9e4\"\r
+
+    \    ]\r
+
+    }"
+order: 2000
