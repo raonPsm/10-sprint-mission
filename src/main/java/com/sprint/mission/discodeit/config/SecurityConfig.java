@@ -45,6 +45,9 @@ public class SecurityConfig {
         .csrf(csrf -> csrf
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+            // WebSocket 핸드셰이크/SockJS HTTP 폴백은 CSRF 검사에서 제외 (인증은 STOMP CONNECT 헤더로 처리)
+            // 제외 안하면 .withSockJS()에서 문제 발생 (SockJS HTTP 폴백 요청이 토큰 없어 403으로 차단됨)
+            .ignoringRequestMatchers(AntPathRequestMatcher.antMatcher("/ws/**"))
         )
         .formLogin(login -> login
             .loginProcessingUrl("/api/auth/login")
