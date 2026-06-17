@@ -36,7 +36,6 @@ public class BasicNotificationService implements NotificationService {
         new Notification(receiverId, title, content));
     log.info("알림 생성 완료: id={}, receiverId={}", notification.getId(), receiverId);
     NotificationDto dto = notificationMapper.toDto(notification);
-    // 알림 생성 -> 수신자에게 SSE 전송 (커밋 후 발송)
     applicationEventPublisher.publishEvent(new NotificationCreatedEvent(dto));
     return dto;
   }
@@ -46,7 +45,6 @@ public class BasicNotificationService implements NotificationService {
   @Override
   public List<NotificationDto> findAllByReceiverId(UUID receiverId) {
     log.debug("알림 목록 조회 시작: receiverId={}", receiverId);
-    // 알림 조회 -> 최신순 정렬
     List<NotificationDto> dtos = notificationRepository
         .findAllByReceiverIdOrderByCreatedAtDesc(receiverId).stream()
         .map(notificationMapper::toDto)
@@ -63,7 +61,6 @@ public class BasicNotificationService implements NotificationService {
     Notification notification = notificationRepository.findById(notificationId)
         .orElseThrow(() -> NotificationNotFoundException.withId(notificationId));
 
-    // 알림 삭제 요청이 본인이 아니면
     if (!notification.getReceiverId().equals(requesterId)) {
       throw NotificationForbiddenException.forNotification(notificationId);
     }

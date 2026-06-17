@@ -71,7 +71,6 @@ public class BasicChannelService implements ChannelService {
     readStatusRepository.saveAll(readStatuses);
 
     log.info("채널 생성 완료: id={}, name={}", channel.getId(), channel.getName());
-    // 참여자 정보가 resolve되도록 readStatus 저장 후 매핑
     ChannelDto dto = channelMapper.toDto(channel);
     applicationEventPublisher.publishEvent(
         new ChannelChangedEvent(ChannelChangedEvent.Type.CREATED, dto));
@@ -86,12 +85,6 @@ public class BasicChannelService implements ChannelService {
         .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
   }
 
-  // @Cacheable : 캐시에 저장하고, 있으면 꺼내 쓰기
-  // 메서드 호출 시, 먼저 "userChannels" 캐시에 해당 key의 값이 있는 지 확인
-  //   cache hit : 메서드 본문을 실행하지 않고 캐시에 저장된 값을 바로 반환 (DB 조회 안함)
-  //   cache miss : 메서드를 실행하고, 그 반환값을 캐시에 저장한 뒤 반환
-  // key를 생략하면 메서드 파라미터로 자동 생성된 key를 사용 (파라미터가 없으면 SimpleKey.EMPTY)
-  // #userId 지정하면 사용자별로 캐시 항목이 따로 저장된다.
   @Cacheable(value = "userChannels", key = "#userId")
   @Transactional(readOnly = true)
   @Override
@@ -128,9 +121,6 @@ public class BasicChannelService implements ChannelService {
     return dto;
   }
 
-  // CacheEvict - 캐시 비우기
-  // 메서드 실행 후 해당 캐시의 항목을 제거. 캐시의 stale data를 없애는 용도이다.
-  // allEntries = true : userChannels의 캐시 전체를 비운다.
   @CacheEvict(value = "userChannels", allEntries = true)
   @Transactional
   @Override
@@ -139,7 +129,6 @@ public class BasicChannelService implements ChannelService {
     log.debug("채널 삭제 시작: id={}", channelId);
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
-    // 삭제 전에 DTO 캡처 (참여자 정보 포함) - readStatus 삭제 후에는 참여자를 조회할 수 없음
     ChannelDto dto = channelMapper.toDto(channel);
 
     messageRepository.deleteAllByChannelId(channelId);
@@ -151,9 +140,3 @@ public class BasicChannelService implements ChannelService {
         new ChannelChangedEvent(ChannelChangedEvent.Type.DELETED, dto));
   }
 }
-
-/*
-읽는 메서드에는 @Cacheable
-쓰는 메서드에는 @CacheEvict를 붙여서
-조회는 빠르게, 데이터가 바뀌면 캐시를 갱신하는 구조
- */

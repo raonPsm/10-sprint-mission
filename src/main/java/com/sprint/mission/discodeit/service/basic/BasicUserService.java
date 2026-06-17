@@ -170,13 +170,10 @@ public class BasicUserService implements UserService {
 
     UserRole oldRole = user.getRole();
     user.updateRole(newRole);
-    jwtRegistry.invalidateJwtInformationByUserId(userId); // JwtInformation 삭제
-    // 다음 API 요청 시 jwtRegistry에 토큰이 없으므로 인증이 실패하고 -> 강제 로그아웃 상태가 됨
-    // 재로그인하면 새 역할이 적용된 JWT가 발급된다.
+    jwtRegistry.invalidateJwtInformationByUserId(userId);
     applicationEventPublisher.publishEvent(new RoleUpdatedEvent(userId, oldRole, newRole));
 
     log.info("사용자 권한 수정 완료: id={}, newRole={}", userId, newRole);
-    // invalidate 이후 매핑하여 online 값이 정확하도록 함
     UserDto dto = userMapper.toDto(user);
     applicationEventPublisher.publishEvent(new UserChangedEvent(UserChangedEvent.Type.UPDATED, dto));
     return dto;
@@ -191,7 +188,6 @@ public class BasicUserService implements UserService {
 
     User user = userRepository.findById(userId)
         .orElseThrow(() -> UserNotFoundException.withId(userId));
-    // 삭제 전에 DTO 캡처
     UserDto dto = userMapper.toDto(user);
 
     userRepository.deleteById(userId);
