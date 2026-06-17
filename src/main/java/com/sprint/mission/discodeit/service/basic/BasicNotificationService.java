@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.NotificationDto;
 import com.sprint.mission.discodeit.entity.Notification;
+import com.sprint.mission.discodeit.event.NotificationCreatedEvent;
 import com.sprint.mission.discodeit.exception.notification.NotificationForbiddenException;
 import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundException;
 import com.sprint.mission.discodeit.mapper.NotificationMapper;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,7 @@ public class BasicNotificationService implements NotificationService {
 
   private final NotificationRepository notificationRepository;
   private final NotificationMapper notificationMapper;
+  private final ApplicationEventPublisher applicationEventPublisher;
 
   @CacheEvict(value = "userNotifications", key = "#receiverId")
   @Transactional
@@ -32,7 +35,10 @@ public class BasicNotificationService implements NotificationService {
     Notification notification = notificationRepository.save(
         new Notification(receiverId, title, content));
     log.info("알림 생성 완료: id={}, receiverId={}", notification.getId(), receiverId);
-    return notificationMapper.toDto(notification);
+    NotificationDto dto = notificationMapper.toDto(notification);
+    // 알림 생성 -> 수신자에게 SSE 전송 (커밋 후 발송)
+    applicationEventPublisher.publishEvent(new NotificationCreatedEvent(dto));
+    return dto;
   }
 
   @Cacheable(value = "userNotifications", key = "#receiverId")

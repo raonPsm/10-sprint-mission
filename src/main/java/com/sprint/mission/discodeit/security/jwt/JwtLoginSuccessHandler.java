@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.security.jwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.response.JwtDto;
+import com.sprint.mission.discodeit.event.UserChangedEvent;
 import com.sprint.mission.discodeit.security.DiscodeitUserDetails;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -26,6 +28,7 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
   private final ObjectMapper objectMapper;
   private final JwtRegistry jwtRegistry;
   private final CacheManager cacheManager;
+  private final ApplicationEventPublisher applicationEventPublisher;
 
   @Override
   public void onAuthenticationSuccess(
@@ -62,5 +65,10 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
       userCache.clear(); // 캐시에 저장된 모든 항목 비우기
     }
 
+    // 로그인 -> online 상태(true)로 변경된 사용자 정보를 SSE broadcast
+    UserDto onlineUser = new UserDto(userDto.id(), userDto.username(), userDto.email(),
+        userDto.profile(), true, userDto.role());
+    applicationEventPublisher.publishEvent(
+        new UserChangedEvent(UserChangedEvent.Type.STATUS_CHANGED, onlineUser));
   }
 }

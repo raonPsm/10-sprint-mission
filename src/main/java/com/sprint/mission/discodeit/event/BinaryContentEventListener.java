@@ -2,11 +2,13 @@ package com.sprint.mission.discodeit.event;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentStatus;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.storage.s3.S3UploadRetryManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -22,6 +24,8 @@ public class BinaryContentEventListener {
   private final BinaryContentStorage binaryContentStorage;
   private final BinaryContentRepository binaryContentRepository;
   private final S3UploadRetryManager s3UploadRetryManager;
+  private final BinaryContentMapper binaryContentMapper;
+  private final ApplicationEventPublisher applicationEventPublisher;
 
   /* 현재 실행 중인 트랜잭션이 성공적으로 커밋된 직후에 이벤트를 처리하도록 함
   AFTER_COMMIT을 통해 DB 처리가 확정된 뒤에 파일 관련 IO 작업 진행
@@ -77,5 +81,8 @@ public class BinaryContentEventListener {
       binaryContent.updateStatus(BinaryContentStatus.FAIL);
       log.error("바이너리 컨텐츠 파일 저장 실패: id={}", event.binaryContentId(), e);
     }
+    // 업로드 상태 변경(SUCCESS/FAIL) -> SSE broadcast (이 트랜잭션 커밋 후 발송)
+    applicationEventPublisher.publishEvent(
+        new BinaryContentStatusChangedEvent(binaryContentMapper.toDto(binaryContent)));
   }
 }

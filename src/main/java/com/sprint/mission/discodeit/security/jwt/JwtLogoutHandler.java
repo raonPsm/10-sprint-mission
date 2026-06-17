@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.security.jwt;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.event.UserChangedEvent;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -8,6 +9,7 @@ import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Component;
@@ -19,6 +21,7 @@ public class JwtLogoutHandler implements LogoutHandler {
   private final JwtRegistry jwtRegistry;
   private final JwtTokenProvider jwtTokenProvider;
   private final CacheManager cacheManager;
+  private final ApplicationEventPublisher applicationEventPublisher;
 
   @Override
   public void logout(HttpServletRequest request, HttpServletResponse response,
@@ -36,6 +39,11 @@ public class JwtLogoutHandler implements LogoutHandler {
               UserDto userDto = jwtTokenProvider.extractUserDtoFromRefreshToken(c.getValue());
               // Registry에서 해당 userId의 모든 토큰 정보 제거
               jwtRegistry.invalidateJwtInformationByUserId(userDto.id());
+              // 로그아웃 -> online 상태(false)로 변경된 사용자 정보를 SSE broadcast
+              UserDto offlineUser = new UserDto(userDto.id(), userDto.username(), userDto.email(),
+                  userDto.profile(), false, userDto.role());
+              applicationEventPublisher.publishEvent(
+                  new UserChangedEvent(UserChangedEvent.Type.STATUS_CHANGED, offlineUser));
             } catch (Exception ignored) {
               // 토큰이 이미 만료되었거나 위변조된 경우에도 로그아웃은 정상 진행
               // 어차피 유효하지 않은 토큰이므로 Registry 제거가 불필요 -> 무시

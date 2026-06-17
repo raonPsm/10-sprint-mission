@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.event.ChannelChangedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +37,7 @@ public class BasicChannelService implements ChannelService {
   private final MessageRepository messageRepository;
   private final UserRepository userRepository;
   private final ChannelMapper channelMapper;
+  private final ApplicationEventPublisher applicationEventPublisher;
 
   @CacheEvict(value = "userChannels", allEntries = true)
   @Transactional
@@ -48,7 +51,10 @@ public class BasicChannelService implements ChannelService {
 
     channelRepository.save(channel);
     log.info("채널 생성 완료: id={}, name={}", channel.getId(), channel.getName());
-    return channelMapper.toDto(channel);
+    ChannelDto dto = channelMapper.toDto(channel);
+    applicationEventPublisher.publishEvent(
+        new ChannelChangedEvent(ChannelChangedEvent.Type.CREATED, dto));
+    return dto;
   }
 
   @CacheEvict(value = "userChannels", allEntries = true)
@@ -65,7 +71,11 @@ public class BasicChannelService implements ChannelService {
     readStatusRepository.saveAll(readStatuses);
 
     log.info("채널 생성 완료: id={}, name={}", channel.getId(), channel.getName());
-    return channelMapper.toDto(channel);
+    // 참여자 정보가 resolve되도록 readStatus 저장 후 매핑
+    ChannelDto dto = channelMapper.toDto(channel);
+    applicationEventPublisher.publishEvent(
+        new ChannelChangedEvent(ChannelChangedEvent.Type.CREATED, dto));
+    return dto;
   }
 
   @Transactional(readOnly = true)
@@ -112,7 +122,10 @@ public class BasicChannelService implements ChannelService {
     }
     channel.update(newName, newDescription);
     log.info("채널 수정 완료: id={}, name={}", channelId, channel.getName());
-    return channelMapper.toDto(channel);
+    ChannelDto dto = channelMapper.toDto(channel);
+    applicationEventPublisher.publishEvent(
+        new ChannelChangedEvent(ChannelChangedEvent.Type.UPDATED, dto));
+    return dto;
   }
 
   // CacheEvict - 캐시 비우기
@@ -124,15 +137,18 @@ public class BasicChannelService implements ChannelService {
   @PreAuthorize("hasRole('CHANNEL_MANAGER')")
   public void delete(UUID channelId) {
     log.debug("채널 삭제 시작: id={}", channelId);
-    if (!channelRepository.existsById(channelId)) {
-      throw ChannelNotFoundException.withId(channelId);
-    }
+    Channel channel = channelRepository.findById(channelId)
+        .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
+    // 삭제 전에 DTO 캡처 (참여자 정보 포함) - readStatus 삭제 후에는 참여자를 조회할 수 없음
+    ChannelDto dto = channelMapper.toDto(channel);
 
     messageRepository.deleteAllByChannelId(channelId);
     readStatusRepository.deleteAllByChannelId(channelId);
 
     channelRepository.deleteById(channelId);
     log.info("채널 삭제 완료: id={}", channelId);
+    applicationEventPublisher.publishEvent(
+        new ChannelChangedEvent(ChannelChangedEvent.Type.DELETED, dto));
   }
 }
 
