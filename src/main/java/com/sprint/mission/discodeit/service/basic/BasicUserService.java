@@ -9,7 +9,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserRole;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
-import com.sprint.mission.discodeit.event.UserChangedEvent;
+import com.sprint.mission.discodeit.event.sse.UserChangedEvent;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -79,7 +79,8 @@ public class BasicUserService implements UserService {
     userRepository.save(user);
     log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
     UserDto dto = userMapper.toDto(user);
-    applicationEventPublisher.publishEvent(new UserChangedEvent(UserChangedEvent.Type.CREATED, dto));
+    applicationEventPublisher.publishEvent(
+        new UserChangedEvent(UserChangedEvent.Type.CREATED, dto));
     return dto;
   }
 
@@ -154,7 +155,8 @@ public class BasicUserService implements UserService {
 
     log.info("사용자 수정 완료: id={}", userId);
     UserDto dto = userMapper.toDto(user);
-    applicationEventPublisher.publishEvent(new UserChangedEvent(UserChangedEvent.Type.UPDATED, dto));
+    applicationEventPublisher.publishEvent(
+        new UserChangedEvent(UserChangedEvent.Type.UPDATED, dto));
     return dto;
   }
 
@@ -175,7 +177,8 @@ public class BasicUserService implements UserService {
 
     log.info("사용자 권한 수정 완료: id={}, newRole={}", userId, newRole);
     UserDto dto = userMapper.toDto(user);
-    applicationEventPublisher.publishEvent(new UserChangedEvent(UserChangedEvent.Type.UPDATED, dto));
+    applicationEventPublisher.publishEvent(
+        new UserChangedEvent(UserChangedEvent.Type.UPDATED, dto));
     return dto;
   }
 
@@ -192,6 +195,7 @@ public class BasicUserService implements UserService {
 
     userRepository.deleteById(userId);
     log.info("사용자 삭제 완료: id={}", userId);
-    applicationEventPublisher.publishEvent(new UserChangedEvent(UserChangedEvent.Type.DELETED, dto));
+    applicationEventPublisher.publishEvent(
+        new UserChangedEvent(UserChangedEvent.Type.DELETED, dto));
   }
 }

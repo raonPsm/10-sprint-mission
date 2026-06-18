@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.security.jwt;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.event.UserChangedEvent;
+import com.sprint.mission.discodeit.event.sse.UserChangedEvent;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

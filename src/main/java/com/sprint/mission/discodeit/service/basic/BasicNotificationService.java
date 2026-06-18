@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.NotificationDto;
 import com.sprint.mission.discodeit.entity.Notification;
-import com.sprint.mission.discodeit.event.NotificationCreatedEvent;
+import com.sprint.mission.discodeit.event.sse.NotificationCreatedEvent;
 import com.sprint.mission.discodeit.exception.notification.NotificationForbiddenException;
 import com.sprint.mission.discodeit.exception.notification.NotificationNotFoundException;
 import com.sprint.mission.discodeit.mapper.NotificationMapper;
