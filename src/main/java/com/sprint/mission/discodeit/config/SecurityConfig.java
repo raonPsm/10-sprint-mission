@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.security.jwt.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.security.jwt.JwtLogoutHandler;
 import com.sprint.mission.discodeit.security.jwt.JwtRegistry;
 import com.sprint.mission.discodeit.security.jwt.JwtTokenProvider;
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -55,6 +56,10 @@ public class SecurityConfig {
             .failureHandler(loginFailureHandler)
         )
         .authorizeHttpRequests(auth -> auth
+            // SSE 등 비동기 요청은 최초 REQUEST 디스패치에서 이미 인증/인가됨.
+            // SseEmitter 반환 후 ASYNC 재디스패치 시 JwtAuthenticationFilter(OncePerRequestFilter)가
+            // 다시 실행되지 않아 SecurityContext가 비어 Access Denied가 발생하므로 ASYNC/ERROR는 통과시킴으로서 문제 해결
+            .dispatcherTypeMatchers(DispatcherType.ASYNC, DispatcherType.ERROR).permitAll()
             .requestMatchers(
                 AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/auth/csrf-token"),
                 AntPathRequestMatcher.antMatcher(HttpMethod.POST, "/api/users"),
