@@ -1,3 +1,50 @@
+### 실행 명령어 정리
+Docker Compose 실행
+```shell
+mkdir -p logs && docker-compose --env-file .env up --build 2>&1 | tee logs/build-$(date +%Y%m%d_%H%M%S).log
+```
+
+app 로그만 실시간으로 보면서 파일로도 저장
+```shell 
+docker compose up -d --build 
+docker compose ps    
+docker compose logs -f app | tee logs/app-$(date +%Y%m%d_%H%M%S).log
+```
+
+로컬 실행 (gradlew)
+```shell
+mkdir -p logs && ./gradlew bootRun 2>&1 | tee logs/build-$(date +%Y%m%d_%H%M%S).log
+```
+
+### DB 접속
+(Docker) psql 접속
+```shell
+docker exec -it discodeit-db bash -c 'psql -U $POSTGRES_USER -d $POSTGRES_DB'
+```
+
+(로컬) psql 접속
+```shell
+psql -U discodeit_user -d discodeit -h localhost -p 5432
+```
+
+데이터베이스/테이블 조회
+```shell
+\l              데이터베이스 목록
+\c dbname       데이터베이스 전환
+\dt             테이블 목록
+\dt schema.*    특정 스키마 테이블 목록
+\d tablename    테이블 구조 확인
+\di             인덱스 목록
+\dv             뷰 목록
+\ds             시퀀스 목록
+\dn             스키마 목록
+```
+
+테이블 삭제 명령어
+```shell
+DROP TABLE IF EXISTS notifications, message_attachments, read_statuses, messages, users, binary_contents, channels CASCADE;
+```
+
 # [SB] 스프린트 미션 12
 
 ## 🏔️ 프로젝트 마일스톤
