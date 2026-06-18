@@ -41,6 +41,7 @@ public class SseController implements SseApi {
     try {
       return UUID.fromString(value);
     } catch (IllegalArgumentException e) {
+      log.debug("유효하지 않은 lastEventId 무시 (value={})", value);
       return null;
     }
   }

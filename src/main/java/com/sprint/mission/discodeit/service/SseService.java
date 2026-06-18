@@ -28,11 +28,17 @@ public class SseService {
     sseEmitterRepository.save(receiverId, emitter);
 
     emitter.onCompletion(() -> {
-      log.info("SSE 연결 완료 (receiverId={})", receiverId);
+      log.debug("SSE 연결 완료 (receiverId={})", receiverId);
       sseEmitterRepository.deleteByReceiverIdAndEmitter(receiverId, emitter);
     });
-    emitter.onTimeout(emitter::complete);
-    emitter.onError(e -> sseEmitterRepository.deleteByReceiverIdAndEmitter(receiverId, emitter));
+    emitter.onTimeout(() -> {
+      log.debug("SSE 연결 타임아웃 (receiverId={})", receiverId);
+      emitter.complete();
+    });
+    emitter.onError(e -> {
+      log.warn("SSE 연결 오류 (receiverId={})", receiverId, e);
+      sseEmitterRepository.deleteByReceiverIdAndEmitter(receiverId, emitter);
+    });
 
     try {
       emitter.send(SseEmitter.event()
@@ -70,17 +76,6 @@ public class SseService {
     }
   }
 
-  private void sendToEmitter(UUID receiverId, SseEmitter emitter, SseMessage message) {
-    try {
-      emitter.send(SseEmitter.event()
-          .id(message.id().toString())
-          .name(message.eventName())
-          .data(message.data(), MediaType.APPLICATION_JSON));
-    } catch (IOException | IllegalStateException e) {
-      sseEmitterRepository.deleteByReceiverIdAndEmitter(receiverId, emitter);
-    }
-  }
-
   @Scheduled(fixedDelay = 1000 * 60 * 30)
   public void cleanUp() {
     sseEmitterRepository.getAll().forEach((receiverId, emitters) -> {
@@ -99,6 +94,17 @@ public class SseService {
     } catch (IOException | IllegalStateException e) {
       emitter.complete();
       return false;
+    }
+  }
+
+  private void sendToEmitter(UUID receiverId, SseEmitter emitter, SseMessage message) {
+    try {
+      emitter.send(SseEmitter.event()
+          .id(message.id().toString())
+          .name(message.eventName())
+          .data(message.data(), MediaType.APPLICATION_JSON));
+    } catch (IOException | IllegalStateException e) {
+      sseEmitterRepository.deleteByReceiverIdAndEmitter(receiverId, emitter);
     }
   }
 }
